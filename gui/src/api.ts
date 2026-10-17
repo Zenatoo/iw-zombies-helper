@@ -48,6 +48,11 @@ export interface Action {
   trial: boolean;
 }
 
+/** A choice from one of the iw7-mod script's lists: the page sends the chosen index. */
+export interface Pick extends Action {
+  options: string[];
+}
+
 export interface Group {
   title: string;
   options: Option[];
@@ -101,6 +106,8 @@ export interface View {
   actions: Action[];
   /** Actions carried out by the iw7-mod script: offered only when `modClient`. */
   extras: Action[];
+  /** Choices from the script's lists (cards, weapons, traps, zombies), also only when `modClient`. */
+  picks: Pick[];
   /** The game is iw7-mod: script extras are offered, account actions are not. */
   modClient: boolean;
   keys: { allOff: string; savePosition: string; teleport: string };
@@ -140,6 +147,7 @@ export const api = {
   setRound: (round: number) => call<void>("set_round", { round }),
   setTweak: (key: string, value: number) => call<void>("set_tweak", { key, value }),
   runAction: (key: string) => call<void>("run_action", { key }),
+  runPick: (pick: string, index: number) => call<void>("run_pick", { pick, index }),
   setWatch: (on: boolean) => call<void>("set_watch", { on }),
   verify: () => call<void>("verify"),
   /** Full survey of everything readable, written into the log folder. Read-only. */

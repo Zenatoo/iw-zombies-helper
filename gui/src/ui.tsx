@@ -209,6 +209,31 @@ function decimalsOf(step: number): number {
 }
 
 /** A number with its step's decimals (0.50 for a step of 0.05), with a decimal comma in French. */
+interface ChoiceProps {
+  label: string;
+  /** Index of the chosen option. */
+  value: number;
+  options: string[];
+  disabled?: boolean;
+  onChange: (index: number) => void;
+}
+
+/** A drop-down list (Windows' ComboBox): the options are sent by index. */
+export function Choice({ label, value, options, disabled, onChange }: ChoiceProps) {
+  return (
+    <span className="choice" data-off={disabled}>
+      <select aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))}>
+        {options.map((option, index) => (
+          <option key={option} value={index}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <ChevronDown12Regular aria-hidden="true" />
+    </span>
+  );
+}
+
 export function formatNumber(value: number, step = 1): string {
   const text = value.toFixed(decimalsOf(step)).replace("-", "−");
   return lang() === "fr" ? text.replace(".", ",") : text;

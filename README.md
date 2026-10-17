@@ -305,6 +305,26 @@ compiled when a Zombies match loads. To remove it, delete that file.
 | Revive (`revive`), trial | `revive` | Every player down gets back up, from last stand or the afterlife arcade. |
 | Third-person view (`third_person`), trial | `thirdperson` | Switches between first and third-person view (iw7-mod's `cg_thirdPerson`). |
 | Explosive bullets (`explosive_bullets`), trial | `explosive` | Switches on or off: each shot explodes where it lands, never right next to you. Off again at every match. |
+| Zombie counter (`zombie_counter`), trial | `counter` | Shows on screen how many zombies the round still has; again to hide it. |
+| Bonus rain (`bonus_rain`), trial | `rain` | Five random bonuses fall around you. |
+| Launch the zombies (`launch_zombies`), trial | `launch` | Every zombie alive dies and flies up in the air. |
+| Set zombies on fire (`burn_zombies`), trial | `burn` | Every zombie alive catches fire and burns out within a few seconds. |
+| Electrocute zombies (`shock_zombies`), trial | `shock` | Every zombie alive is stunned by electric shocks for a few seconds. |
+| Super sprint (`super_sprint`), trial | `sprint` | You run almost twice as fast for 30 seconds. |
+
+Four lists, from the window only, each with a choice and a button (trial):
+
+- **Fate & Fortune card**: any of the game's 61 cards, by its name in the game. Its effect starts right away,
+  without using a card from your deck; a card with a duration stops at its end.
+- **Weapon**: the map's weapons, its wonder weapons included (Dischord, Shredder, harpoons, Venom-X…). Only
+  what the current map has.
+- **Crafted trap**: ready to place, as if built at the crafting station: turret, boombox, fireworks, electric
+  trap, Medusa, revocator, gas can, balloons, mower, on the maps named in the list. The traps of Radioactive
+  Thing and Beast from Beyond are out of reach: the game gives their functions no public name.
+- **Spawn a zombie**: a zombie of the kind chosen (clown, brute, grey, skeleton, crabs, cryptids…) a few steps
+  in front of you, if the map has that kind. Bosses are not offered: they depend on their scripted fight.
+
+The lists are kept in [src/picks.rs](src/picks.rs) and in the script in the same order; a test checks it.
 | Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
 | | `bonuses` | Lists the bonuses of the current map. |
 

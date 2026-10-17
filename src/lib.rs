@@ -5,6 +5,7 @@ pub mod cpu;
 pub mod engine;
 pub mod lang;
 pub mod logbook;
+pub mod picks;
 pub mod process;
 pub mod profile;
 pub mod state;

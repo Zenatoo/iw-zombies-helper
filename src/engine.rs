@@ -4,6 +4,7 @@
 use crate::config::{self, Config, Priority};
 use crate::lang::{tr, trs};
 use crate::logbook::Logbook;
+use crate::picks::Pick;
 use crate::process::{self, Access, Process};
 use crate::trainer::{self, Feature, FpsOutcome, OneShot, RoundSource, Trainer, Tweak};
 use crate::watch::{self, Watch};
@@ -41,6 +42,8 @@ pub enum Command {
     SetTweak { tweak: Tweak, value: f32 },
     /// Runs a one-off action.
     RunAction(OneShot),
+    /// Sends a choice from one of the iw7-mod script's lists: its index in the list.
+    RunPick { pick: Pick, index: usize },
     /// Writes a full survey of everything readable into the log folder. Read-only.
     Survey,
     /// Starts or stops watching the player's structures (research).
@@ -151,6 +154,7 @@ enum Action {
     Teleport,
     SetTweak(Tweak, f32),
     Run(OneShot),
+    Pick(Pick, usize),
 }
 
 struct Hotkey {
@@ -504,6 +508,7 @@ impl Worker {
             Command::SetRound(round) => self.set_round(s, round),
             Command::SetTweak { tweak, value } => self.perform(s, Action::SetTweak(tweak, value)),
             Command::RunAction(action) => self.perform(s, Action::Run(action)),
+            Command::RunPick { pick, index } => self.perform(s, Action::Pick(pick, index)),
             Command::Survey => self.survey(s),
             Command::SetWatch(on) => {
                 if on && !(s.memory && s.in_match) {
@@ -550,6 +555,13 @@ impl Worker {
                 Ok((previous, written)) => (trs(format!("{}: {previous} -> {written}", tweak.label()), format!("{} : {previous} -> {written}", tweak.label())), true),
                 Err(why) => (trs(format!("{} unavailable ({why})", tweak.label()), format!("{} indisponible ({why})", tweak.label())), false),
             },
+            Action::Pick(pick, index) => {
+                let choice = pick.entries().get(index).map(|entry| entry.label()).unwrap_or("?");
+                match trainer.run_pick(&s.game, pick, index) {
+                    Ok(detail) => (trs(format!("{}: {choice}: done ({detail})", pick.label()), format!("{} : {choice} : fait ({detail})", pick.label())), true),
+                    Err(why) => (trs(format!("{}: {choice} unavailable ({why})", pick.label()), format!("{} : {choice} indisponible ({why})", pick.label())), false),
+                }
+            }
             Action::Run(action) => match trainer.run_action(&s.game, action) {
                 Ok(detail) => (trs(format!("{}: done ({detail})", action.label()), format!("{} : fait ({detail})", action.label())), true),
                 Err(why) => (trs(format!("{} unavailable ({why})", action.label()), format!("{} indisponible ({why})", action.label())), false),

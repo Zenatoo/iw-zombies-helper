@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { api, type Tweak, type View } from "../api";
+import { api, type Pick, type Tweak, type View } from "../api";
 import { t } from "../i18n";
 import { usePending, useToggles } from "../toggles";
-import { formatNumber, Key, Legend, NumberBox, OptionRow, Row, Section, Slider } from "../ui";
+import { Choice, formatNumber, Key, Legend, NumberBox, OptionRow, Row, Section, Slider } from "../ui";
 
 interface Props {
   view: View;
@@ -13,6 +13,25 @@ interface TweakRowProps {
   tweak: Tweak;
   disabled: boolean;
   act: (command: Promise<void>) => void;
+}
+
+interface PickRowProps {
+  pick: Pick;
+  disabled: boolean;
+  act: (command: Promise<void>) => void;
+}
+
+/** A choice from one of the script's lists, sent with its button; the choice stays for the next time. */
+function PickRow({ pick, disabled, act }: PickRowProps) {
+  const [index, setIndex] = useState(0);
+  return (
+    <Row label={pick.label} hint={pick.hint} trial={pick.trial} off={disabled}>
+      <Choice label={pick.label} value={index} options={pick.options} disabled={disabled} onChange={setIndex} />
+      <button type="button" className="btn" disabled={disabled} onClick={() => act(api.runPick(pick.key, index))}>
+        {pick.button}
+      </button>
+    </Row>
+  );
 }
 
 /** A numeric setting: slider for rough changes, number box for the exact value, back to the original. */
@@ -52,7 +71,8 @@ export function Match({ view, act }: Props) {
   const { playing, isOn, canToggle, toggle } = useToggles(view, act);
   const position = view.savedPosition;
   const extras = view.modClient ? view.extras : [];
-  const marked = [...view.groups.flatMap((group) => group.options), ...view.tweaks, ...[...view.actions, ...extras].map((action) => ({ ...action, code: false }))];
+  const picks = view.modClient ? view.picks : [];
+  const marked = [...view.groups.flatMap((group) => group.options), ...view.tweaks, ...[...view.actions, ...extras, ...picks].map((action) => ({ ...action, code: false }))];
 
   return (
     <>
@@ -133,6 +153,9 @@ export function Match({ view, act }: Props) {
                 {action.button}
               </button>
             </Row>
+          ))}
+          {picks.map((pick) => (
+            <PickRow key={pick.key} pick={pick} disabled={!playing} act={act} />
           ))}
         </Section>
       )}

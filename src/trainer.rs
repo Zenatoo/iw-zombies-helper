@@ -13,6 +13,7 @@
 
 use crate::config;
 use crate::lang::{self, tr, trs};
+use crate::picks::Pick;
 use crate::process::Process;
 use crate::state::Pending;
 use windows_sys::Win32::Media::Audio::{PlaySoundW, SND_ASYNC, SND_MEMORY, SND_NODEFAULT};
@@ -140,7 +141,7 @@ const TICKETS_NAME: u32 = 0xC206;
 /// it back.
 const SCRIPT_MAILBOX_NAME: u32 = 0x441A;
 const SCRIPT_READY: i32 = 7_700;
-const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_READY..=SCRIPT_READY + 99;
+const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_READY..=SCRIPT_READY + 999;
 
 // --- Server-side players (`client_t`, 0xAEA98 bytes per player) ------------------------------
 /// `svs_clients`: pointer to the server's player array, allocated when the match starts.
@@ -626,10 +627,16 @@ pub enum OneShot {
     Revive,
     ThirdPerson,
     ExplosiveBullets,
+    ZombieCounter,
+    BonusRain,
+    LaunchZombies,
+    BurnZombies,
+    ShockZombies,
+    SuperSprint,
 }
 
 impl OneShot {
-    pub const ALL: [OneShot; 21] = [
+    pub const ALL: [OneShot; 27] = [
         OneShot::RefillAmmo,
         OneShot::AddMoney,
         OneShot::WeakenZombies,
@@ -651,6 +658,12 @@ impl OneShot {
         OneShot::Revive,
         OneShot::ThirdPerson,
         OneShot::ExplosiveBullets,
+        OneShot::ZombieCounter,
+        OneShot::BonusRain,
+        OneShot::LaunchZombies,
+        OneShot::BurnZombies,
+        OneShot::ShockZombies,
+        OneShot::SuperSprint,
     ];
 
     /// Name used by the interface and in the configuration (keyboard shortcuts).
@@ -677,6 +690,12 @@ impl OneShot {
             OneShot::Revive => "revive",
             OneShot::ThirdPerson => "third_person",
             OneShot::ExplosiveBullets => "explosive_bullets",
+            OneShot::ZombieCounter => "zombie_counter",
+            OneShot::BonusRain => "bonus_rain",
+            OneShot::LaunchZombies => "launch_zombies",
+            OneShot::BurnZombies => "burn_zombies",
+            OneShot::ShockZombies => "shock_zombies",
+            OneShot::SuperSprint => "super_sprint",
         }
     }
 
@@ -703,6 +722,12 @@ impl OneShot {
             OneShot::Revive => tr("Revive", "Se relever"),
             OneShot::ThirdPerson => tr("Third-person view", "Vue à la troisième personne"),
             OneShot::ExplosiveBullets => tr("Explosive bullets", "Balles explosives"),
+            OneShot::ZombieCounter => tr("Zombie counter", "Compteur de zombies"),
+            OneShot::BonusRain => tr("Bonus rain", "Pluie de bonus"),
+            OneShot::LaunchZombies => tr("Launch the zombies", "Faire voler les zombies"),
+            OneShot::BurnZombies => tr("Set zombies on fire", "Mettre le feu aux zombies"),
+            OneShot::ShockZombies => tr("Electrocute zombies", "Électrocuter les zombies"),
+            OneShot::SuperSprint => tr("Super sprint", "Super sprint"),
         }
     }
 
@@ -729,6 +754,12 @@ impl OneShot {
             OneShot::Revive => tr("Every player down gets back up, from last stand or the afterlife arcade.", "Tout joueur à terre se relève, en dernier recours ou depuis l'arcade de l'au-delà."),
             OneShot::ThirdPerson => tr("Switches between first and third-person view.", "Passe de la vue à la première personne à la troisième, et inversement."),
             OneShot::ExplosiveBullets => tr("Switches on or off: each shot explodes where it lands, away from you.", "S'active ou se coupe : chaque tir explose là où il touche, loin de vous."),
+            OneShot::ZombieCounter => tr("Shows on screen how many zombies the round still has. Again to hide it.", "Affiche à l'écran combien de zombies il reste dans la manche. Encore une fois pour le cacher."),
+            OneShot::BonusRain => tr("Five random bonuses fall around you.", "Cinq bonus au hasard tombent autour de vous."),
+            OneShot::LaunchZombies => tr("Every zombie alive dies and flies up in the air.", "Tous les zombies en vie meurent et s'envolent."),
+            OneShot::BurnZombies => tr("Every zombie alive catches fire and burns out within a few seconds.", "Tous les zombies en vie prennent feu et se consument en quelques secondes."),
+            OneShot::ShockZombies => tr("Every zombie alive is stunned by an electric shock for a moment.", "Tous les zombies en vie sont paralysés un moment par une décharge."),
+            OneShot::SuperSprint => tr("You run almost twice as fast for 30 seconds.", "Vous courez presque deux fois plus vite pendant 30 secondes."),
         }
     }
 
@@ -745,7 +776,12 @@ impl OneShot {
             OneShot::OpenDoors => tr("Open", "Ouvrir"),
             OneShot::NextCharacter => tr("Change", "Changer"),
             OneShot::Revive => tr("Revive", "Relever"),
-            OneShot::ThirdPerson | OneShot::ExplosiveBullets => tr("Switch", "Basculer"),
+            OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter => tr("Switch", "Basculer"),
+            OneShot::BonusRain => tr("Drop", "Faire tomber"),
+            OneShot::LaunchZombies => tr("Launch", "Lancer"),
+            OneShot::BurnZombies => tr("Ignite", "Enflammer"),
+            OneShot::ShockZombies => tr("Shock", "Électrocuter"),
+            OneShot::SuperSprint => tr("Sprint", "Sprinter"),
             OneShot::AllPerks | OneShot::BoxWeapon => tr("Get", "Obtenir"),
             OneShot::DropMaxAmmo | OneShot::DropNuke | OneShot::DropInstakill | OneShot::DropDoubleMoney | OneShot::DropFireSale | OneShot::DropInfiniteAmmo => {
                 tr("Drop", "Faire apparaître")
@@ -756,7 +792,7 @@ impl OneShot {
     /// True as long as the action has not been seen working on the real game. The other iw7-mod
     /// extras were seen working, from the console and from the window, on 2026-10-16.
     pub fn trial(self) -> bool {
-        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets)
+        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint)
     }
 
     /// Number of the command for the iw7-mod script, for the actions it carries out. Keep in step
@@ -778,6 +814,12 @@ impl OneShot {
             OneShot::Revive => 21,
             OneShot::ThirdPerson => 22,
             OneShot::ExplosiveBullets => 23,
+            OneShot::ZombieCounter => 24,
+            OneShot::BonusRain => 25,
+            OneShot::LaunchZombies => 26,
+            OneShot::BurnZombies => 27,
+            OneShot::ShockZombies => 28,
+            OneShot::SuperSprint => 29,
             _ => return None,
         })
     }
@@ -1135,7 +1177,13 @@ impl Trainer {
             | OneShot::NextCharacter
             | OneShot::Revive
             | OneShot::ThirdPerson
-            | OneShot::ExplosiveBullets => self.send_to_script(p, action),
+            | OneShot::ExplosiveBullets
+            | OneShot::ZombieCounter
+            | OneShot::BonusRain
+            | OneShot::LaunchZombies
+            | OneShot::BurnZombies
+            | OneShot::ShockZombies
+            | OneShot::SuperSprint => self.send_to_script(p, action),
         }
     }
 
@@ -1143,6 +1191,19 @@ impl Trainer {
     /// never loads the script, and nothing is written to it for this.
     fn send_to_script(&mut self, p: &Process, action: OneShot) -> Result<String, &'static str> {
         let code = action.script_code().ok_or(tr("not a script command", "pas une commande du script"))?;
+        self.send_code(p, code)
+    }
+
+    /// Sends the choice made in one of the script's lists (cards, weapons, traps, zombies).
+    pub fn run_pick(&mut self, p: &Process, pick: Pick, index: usize) -> Result<String, &'static str> {
+        if !in_match(p) {
+            return Err(not_in_match());
+        }
+        let code = pick.code(index).ok_or(tr("unknown choice", "choix inconnu"))?;
+        self.send_code(p, code)
+    }
+
+    fn send_code(&mut self, p: &Process, code: i32) -> Result<String, &'static str> {
         if !p.name.eq_ignore_ascii_case(config::MOD_CLIENT) {
             return Err(tr("iw7-mod only", "iw7-mod uniquement"));
         }

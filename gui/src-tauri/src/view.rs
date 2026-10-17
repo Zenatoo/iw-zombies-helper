@@ -5,6 +5,7 @@
 use iw_helper::config::{self, Config, Priority};
 use iw_helper::engine::{FeatureState, Game, Snapshot};
 use iw_helper::lang::{self, tr, trs};
+use iw_helper::picks::{Entry, Pick};
 use iw_helper::trainer::{Feature, OneShot, Tweak};
 use iw_helper::winsettings::GraphicsSettings;
 use iw_helper::{cpu, profile};
@@ -42,6 +43,8 @@ pub struct View {
     pub actions: Vec<ActionRow>,
     /// Actions carried out by the iw7-mod script: the pages only offer them on iw7-mod.
     pub extras: Vec<ActionRow>,
+    /// Choices from the script's lists (cards, weapons, traps, zombies), on iw7-mod too.
+    pub picks: Vec<PickRow>,
     /// The game is iw7-mod: script extras are offered, account actions are not.
     pub mod_client: bool,
     pub keys: Keys,
@@ -107,6 +110,17 @@ pub struct ActionRow {
     /// Button text.
     pub button: &'static str,
     pub trial: bool,
+}
+
+#[derive(Serialize)]
+pub struct PickRow {
+    pub key: &'static str,
+    pub label: &'static str,
+    pub hint: &'static str,
+    pub button: &'static str,
+    pub trial: bool,
+    /// Labels of the choices, in the order the script knows them: the page sends the index.
+    pub options: Vec<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -242,6 +256,10 @@ pub fn build(input: &Input) -> View {
         tweaks: Tweak::ALL.iter().map(|&tweak| tweak_row(tweak, snapshot)).collect(),
         actions: action_rows(false),
         extras: action_rows(true),
+        picks: Pick::ALL
+            .iter()
+            .map(|&pick| PickRow { key: pick.key(), label: pick.label(), hint: pick.hint(), button: pick.button(), trial: pick.trial(), options: pick.entries().iter().map(Entry::label).collect() })
+            .collect(),
         mod_client,
         keys: Keys { all_off: key(config::ACTION_ALL_OFF), save_position: key(config::ACTION_SAVE_POSITION), teleport: key(config::ACTION_TELEPORT) },
         saved_position: snapshot.saved_position,
@@ -568,14 +586,15 @@ mod tests {
         let (config, cores, graphics, snapshot) = (Config::default(), [0b11], GraphicsSettings::default(), demo_snapshot());
         let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None });
         let json = serde_json::to_value(&view).unwrap();
-        let expected: [(&serde_json::Value, &[&str]); 14] = [
-            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "modClient", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
+        let expected: [(&serde_json::Value, &[&str]); 15] = [
+            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "modClient", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
             (&json["message"], &["text", "tone"]),
             (&json["groups"][0], &["title", "options"]),
             (&json["groups"][0]["options"][0], &["key", "label", "hint", "hotkey", "on", "code", "trial"]),
             (&json["tweaks"][0], &["key", "label", "hint", "value", "min", "max", "step", "default", "unit", "code", "trial"]),
             (&json["actions"][0], &["key", "label", "hint", "button", "trial"]),
             (&json["extras"][0], &["key", "label", "hint", "button", "trial"]),
+            (&json["picks"][0], &["key", "label", "hint", "button", "trial", "options"]),
             (&json["keys"], &["allOff", "savePosition", "teleport"]),
             (&json["characters"][0], &["code", "name", "map"]),
             (&json["hotkeys"][0], &["label", "key"]),

@@ -9,6 +9,7 @@ use iw_helper::config::{self, Config, Priority, Setting};
 use iw_helper::engine::{Command, Engine, Launch, Snapshot};
 use iw_helper::lang::{self, tr, trs, Lang};
 use iw_helper::logbook::Logbook;
+use iw_helper::picks::Pick;
 use iw_helper::trainer::{Feature, OneShot, Tweak};
 use iw_helper::winsettings::{self, GraphicsSettings};
 use iw_helper::{cpu, profile};
@@ -188,6 +189,16 @@ fn run_action(app: State<App>, key: String) {
     if let Some(action) = OneShot::ALL.into_iter().find(|candidate| candidate.key() == key) {
         app.send(Command::RunAction(action));
         app.demo_line(trs(format!("{}: done (demo, nothing is written)", action.label()), format!("{} : fait (démonstration, rien n'est écrit)", action.label())));
+    }
+}
+
+/// A choice from one of the iw7-mod script's lists, by its index.
+#[tauri::command]
+fn run_pick(app: State<App>, pick: String, index: usize) {
+    if let Some(pick) = Pick::parse(&pick).filter(|pick| index < pick.entries().len()) {
+        app.send(Command::RunPick { pick, index });
+        let choice = pick.entries()[index].label();
+        app.demo_line(trs(format!("{}: {choice}: done (demo, nothing is written)", pick.label()), format!("{} : {choice} : fait (démonstration, rien n'est écrit)", pick.label())));
     }
 }
 
@@ -394,6 +405,7 @@ fn main() {
             set_round,
             set_tweak,
             run_action,
+            run_pick,
             survey,
             set_cpu_enabled,
             set_smt,

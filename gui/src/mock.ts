@@ -1,6 +1,6 @@
 // Fake engine to see the interface in a browser, without the game or the Tauri window.
 // `?tab=reglages` picks the open page, `?etat=absent|menu|match` the game state, `?lang=fr` the language.
-import type { Action, Group, TabId, Tweak, View } from "./api";
+import type { Action, Group, Pick, TabId, Tweak, View } from "./api";
 import { type Lang, setLang, t } from "./i18n";
 
 const params = new URLSearchParams(location.search);
@@ -237,6 +237,72 @@ function makeView(language: Lang): View {
       button: t("Switch", "Basculer"),
       trial: true,
     },
+    {
+      key: "zombie_counter",
+      label: t("Zombie counter", "Compteur de zombies"),
+      hint: t("Shows on screen how many zombies the round still has. Again to hide it.", "Affiche à l'écran combien de zombies il reste dans la manche. Encore une fois pour le cacher."),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
+    { key: "bonus_rain", label: t("Bonus rain", "Pluie de bonus"), hint: t("Five random bonuses fall around you.", "Cinq bonus au hasard tombent autour de vous."), button: t("Drop", "Faire tomber"), trial: true },
+    {
+      key: "launch_zombies",
+      label: t("Launch the zombies", "Faire voler les zombies"),
+      hint: t("Every zombie alive dies and flies up in the air.", "Tous les zombies en vie meurent et s'envolent."),
+      button: t("Launch", "Lancer"),
+      trial: true,
+    },
+    {
+      key: "burn_zombies",
+      label: t("Set zombies on fire", "Mettre le feu aux zombies"),
+      hint: t("Every zombie alive catches fire and burns out within a few seconds.", "Tous les zombies en vie prennent feu et se consument en quelques secondes."),
+      button: t("Ignite", "Enflammer"),
+      trial: true,
+    },
+    {
+      key: "shock_zombies",
+      label: t("Electrocute zombies", "Électrocuter les zombies"),
+      hint: t("Every zombie alive is stunned by an electric shock for a moment.", "Tous les zombies en vie sont paralysés un moment par une décharge."),
+      button: t("Shock", "Électrocuter"),
+      trial: true,
+    },
+    { key: "super_sprint", label: t("Super sprint", "Super sprint"), hint: t("You run almost twice as fast for 30 seconds.", "Vous courez presque deux fois plus vite pendant 30 secondes."), button: t("Sprint", "Sprinter"), trial: true },
+  ];
+
+  // Choices from the script's lists (src/picks.rs), a few of each.
+  const picks: Pick[] = [
+    {
+      key: "card",
+      label: t("Fate & Fortune card", "Carte Fate & Fortune"),
+      hint: t("Its effect starts right away, without using a card from your deck. A card with a duration stops at its end.", "Son effet démarre tout de suite, sans utiliser de carte du paquet. Une carte à durée s'arrête à la fin."),
+      button: t("Use", "Utiliser"),
+      trial: true,
+      options: ["Nade Party (Fate)", "Mana Up (Fate)", "Black Hole Fun (Fortune)", "Kabooom! (Fortune)", "Packin' Heat (Fortune)"],
+    },
+    {
+      key: "weapon",
+      label: t("Weapon", "Arme"),
+      hint: t("In place of the one in hand if you carry the maximum. Only weapons the current map has.", "À la place de celle en main si vous êtes plein. Seulement les armes que la carte en cours possède."),
+      button: t("Get", "Obtenir"),
+      trial: true,
+      options: ["Dischord (Spaceland)", "Face Melter (Spaceland)", "Katana (Shaolin)", "Banshee", "Kendall 44"],
+    },
+    {
+      key: "craftable",
+      label: t("Crafted trap", "Piège à fabriquer"),
+      hint: t("Ready to place, as if built at the crafting station. Only on the maps named.", "Prêt à poser, comme s'il sortait de l'atelier. Seulement sur les cartes indiquées."),
+      button: t("Get", "Obtenir"),
+      trial: true,
+      options: [t("Sentry turret (Spaceland, Rave, Shaolin)", "Tourelle (Spaceland, Rave, Shaolin)"), t("Boombox (Spaceland, Rave, Shaolin)", "Boombox (Spaceland, Rave, Shaolin)")],
+    },
+    {
+      key: "zombie",
+      label: t("Spawn a zombie", "Faire apparaître un zombie"),
+      hint: t("Appears a few steps in front of you. Only the kinds the current map has; bosses are not offered.", "Apparaît à quelques pas devant vous. Seulement les types que la carte possède ; les boss ne sont pas proposés."),
+      button: t("Spawn", "Faire apparaître"),
+      trial: true,
+      options: ["Zombie", "Clown (Spaceland)", "Brute", t("Grey alien", "Extraterrestre gris")],
+    },
   ];
 
   const keys = { allOff: t("End", "Fin"), savePosition: t("Page Up", "Page préc."), teleport: t("Page Down", "Page suiv.") };
@@ -260,6 +326,7 @@ function makeView(language: Lang): View {
     tweaks,
     actions,
     extras,
+    picks,
     // `?client=mod`: the game is iw7-mod.
     modClient: game !== "absent" && params.get("client") === "mod",
     keys,
@@ -359,6 +426,11 @@ export function respond(command: string, args: Record<string, unknown>): unknown
         setMessage(t(`${tweak.label}: ${previous} -> ${tweak.value}`, `${tweak.label} : ${previous} -> ${tweak.value}`), "done");
       }
       return;
+    }
+    case "run_pick": {
+      const pick = view.picks.find((candidate) => candidate.key === args.pick);
+      const choice = pick?.options[Number(args.index)];
+      return pick && choice ? setMessage(t(`${pick.label}: ${choice}: done`, `${pick.label} : ${choice} : fait`), "done") : undefined;
     }
     case "run_action": {
       const action = [...view.actions, ...view.extras].find((candidate) => candidate.key === args.key);
