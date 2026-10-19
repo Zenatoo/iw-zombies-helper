@@ -21,18 +21,46 @@ interface PickRowProps {
   act: (command: Promise<void>) => void;
 }
 
+/** Lists longer than this get a search field. */
+const SEARCHABLE = 12;
+
 /** A choice from one of the script's lists, sent with its button; the choice stays for the next time. */
 function PickRow({ pick, disabled, act }: PickRowProps) {
   const [index, setIndex] = useState(0);
+  const [search, setSearch] = useState("");
+  const wanted = search.trim().toLowerCase();
+  // The options that match the search, each with its index in the full list (the one the script knows).
+  const shown = pick.options.map((label, at) => ({ label, at })).filter(({ label }) => label.toLowerCase().includes(wanted));
+  const chosen = shown.find(({ at }) => at === index) ?? shown[0];
   return (
     <Row label={pick.label} hint={pick.hint} trial={pick.trial} off={disabled}>
-      <Choice label={pick.label} value={index} options={pick.options} disabled={disabled} onChange={setIndex} />
-      <button type="button" className="btn" disabled={disabled} onClick={() => act(api.runPick(pick.key, index))}>
+      {pick.options.length > SEARCHABLE && (
+        <input
+          type="search"
+          className="search"
+          aria-label={t(`Search: ${pick.label}`, `Rechercher : ${pick.label}`)}
+          placeholder={t("Search", "Rechercher")}
+          value={search}
+          disabled={disabled}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      )}
+      <Choice
+        label={pick.label}
+        value={chosen ? shown.indexOf(chosen) : 0}
+        options={chosen ? shown.map(({ label }) => label) : [t("Nothing found", "Aucun résultat")]}
+        disabled={disabled || !chosen}
+        onChange={(position) => setIndex(shown[position]?.at ?? index)}
+      />
+      <button type="button" className="btn" disabled={disabled || !chosen} onClick={() => chosen && act(api.runPick(pick.key, chosen.at))}>
         {pick.button}
       </button>
     </Row>
   );
 }
+
+/** Options turned on together by the "Quiet mode" preset. */
+const QUIET_MODE = ["god_mode", "infinite_ammo", "infinite_money"];
 
 /** A numeric setting: slider for rough changes, number box for the exact value, back to the original. */
 function TweakRow({ tweak, disabled, act }: TweakRowProps) {
@@ -73,9 +101,28 @@ export function Match({ view, act }: Props) {
   const extras = view.modClient ? view.extras : [];
   const picks = view.modClient ? view.picks : [];
   const marked = [...view.groups.flatMap((group) => group.options), ...view.tweaks, ...[...view.actions, ...extras, ...picks].map((action) => ({ ...action, code: false }))];
+  const quiet = view.groups.flatMap((group) => group.options).filter((option) => QUIET_MODE.includes(option.key));
+  const quietOn = quiet.length > 0 && quiet.every((option) => isOn(option));
 
   return (
     <>
+      <Section title={t("Presets", "Préréglages")}>
+        <Row
+          label={t("Quiet mode", "Mode tranquille")}
+          hint={t("God mode, infinite ammo and infinite money, all at once. Each one turns off on its own.", "Invincibilité, munitions infinies et argent infini, d'un coup. Chacun se coupe séparément.")}
+          off={!playing}
+        >
+          <button
+            type="button"
+            className="btn"
+            disabled={!playing || quietOn}
+            onClick={() => quiet.filter((option) => !isOn(option)).forEach((option) => toggle(option, true))}
+          >
+            {quietOn ? t("On", "Actif") : t("Turn on", "Activer")}
+          </button>
+        </Row>
+      </Section>
+
       {view.groups
         .filter((group) => group.options.length > 0)
         .map((group) => (

@@ -267,6 +267,34 @@ function makeView(language: Lang): View {
       trial: true,
     },
     { key: "super_sprint", label: t("Super sprint", "Super sprint"), hint: t("You run almost twice as fast for 30 seconds.", "Vous courez presque deux fois plus vite pendant 30 secondes."), button: t("Sprint", "Sprinter"), trial: true },
+    {
+      key: "xray",
+      label: t("See zombies through walls", "Voir les zombies à travers les murs"),
+      hint: t("Switches on or off: every zombie gets an outline you see through walls.", "S'active ou se coupe : chaque zombie a un contour visible à travers les murs."),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
+    {
+      key: "max_pap",
+      label: t("Pack-a-Punch to the top", "Pack-a-Punch au maximum"),
+      hint: t("Every player's weapons go up two levels at once.", "Les armes de tous les joueurs montent de deux niveaux d'un coup."),
+      button: t("Upgrade", "Améliorer"),
+      trial: true,
+    },
+    {
+      key: "unlimited_revives",
+      label: t("Unlimited self-revives", "Auto-réanimations illimitées"),
+      hint: t("Switches on or off: in solo, the revive machine never stops selling.", "S'active ou se coupe : en solo, la machine de réanimation n'arrête jamais de vendre."),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
+    {
+      key: "bonus_on_kill",
+      label: t("A bonus per zombie killed", "Un bonus par zombie tué"),
+      hint: t("Switches on or off: every zombie that spawns from now drops a random bonus when it dies.", "S'active ou se coupe : chaque zombie qui apparaît ensuite lâche un bonus au hasard en mourant."),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
   ];
 
   // Choices from the script's lists (src/picks.rs), a few of each.
@@ -285,7 +313,23 @@ function makeView(language: Lang): View {
       hint: t("In place of the one in hand if you carry the maximum. Only weapons the current map has.", "À la place de celle en main si vous êtes plein. Seulement les armes que la carte en cours possède."),
       button: t("Get", "Obtenir"),
       trial: true,
-      options: ["Dischord (Spaceland)", "Face Melter (Spaceland)", "Katana (Shaolin)", "Banshee", "Kendall 44"],
+      // Long enough to show the search field.
+      options: [
+        "Dischord (Spaceland)",
+        "Face Melter (Spaceland)",
+        "Headcutter (Spaceland)",
+        "Shredder (Spaceland)",
+        "Katana (Shaolin)",
+        "Venom-X (Beast from Beyond)",
+        "Atlas",
+        "Banshee",
+        "EBR-800",
+        "Kendall 44",
+        "NV4",
+        "R3K",
+        "Volk",
+        "Widowmaker",
+      ],
     },
     {
       key: "craftable",
@@ -302,6 +346,22 @@ function makeView(language: Lang): View {
       button: t("Spawn", "Faire apparaître"),
       trial: true,
       options: ["Zombie", "Clown (Spaceland)", "Brute", t("Grey alien", "Extraterrestre gris")],
+    },
+    {
+      key: "place",
+      label: t("Go to", "Aller à"),
+      hint: t("Teleports you there. Again for the next one of the same kind, when the map has several.", "Vous y téléporte. Encore une fois pour le suivant du même genre, quand la carte en a plusieurs."),
+      button: t("Go", "Y aller"),
+      trial: true,
+      options: ["Pack-a-Punch", t("Mystery wheel", "Roue mystère"), t("Perk machine", "Machine à atout"), t("Fate & Fortune machine", "Machine Fate & Fortune"), t("Crafting station", "Atelier")],
+    },
+    {
+      key: "pace",
+      label: t("Zombie speed", "Vitesse des zombies"),
+      hint: t("For every zombie, new ones included, until set back to Normal.", "Pour tous les zombies, nouveaux compris, jusqu'au retour à Normale."),
+      button: t("Apply", "Appliquer"),
+      trial: true,
+      options: [t("Normal", "Normale"), t("All fast", "Tous rapides"), t("All slow", "Tous lents")],
     },
   ];
 

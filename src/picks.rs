@@ -1,5 +1,5 @@
-//! Choices the window offers for the iw7-mod script: Fate & Fortune cards, weapons, crafted traps and
-//! special zombies. The script holds the same lists in the same order (`pick_list` in
+//! Choices the window offers for the iw7-mod script: Fate & Fortune cards, weapons, crafted traps,
+//! special zombies, places to go to and the zombies' speed. The script holds the same lists in the same order (`pick_list` in
 //! iw7-mod/custom_scripts/cp/iw_helper.gsc) and receives `base + index`; a test checks they match.
 
 use crate::lang::tr;
@@ -23,10 +23,12 @@ pub enum Pick {
     Weapon,
     Craftable,
     Zombie,
+    Place,
+    Pace,
 }
 
 impl Pick {
-    pub const ALL: [Pick; 4] = [Pick::Card, Pick::Weapon, Pick::Craftable, Pick::Zombie];
+    pub const ALL: [Pick; 6] = [Pick::Card, Pick::Weapon, Pick::Craftable, Pick::Zombie, Pick::Place, Pick::Pace];
 
     /// Name used by the interface, and by the script for its list.
     pub fn key(self) -> &'static str {
@@ -35,6 +37,8 @@ impl Pick {
             Pick::Weapon => "weapon",
             Pick::Craftable => "craftable",
             Pick::Zombie => "zombie",
+            Pick::Place => "place",
+            Pick::Pace => "pace",
         }
     }
 
@@ -48,6 +52,8 @@ impl Pick {
             Pick::Weapon => tr("Weapon", "Arme"),
             Pick::Craftable => tr("Crafted trap", "Piège à fabriquer"),
             Pick::Zombie => tr("Spawn a zombie", "Faire apparaître un zombie"),
+            Pick::Place => tr("Go to", "Aller à"),
+            Pick::Pace => tr("Zombie speed", "Vitesse des zombies"),
         }
     }
 
@@ -69,6 +75,14 @@ impl Pick {
                 "Appears a few steps in front of you. Only the kinds the current map has; bosses are not offered.",
                 "Apparaît à quelques pas devant vous. Seulement les types que la carte possède ; les boss ne sont pas proposés.",
             ),
+            Pick::Place => tr(
+                "Teleports you there. Again for the next one of the same kind, when the map has several.",
+                "Vous y téléporte. Encore une fois pour le suivant du même genre, quand la carte en a plusieurs.",
+            ),
+            Pick::Pace => tr(
+                "For every zombie, new ones included, until set back to Normal.",
+                "Pour tous les zombies, nouveaux compris, jusqu'au retour à Normale.",
+            ),
         }
     }
 
@@ -77,6 +91,25 @@ impl Pick {
             Pick::Card => tr("Use", "Utiliser"),
             Pick::Weapon | Pick::Craftable => tr("Get", "Obtenir"),
             Pick::Zombie => tr("Spawn", "Faire apparaître"),
+            Pick::Place => tr("Go", "Y aller"),
+            Pick::Pace => tr("Apply", "Appliquer"),
+        }
+    }
+
+    /// Name of the shortcut that repeats the last choice made in this list.
+    pub fn repeat_key(self) -> String {
+        format!("repeat_{}", self.key())
+    }
+
+    /// Label of that shortcut.
+    pub fn repeat_label(self) -> &'static str {
+        match self {
+            Pick::Card => tr("Last card chosen", "Dernière carte choisie"),
+            Pick::Weapon => tr("Last weapon chosen", "Dernière arme choisie"),
+            Pick::Craftable => tr("Last trap chosen", "Dernier piège choisi"),
+            Pick::Zombie => tr("Last zombie chosen", "Dernier zombie choisi"),
+            Pick::Place => tr("Last place chosen", "Dernier endroit choisi"),
+            Pick::Pace => tr("Last zombie speed chosen", "Dernière vitesse choisie"),
         }
     }
 
@@ -91,6 +124,8 @@ impl Pick {
             Pick::Weapon => &WEAPONS,
             Pick::Craftable => &CRAFTABLES,
             Pick::Zombie => &ZOMBIES,
+            Pick::Place => &PLACES,
+            Pick::Pace => &PACES,
         }
     }
 
@@ -101,6 +136,8 @@ impl Pick {
             Pick::Weapon => 200,
             Pick::Craftable => 300,
             Pick::Zombie => 320,
+            Pick::Place => 400,
+            Pick::Pace => 420,
         };
         (index < self.entries().len()).then(|| base + index as i32)
     }
@@ -109,7 +146,8 @@ impl Pick {
 // Cards: the game's table (cp/loot/iw7_zombiefatefortune_loot_master.csv) with their English names,
 // without Irish Luck, which the game activates in its own way. Weapons: the raw names the game keys
 // its lists with; "name|full name|map" for the ones only one map has, outside those lists. Traps:
-// "script file|function|maps". Zombies: the agent types.
+// "script file|function|maps". Zombies: the agent types. Places: the kind of interaction point, "perk"
+// for any perk machine. Speeds: the zombies' move rate, in hundredths.
 const CARDS: [Entry; 61] = [
     Entry { script: "grenade_cooldown", en: "Nade Party (Fate)", fr: "Nade Party (Fate)" },
     Entry { script: "spawn_reboard_windows", en: "Shop Class (Fate)", fr: "Shop Class (Fate)" },
@@ -263,6 +301,20 @@ const ZOMBIES: [Entry; 13] = [
     Entry { script: "alien_goon", en: "Cryptid goon (Beast from Beyond)", fr: "Sbire cryptide (Beast from Beyond)" },
     Entry { script: "alien_phantom", en: "Cryptid phantom (Beast from Beyond)", fr: "Fantôme cryptide (Beast from Beyond)" },
     Entry { script: "alien_rhino", en: "Cryptid rhino (Beast from Beyond)", fr: "Rhino cryptide (Beast from Beyond)" },
+];
+
+const PLACES: [Entry; 5] = [
+    Entry { script: "weapon_upgrade", en: "Pack-a-Punch", fr: "Pack-a-Punch" },
+    Entry { script: "magic_wheel", en: "Mystery wheel", fr: "Roue mystère" },
+    Entry { script: "perk", en: "Perk machine", fr: "Machine à atout" },
+    Entry { script: "jaroslav_machine", en: "Fate & Fortune machine", fr: "Machine Fate & Fortune" },
+    Entry { script: "crafting_station", en: "Crafting station", fr: "Atelier" },
+];
+
+const PACES: [Entry; 3] = [
+    Entry { script: "100", en: "Normal", fr: "Normale" },
+    Entry { script: "170", en: "All fast", fr: "Tous rapides" },
+    Entry { script: "45", en: "All slow", fr: "Tous lents" },
 ];
 
 #[cfg(test)]

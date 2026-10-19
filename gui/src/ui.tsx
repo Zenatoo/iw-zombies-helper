@@ -221,7 +221,7 @@ interface ChoiceProps {
 /** A drop-down list (Windows' ComboBox): the options are sent by index. */
 export function Choice({ label, value, options, disabled, onChange }: ChoiceProps) {
   return (
-    <span className="choice" data-off={disabled}>
+    <span className="dropdown" data-off={disabled}>
       <select aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))}>
         {options.map((option, index) => (
           <option key={option} value={index}>

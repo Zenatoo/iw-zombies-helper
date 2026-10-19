@@ -155,6 +155,8 @@ enum Action {
     SetTweak(Tweak, f32),
     Run(OneShot),
     Pick(Pick, usize),
+    /// The last choice made in that list, again (keyboard shortcut).
+    RepeatPick(Pick),
 }
 
 struct Hotkey {
@@ -201,6 +203,8 @@ struct Worker {
     rx: Receiver<Command>,
     snapshot: Arc<Mutex<Snapshot>>,
     hotkeys: Vec<Hotkey>,
+    /// Last choice made in each of the script's lists, for the shortcuts that repeat it.
+    last_picks: std::collections::HashMap<Pick, usize>,
 }
 
 impl Worker {
@@ -218,10 +222,13 @@ impl Worker {
         for action in OneShot::ALL {
             bind(action.key(), Action::Run(action));
         }
+        for pick in Pick::ALL {
+            bind(&pick.repeat_key(), Action::RepeatPick(pick));
+        }
         bind(config::ACTION_ALL_OFF, Action::AllOff);
         bind(config::ACTION_SAVE_POSITION, Action::SavePosition);
         bind(config::ACTION_TELEPORT, Action::Teleport);
-        Self { config, mask, log, rx, snapshot, hotkeys }
+        Self { config, mask, log, rx, snapshot, hotkeys, last_picks: std::collections::HashMap::new() }
     }
 
     fn run(mut self, start: Start) {
@@ -526,6 +533,20 @@ impl Worker {
     }
 
     fn perform(&mut self, s: &mut Session, action: Action) {
+        let action = match action {
+            Action::RepeatPick(pick) => match self.last_picks.get(&pick) {
+                Some(&index) => Action::Pick(pick, index),
+                None => {
+                    self.log.line(trs(format!("{}: nothing chosen yet in this list.", pick.label()), format!("{} : rien n'a encore été choisi dans cette liste.", pick.label())));
+                    return;
+                }
+            },
+            Action::Pick(pick, index) => {
+                self.last_picks.insert(pick, index);
+                action
+            }
+            other => other,
+        };
         let Some(trainer) = s.trainer.as_mut() else {
             self.log.line(tr("Trainer off: check trainer.enabled and memory.allow_steam_client.", "Trainer inactif : vérifier trainer.enabled et memory.allow_steam_client."));
             return;
@@ -555,6 +576,7 @@ impl Worker {
                 Ok((previous, written)) => (trs(format!("{}: {previous} -> {written}", tweak.label()), format!("{} : {previous} -> {written}", tweak.label())), true),
                 Err(why) => (trs(format!("{} unavailable ({why})", tweak.label()), format!("{} indisponible ({why})", tweak.label())), false),
             },
+            Action::RepeatPick(_) => return,
             Action::Pick(pick, index) => {
                 let choice = pick.entries().get(index).map(|entry| entry.label()).unwrap_or("?");
                 match trainer.run_pick(&s.game, pick, index) {

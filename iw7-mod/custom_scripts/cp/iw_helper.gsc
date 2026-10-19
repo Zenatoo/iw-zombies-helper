@@ -26,7 +26,12 @@
 //   burn           set every zombie on fire
 //   shock          stun every zombie with electric shocks
 //   sprint         run almost twice as fast for 30 seconds
-// From the window only: a Fate & Fortune card, a weapon, a crafted trap or a zombie, chosen in a list.
+//   xray           switch the outline that shows zombies through walls on or off
+//   maxpap         upgrade every player's weapons two levels at once
+//   revives        switch unlimited self-revives (solo) on or off
+//   lucky          switch a bonus per zombie killed on or off
+// From the window only: a Fate & Fortune card, a weapon, a crafted trap, a zombie, a place to go to or the
+// zombies' speed, chosen in a list.
 //   drop <bonus>   drop a bonus in front of you: ammo, kill, instakill, cash, upgrade, fire, infinite,
 //                  grenade, power, board (what exists depends on the map)
 //   bonuses        list the bonuses of this map
@@ -40,6 +45,10 @@ init()
     // Explosive bullets start off at every match.
     setdvar("iwh_explosive", 0);
     setdvar("iwh_counter", 0);
+    setdvar("iwh_xray", 0);
+    setdvar("iwh_revives", 0);
+    setdvar("iwh_lucky", 0);
+    setdvar("iwh_pace", 100);
     level.command_given = 7700;
     level thread watch_commands();
 }
@@ -80,15 +89,20 @@ watch_commands()
 // Commands from iw-helper, by number.
 run_code(player, code)
 {
-    // The lists: cards from 100, weapons from 200, traps from 300, zombies from 320.
+    // The lists: cards from 100, weapons from 200, traps from 300, zombies from 320, places from 400,
+    // zombie speeds from 420.
     if (code >= 100 && code < 200)
         return run_pick(player, "card", code - 100);
     if (code >= 200 && code < 300)
         return run_pick(player, "weapon", code - 200);
     if (code >= 300 && code < 320)
         return run_pick(player, "craftable", code - 300);
-    if (code >= 320 && code < 400)
+    if (code >= 320 && code < 340)
         return run_pick(player, "zombie", code - 320);
+    if (code >= 400 && code < 420)
+        return run_pick(player, "place", code - 400);
+    if (code >= 420 && code < 430)
+        return run_pick(player, "pace", code - 420);
 
     switch (code)
     {
@@ -113,6 +127,10 @@ run_code(player, code)
         case 27: burn_zombies(player); break;
         case 28: shock_zombies(player); break;
         case 29: player thread super_sprint(player); break;
+        case 30: switch_xray(player); break;
+        case 31: level thread max_pap(player); break;
+        case 32: switch_unlimited_revives(player); break;
+        case 33: switch_bonus_on_kill(player); break;
         default: player iprintln("iw-helper: unknown command " + code); break;
     }
 }
@@ -137,9 +155,13 @@ run_word(player, command, argument)
         case "burn": burn_zombies(player); break;
         case "shock": shock_zombies(player); break;
         case "sprint": player thread super_sprint(player); break;
+        case "xray": switch_xray(player); break;
+        case "maxpap": level thread max_pap(player); break;
+        case "revives": switch_unlimited_revives(player); break;
+        case "lucky": switch_bonus_on_kill(player); break;
         case "drop": drop_bonus(player, argument); break;
         case "bonuses": list_bonuses(player); break;
-        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, drop <bonus>, bonuses"); break;
+        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, xray, maxpap, revives, lucky, drop <bonus>, bonuses"); break;
     }
 }
 
@@ -518,6 +540,22 @@ pick_list(kind)
                 "alien_phantom",
                 "alien_rhino"
             ];
+        // pick: place
+        case "place":
+            return [
+                "weapon_upgrade",
+                "magic_wheel",
+                "perk",
+                "jaroslav_machine",
+                "crafting_station"
+            ];
+        // pick: pace
+        case "pace":
+            return [
+                "100",
+                "170",
+                "45"
+            ];
     }
 
     return [];
@@ -539,6 +577,8 @@ run_pick(player, kind, index)
         case "weapon": give_listed_weapon(player, entry); break;
         case "craftable": give_craftable(player, entry); break;
         case "zombie": spawn_listed_zombie(player, entry); break;
+        case "place": go_to_place(player, entry); break;
+        case "pace": set_pace(player, entry); break;
     }
 }
 
@@ -660,6 +700,198 @@ spawn_now(player, spawner, kind)
         player iprintln("iw-helper: " + kind + " spawned");
     else
         player iprintln("iw-helper: " + kind + " could not spawn here");
+}
+
+// --- Useful -------------------------------------------------------------------------------------
+
+// The outline the game's x-ray bonus puts on zombies, kept on until switched off.
+switch_xray(player)
+{
+    if (getdvarint("iwh_xray") == 1)
+    {
+        setdvar("iwh_xray", 0);
+        level notify("deactivatediwh_xray");
+        foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+        {
+            if (isdefined(enemy))
+                scripts\cp\cp_outline::disable_outline_for_players(enemy, level.players);
+        }
+        player iprintln("iw-helper: x-ray off");
+        return;
+    }
+
+    setdvar("iwh_xray", 1);
+    level thread scripts\cp\loot::outline_all_enemies("iwh_xray");
+    player iprintln("iw-helper: x-ray on");
+}
+
+// The upgrade twice, as the bosses' reward does.
+max_pap(player)
+{
+    if (!isdefined(level.upgrade_weapons_func))
+    {
+        player iprintln("iw-helper: no Pack-a-Punch on this map");
+        return;
+    }
+
+    level [[level.upgrade_weapons_func]]();
+    wait 0.5;
+    level thread [[level.upgrade_weapons_func]]();
+    player iprintln("iw-helper: weapons upgraded twice");
+}
+
+// In solo, the revive machine stops selling after a few self-revives: the count is kept at zero.
+switch_unlimited_revives(player)
+{
+    if (getdvarint("iwh_revives") == 1)
+    {
+        setdvar("iwh_revives", 0);
+        level notify("iwh_revives_stop");
+        player iprintln("iw-helper: self-revives limited again");
+        return;
+    }
+
+    setdvar("iwh_revives", 1);
+    level thread keep_revives();
+    player iprintln("iw-helper: unlimited self-revives");
+}
+
+keep_revives()
+{
+    level endon("game_ended");
+    level endon("iwh_revives_stop");
+
+    for (;;)
+    {
+        foreach (other in level.players)
+            other.self_revives_purchased = 0;
+        wait 1;
+    }
+}
+
+// Every zombie spawned from now drops a random bonus where it dies.
+switch_bonus_on_kill(player)
+{
+    if (getdvarint("iwh_lucky") == 1)
+    {
+        setdvar("iwh_lucky", 0);
+        level notify("iwh_lucky_stop");
+        player iprintln("iw-helper: bonus per kill off");
+        return;
+    }
+
+    setdvar("iwh_lucky", 1);
+    level thread watch_spawns_for_bonus();
+    player iprintln("iw-helper: bonus per kill on");
+}
+
+watch_spawns_for_bonus()
+{
+    level endon("game_ended");
+    level endon("iwh_lucky_stop");
+
+    for (;;)
+    {
+        level waittill("agent_spawned", enemy);
+        if (isdefined(enemy))
+            enemy thread drop_bonus_on_death();
+    }
+}
+
+drop_bonus_on_death()
+{
+    level endon("iwh_lucky_stop");
+    level endon("game_ended");
+
+    // Where it stands, until it dies: the body may be gone right after.
+    spot = self.origin;
+    while (isdefined(self) && isalive(self))
+    {
+        spot = self.origin;
+        wait 0.1;
+    }
+
+    if (!isdefined(level.loot_id))
+        return;
+
+    ids = getarraykeys(level.loot_id);
+    scripts\cp\loot::drop_loot(spot, undefined, ids[randomint(ids.size)]);
+}
+
+// The zombies' move rate, in hundredths: kept on every zombie, new ones included, until set back to 100.
+set_pace(player, entry)
+{
+    rate = int(entry);
+    setdvar("iwh_pace", rate);
+    level notify("iwh_pace_restart");
+
+    if (rate == 100)
+    {
+        foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+        {
+            if (isdefined(enemy) && isalive(enemy))
+                enemy.moveratescale = 1;
+        }
+        player iprintln("iw-helper: zombies at normal speed");
+        return;
+    }
+
+    level thread keep_pace(rate / 100.0);
+    player iprintln("iw-helper: zombie speed x" + (rate / 100.0));
+}
+
+keep_pace(scale)
+{
+    level endon("game_ended");
+    level endon("iwh_pace_restart");
+
+    for (;;)
+    {
+        foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+        {
+            if (isdefined(enemy) && isalive(enemy))
+                enemy.moveratescale = scale;
+        }
+        wait 0.5;
+    }
+}
+
+// Teleports to an interaction point of that kind ("perk": any perk machine) or to a mystery wheel.
+// When the map has several, each use goes to the next one.
+go_to_place(player, place)
+{
+    spots = [];
+    if (place == "magic_wheel")
+    {
+        foreach (wheel in getentarray("magic_wheel", "script_noteworthy"))
+            spots[spots.size] = wheel.origin;
+    }
+    else
+    {
+        foreach (point in scripts\engine\utility::getstructarray("interaction", "targetname"))
+        {
+            if (place == "perk")
+            {
+                if (isdefined(point.perk_type))
+                    spots[spots.size] = point.origin;
+            }
+            else if (isdefined(point.script_noteworthy) && point.script_noteworthy == place)
+            {
+                spots[spots.size] = point.origin;
+            }
+        }
+    }
+
+    if (spots.size == 0)
+    {
+        player iprintln("iw-helper: no " + place + " on this map");
+        return;
+    }
+
+    turn = getdvarint("iwh_place_" + place) % spots.size;
+    setdvar("iwh_place_" + place, turn + 1);
+    player setorigin(getclosestpointonnavmesh(spots[turn]) + (0, 0, 2));
+    player iprintln("iw-helper: " + place + " " + (turn + 1) + "/" + spots.size);
 }
 
 // --- Fun ------------------------------------------------------------------------------------------

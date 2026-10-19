@@ -633,10 +633,14 @@ pub enum OneShot {
     BurnZombies,
     ShockZombies,
     SuperSprint,
+    XRay,
+    MaxPap,
+    UnlimitedRevives,
+    BonusOnKill,
 }
 
 impl OneShot {
-    pub const ALL: [OneShot; 27] = [
+    pub const ALL: [OneShot; 31] = [
         OneShot::RefillAmmo,
         OneShot::AddMoney,
         OneShot::WeakenZombies,
@@ -664,6 +668,10 @@ impl OneShot {
         OneShot::BurnZombies,
         OneShot::ShockZombies,
         OneShot::SuperSprint,
+        OneShot::XRay,
+        OneShot::MaxPap,
+        OneShot::UnlimitedRevives,
+        OneShot::BonusOnKill,
     ];
 
     /// Name used by the interface and in the configuration (keyboard shortcuts).
@@ -696,6 +704,10 @@ impl OneShot {
             OneShot::BurnZombies => "burn_zombies",
             OneShot::ShockZombies => "shock_zombies",
             OneShot::SuperSprint => "super_sprint",
+            OneShot::XRay => "xray",
+            OneShot::MaxPap => "max_pap",
+            OneShot::UnlimitedRevives => "unlimited_revives",
+            OneShot::BonusOnKill => "bonus_on_kill",
         }
     }
 
@@ -728,6 +740,10 @@ impl OneShot {
             OneShot::BurnZombies => tr("Set zombies on fire", "Mettre le feu aux zombies"),
             OneShot::ShockZombies => tr("Electrocute zombies", "Électrocuter les zombies"),
             OneShot::SuperSprint => tr("Super sprint", "Super sprint"),
+            OneShot::XRay => tr("See zombies through walls", "Voir les zombies à travers les murs"),
+            OneShot::MaxPap => tr("Pack-a-Punch to the top", "Pack-a-Punch au maximum"),
+            OneShot::UnlimitedRevives => tr("Unlimited self-revives", "Auto-réanimations illimitées"),
+            OneShot::BonusOnKill => tr("A bonus per zombie killed", "Un bonus par zombie tué"),
         }
     }
 
@@ -760,6 +776,10 @@ impl OneShot {
             OneShot::BurnZombies => tr("Every zombie alive catches fire and burns out within a few seconds.", "Tous les zombies en vie prennent feu et se consument en quelques secondes."),
             OneShot::ShockZombies => tr("Every zombie alive is stunned by an electric shock for a moment.", "Tous les zombies en vie sont paralysés un moment par une décharge."),
             OneShot::SuperSprint => tr("You run almost twice as fast for 30 seconds.", "Vous courez presque deux fois plus vite pendant 30 secondes."),
+            OneShot::XRay => tr("Switches on or off: every zombie gets an outline you see through walls.", "S'active ou se coupe : chaque zombie a un contour visible à travers les murs."),
+            OneShot::MaxPap => tr("Every player's weapons go up two levels at once.", "Les armes de tous les joueurs montent de deux niveaux d'un coup."),
+            OneShot::UnlimitedRevives => tr("Switches on or off: in solo, the revive machine never stops selling.", "S'active ou se coupe : en solo, la machine de réanimation n'arrête jamais de vendre."),
+            OneShot::BonusOnKill => tr("Switches on or off: every zombie that spawns from now drops a random bonus when it dies.", "S'active ou se coupe : chaque zombie qui apparaît ensuite lâche un bonus au hasard en mourant."),
         }
     }
 
@@ -776,7 +796,10 @@ impl OneShot {
             OneShot::OpenDoors => tr("Open", "Ouvrir"),
             OneShot::NextCharacter => tr("Change", "Changer"),
             OneShot::Revive => tr("Revive", "Relever"),
-            OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter => tr("Switch", "Basculer"),
+            OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::XRay | OneShot::UnlimitedRevives | OneShot::BonusOnKill => {
+                tr("Switch", "Basculer")
+            }
+            OneShot::MaxPap => tr("Upgrade", "Améliorer"),
             OneShot::BonusRain => tr("Drop", "Faire tomber"),
             OneShot::LaunchZombies => tr("Launch", "Lancer"),
             OneShot::BurnZombies => tr("Ignite", "Enflammer"),
@@ -792,7 +815,7 @@ impl OneShot {
     /// True as long as the action has not been seen working on the real game. The other iw7-mod
     /// extras were seen working, from the console and from the window, on 2026-10-16.
     pub fn trial(self) -> bool {
-        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint)
+        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint | OneShot::XRay | OneShot::MaxPap | OneShot::UnlimitedRevives | OneShot::BonusOnKill)
     }
 
     /// Number of the command for the iw7-mod script, for the actions it carries out. Keep in step
@@ -820,6 +843,10 @@ impl OneShot {
             OneShot::BurnZombies => 27,
             OneShot::ShockZombies => 28,
             OneShot::SuperSprint => 29,
+            OneShot::XRay => 30,
+            OneShot::MaxPap => 31,
+            OneShot::UnlimitedRevives => 32,
+            OneShot::BonusOnKill => 33,
             _ => return None,
         })
     }
@@ -1183,7 +1210,11 @@ impl Trainer {
             | OneShot::LaunchZombies
             | OneShot::BurnZombies
             | OneShot::ShockZombies
-            | OneShot::SuperSprint => self.send_to_script(p, action),
+            | OneShot::SuperSprint
+            | OneShot::XRay
+            | OneShot::MaxPap
+            | OneShot::UnlimitedRevives
+            | OneShot::BonusOnKill => self.send_to_script(p, action),
         }
     }
 

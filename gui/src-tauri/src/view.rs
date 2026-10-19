@@ -296,7 +296,8 @@ fn tweak_row(tweak: Tweak, snapshot: &Snapshot) -> TweakRow {
     TweakRow { key: tweak.key(), label: tweak.label(), hint: tweak.hint(), value, min, max, step, default: tweak.default(), unit: tweak.unit(), code: false, trial: tweak.trial() }
 }
 
-/// Every shortcut, in page order: the options, then position and turning everything off.
+/// Every shortcut, in page order: the options, the actions, the repeats of the script's lists, then
+/// position and turning everything off.
 fn hotkeys(config: &Config) -> Vec<Hotkey> {
     let key = |action: &str| config.hotkey(action).map(key_label).unwrap_or_default();
     let features = GROUPS.iter().flat_map(|(_, features)| features.iter()).map(|feature| (feature.label().trim_end_matches(" (essai)"), feature.key()));
@@ -306,7 +307,9 @@ fn hotkeys(config: &Config) -> Vec<Hotkey> {
         (tr("Back to saved position", "Revenir à la position"), config::ACTION_TELEPORT),
         (tr("Turn everything off", "Tout désactiver"), config::ACTION_ALL_OFF),
     ];
-    features.chain(one_shots).chain(actions).map(|(label, action)| Hotkey { label, key: key(action) }).collect()
+    let row = |(label, action): (&'static str, &str)| Hotkey { label, key: key(action) };
+    let repeats = Pick::ALL.iter().map(|pick| Hotkey { label: pick.repeat_label(), key: key(&pick.repeat_key()) });
+    features.chain(one_shots).map(row).chain(repeats).chain(actions.into_iter().map(row)).collect()
 }
 
 /// Windows' accent in its light shade, the one dark themes use; otherwise Windows' original accent.
@@ -636,7 +639,7 @@ mod tests {
             assert_eq!(thousands(950), "950");
             assert_eq!(hint(Feature::SlowMotion, &Config::default()), "Vitesse du jeu multipliée par 0,5.");
             let keys = hotkeys(&Config::default());
-            assert_eq!(keys.len(), Feature::ALL.len() + OneShot::ALL.len() + 3);
+            assert_eq!(keys.len(), Feature::ALL.len() + OneShot::ALL.len() + Pick::ALL.len() + 3);
             // One-off actions are listed, without a key until the configuration gives them one.
             assert!(keys.iter().any(|hotkey| hotkey.label == "Remplir les munitions" && hotkey.key.is_empty()));
             assert_eq!((keys[0].label, keys[0].key.as_str()), ("Invincibilité", "F1"));

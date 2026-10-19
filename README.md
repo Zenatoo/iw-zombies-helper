@@ -311,8 +311,16 @@ compiled when a Zombies match loads. To remove it, delete that file.
 | Set zombies on fire (`burn_zombies`), trial | `burn` | Every zombie alive catches fire and burns out within a few seconds. |
 | Electrocute zombies (`shock_zombies`), trial | `shock` | Every zombie alive is stunned by electric shocks for a few seconds. |
 | Super sprint (`super_sprint`), trial | `sprint` | You run almost twice as fast for 30 seconds. |
+| See zombies through walls (`xray`), trial | `xray` | Switches on or off: the outline of the game's x-ray bonus on every zombie. |
+| Pack-a-Punch to the top (`max_pap`), trial | `maxpap` | Every player's weapons go up two levels at once. |
+| Unlimited self-revives (`unlimited_revives`), trial | `revives` | Switches on or off: in solo, the revive machine never stops selling. |
+| A bonus per zombie killed (`bonus_on_kill`), trial | `lucky` | Switches on or off: every zombie that spawns from now drops a random bonus when it dies. |
+| Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
+| | `bonuses` | Lists the bonuses of the current map. |
 
-Four lists, from the window only, each with a choice and a button (trial):
+Six lists, from the window only, each with a choice and a button (trial). The long ones have a search field,
+and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat_place` and `repeat_pace` in
+`[hotkeys]` give a key to the last choice made in each.
 
 - **Fate & Fortune card**: any of the game's 61 cards, by its name in the game. Its effect starts right away,
   without using a card from your deck; a card with a duration stops at its end.
@@ -323,14 +331,20 @@ Four lists, from the window only, each with a choice and a button (trial):
   Thing and Beast from Beyond are out of reach: the game gives their functions no public name.
 - **Spawn a zombie**: a zombie of the kind chosen (clown, brute, grey, skeleton, crabs, cryptids…) a few steps
   in front of you, if the map has that kind. Bosses are not offered: they depend on their scripted fight.
+- **Go to**: Pack-a-Punch, a mystery wheel, a perk machine, the Fate & Fortune machine or the crafting station.
+  When the map has several of a kind, each use goes to the next one.
+- **Zombie speed**: normal, all fast or all slow, for every zombie, new ones included.
 
 The lists are kept in [src/picks.rs](src/picks.rs) and in the script in the same order; a test checks it.
-| Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
-| | `bonuses` | Lists the bonuses of the current map. |
 
-Seen working in game, from the window and the console: everything except revive, third-person view and
-explosive bullets, not tried yet. On iw7-mod, the **Account** page is turned off: its actions are for the
-Steam game's account.
+The Match page also has a **Quiet mode** preset: god mode, infinite ammo and infinite money at once, on the
+Steam game as on iw7-mod.
+
+Not possible by script: zombies fighting each other (the trap that does it gives its function no public
+name), and the zombies' walk or sprint animation itself (only their speed).
+
+Seen working in game, from the window and the console: the extras without "trial". On iw7-mod, the
+**Account** page is turned off: its actions are for the Steam game's account.
 
 ## Known limits
 
