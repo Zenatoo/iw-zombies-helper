@@ -342,9 +342,17 @@ and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat
 - **Go to**: Pack-a-Punch, a mystery wheel, a perk machine, the Fate & Fortune machine or the crafting station.
   When the map has several of a kind, each use goes to the next one.
 - **Zombie speed**: normal, all fast or all slow, for every zombie, new ones included.
-- **Easter egg step**: validates the step you are at in a map's main quest, through the game's own quest
-  system (each step waits for a flag or an event, which the script gives). Spaceland for now: its 12 steps,
-  from the DJ's parts to the UFO and the soul key. A step not reached yet does nothing.
+- **Easter egg step**: validates the step you are at in a map's main quest. Each step waits for a flag or an
+  event, which the script gives; the game then runs its own end of step. A step not reached yet does
+  nothing, so choose the one in progress.
+  - **Spaceland** (12 steps): the DJ's parts, the speaker defenses, the tone generators, the UFO and its
+    destruction, which drops the soul key.
+  - **Rave in the Redwoods** (11): Kevin Smith's three mementos, the survivor, the Super Slasher. Partial: a
+    circle fight can only be won once started, and the photo and the Slasher after it stay to be done.
+  - **Shaolin Shuffle** (19): the soul key quest, through the shortcuts the developers left in it.
+  - **Attack of the Radioactive Thing** (20): launch codes, chemistry and death ray, then the crab boss's five
+    phases.
+  - **The Beast from Beyond** (8): N31L's quest, up to the boss fight.
 
 The lists are kept in [src/picks.rs](src/picks.rs) and in the script in the same order; a test checks it.
 

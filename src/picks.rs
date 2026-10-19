@@ -159,7 +159,10 @@ impl Pick {
 // its lists with; "name|full name|map" for the ones only one map has, outside those lists. Traps:
 // "script file|function|maps". Zombies: the agent types. Places: the kind of interaction point, "perk"
 // for any perk machine. Speeds: the zombies' move rate, in hundredths. Quest steps: "map|step", the step's
-// number in the map's quest line (Spaceland: "ufo", which ends with the soul key).
+// number in the map's quest line (Spaceland: "ufo", which ends with the soul key; Rave: Kevin Smith's
+// mementos, then the Super Slasher; Radioactive Thing: its three parallel lines, launch codes, chemistry and
+// death ray, then the crab boss; Shaolin: the soul key quest, phase 1 then its three tasks; Beast from
+// Beyond: N31L's quest up to the boss fight).
 const CARDS: [Entry; 61] = [
     Entry { script: "grenade_cooldown", en: "Nade Party (Fate)", fr: "Nade Party (Fate)" },
     Entry { script: "spawn_reboard_windows", en: "Shop Class (Fate)", fr: "Shop Class (Fate)" },
@@ -329,7 +332,7 @@ const PACES: [Entry; 3] = [
     Entry { script: "45", en: "All slow", fr: "Tous lents" },
 ];
 
-const QUEST_STEPS: [Entry; 12] = [
+const QUEST_STEPS: [Entry; 70] = [
     Entry { script: "cp_zmb|0", en: "Spaceland 1: the DJ's three parts", fr: "Spaceland 1 : les trois pièces du DJ" },
     Entry { script: "cp_zmb|1", en: "Spaceland 2: Pack-a-Punch portal", fr: "Spaceland 2 : portail du Pack-a-Punch" },
     Entry { script: "cp_zmb|2", en: "Spaceland 3: first speaker defense", fr: "Spaceland 3 : première défense de l'enceinte" },
@@ -342,6 +345,64 @@ const QUEST_STEPS: [Entry; 12] = [
     Entry { script: "cp_zmb|9", en: "Spaceland 10: the UFO's kamikaze clowns", fr: "Spaceland 10 : les clowns kamikazes de l'OVNI" },
     Entry { script: "cp_zmb|10", en: "Spaceland 11: the greys fight", fr: "Spaceland 11 : le combat contre les gris" },
     Entry { script: "cp_zmb|11", en: "Spaceland 12: destroy the UFO (soul key)", fr: "Spaceland 12 : détruire l'OVNI (clé d'âme)" },
+    Entry { script: "cp_rave|0", en: "Rave 1: first memento (needs Kevin met)", fr: "Rave 1 : premier souvenir (après avoir rencontré Kevin)" },
+    Entry { script: "cp_rave|1", en: "Rave 2: first circle defense, won", fr: "Rave 2 : première défense du cercle, gagnée" },
+    Entry { script: "cp_rave|2", en: "Rave 3: give the first memento to Kevin", fr: "Rave 3 : donner le premier souvenir à Kevin" },
+    Entry { script: "cp_rave|3", en: "Rave 4: second memento", fr: "Rave 4 : deuxième souvenir" },
+    Entry { script: "cp_rave|4", en: "Rave 5: second circle defense, won", fr: "Rave 5 : deuxième défense du cercle, gagnée" },
+    Entry { script: "cp_rave|5", en: "Rave 6: give the second memento to Kevin", fr: "Rave 6 : donner le deuxième souvenir à Kevin" },
+    Entry { script: "cp_rave|6", en: "Rave 7: third memento", fr: "Rave 7 : troisième souvenir" },
+    Entry { script: "cp_rave|7", en: "Rave 8: third circle defense, won", fr: "Rave 8 : troisième défense du cercle, gagnée" },
+    Entry { script: "cp_rave|8", en: "Rave 9: free the survivor", fr: "Rave 9 : libérer le survivant" },
+    Entry { script: "cp_rave|9", en: "Rave 10: survivor on the island", fr: "Rave 10 : survivant sur l'île" },
+    Entry { script: "cp_rave|10", en: "Rave 11: end of the Super Slasher fight", fr: "Rave 11 : fin du combat contre le Super Slasher" },
+    Entry { script: "cp_town|0", en: "Radioactive Thing, launch codes 1: open the safe", fr: "Radioactive Thing, codes 1 : ouvrir le coffre" },
+    Entry { script: "cp_town|1", en: "Radioactive Thing, launch codes 2: take the codes", fr: "Radioactive Thing, codes 2 : prendre les codes" },
+    Entry { script: "cp_town|2", en: "Radioactive Thing, launch codes 3: build the bomb", fr: "Radioactive Thing, codes 3 : construire la bombe" },
+    Entry { script: "cp_town|3", en: "Radioactive Thing, launch codes 4", fr: "Radioactive Thing, codes 4" },
+    Entry { script: "cp_town|4", en: "Radioactive Thing, chemistry 1", fr: "Radioactive Thing, chimie 1" },
+    Entry { script: "cp_town|5", en: "Radioactive Thing, chemistry 2", fr: "Radioactive Thing, chimie 2" },
+    Entry { script: "cp_town|6", en: "Radioactive Thing, chemistry 3: make and carry the mix", fr: "Radioactive Thing, chimie 3 : préparer et porter le mélange" },
+    Entry { script: "cp_town|7", en: "Radioactive Thing, chemistry 4: add the mix to the bomb", fr: "Radioactive Thing, chimie 4 : ajouter le mélange à la bombe" },
+    Entry { script: "cp_town|8", en: "Radioactive Thing, death ray 1", fr: "Radioactive Thing, rayon de la mort 1" },
+    Entry { script: "cp_town|9", en: "Radioactive Thing, death ray 2", fr: "Radioactive Thing, rayon de la mort 2" },
+    Entry { script: "cp_town|10", en: "Radioactive Thing, death ray 3", fr: "Radioactive Thing, rayon de la mort 3" },
+    Entry { script: "cp_town|11", en: "Radioactive Thing, death ray 4", fr: "Radioactive Thing, rayon de la mort 4" },
+    Entry { script: "cp_town|12", en: "Radioactive Thing, death ray 5", fr: "Radioactive Thing, rayon de la mort 5" },
+    Entry { script: "cp_town|13", en: "Radioactive Thing, death ray 6", fr: "Radioactive Thing, rayon de la mort 6" },
+    Entry { script: "cp_town|14", en: "Radioactive Thing, death ray 7", fr: "Radioactive Thing, rayon de la mort 7" },
+    Entry { script: "cp_town|15", en: "Radioactive Thing, crab boss 1: start of the fight", fr: "Radioactive Thing, crabe géant 1 : début du combat" },
+    Entry { script: "cp_town|16", en: "Radioactive Thing, crab boss 2: escort the bomb", fr: "Radioactive Thing, crabe géant 2 : escorter la bombe" },
+    Entry { script: "cp_town|17", en: "Radioactive Thing, crab boss 3: death ray cannon", fr: "Radioactive Thing, crabe géant 3 : canon à rayon de la mort" },
+    Entry { script: "cp_town|18", en: "Radioactive Thing, crab boss 4: wall of death", fr: "Radioactive Thing, crabe géant 4 : mur de la mort" },
+    Entry { script: "cp_town|19", en: "Radioactive Thing, crab boss 5: sonic beam", fr: "Radioactive Thing, crabe géant 5 : rayon sonique" },
+    Entry { script: "cp_disco|0", en: "Shaolin 1: talk to Pam (after round 5)", fr: "Shaolin 1 : parler à Pam (après la manche 5)" },
+    Entry { script: "cp_disco|1", en: "Shaolin 2: receive the eye quest", fr: "Shaolin 2 : recevoir la quête de l'œil" },
+    Entry { script: "cp_disco|2", en: "Shaolin 3: destroy the rat cages", fr: "Shaolin 3 : détruire les cages à rats" },
+    Entry { script: "cp_disco|3", en: "Shaolin 4: subway locker", fr: "Shaolin 4 : casier du métro" },
+    Entry { script: "cp_disco|4", en: "Shaolin 5: graffiti puzzle", fr: "Shaolin 5 : énigme des graffitis" },
+    Entry { script: "cp_disco|5", en: "Shaolin 6: Rat King fight for the eye", fr: "Shaolin 6 : combat contre le Rat King pour l'œil" },
+    Entry { script: "cp_disco|6", en: "Shaolin 7: symbol hunt", fr: "Shaolin 7 : chasse aux symboles" },
+    Entry { script: "cp_disco|7", en: "Shaolin 8: phone puzzle", fr: "Shaolin 8 : énigme du téléphone" },
+    Entry { script: "cp_disco|8", en: "Shaolin 9: poster puzzle", fr: "Shaolin 9 : énigme des affiches" },
+    Entry { script: "cp_disco|9", en: "Shaolin 10: kung fu fight", fr: "Shaolin 10 : combat de kung-fu" },
+    Entry { script: "cp_disco|10", en: "Shaolin 11: Rat King puzzle", fr: "Shaolin 11 : énigme du Rat King" },
+    Entry { script: "cp_disco|11", en: "Shaolin 12: Rat King fight for the heart", fr: "Shaolin 12 : combat contre le Rat King pour le cœur" },
+    Entry { script: "cp_disco|12", en: "Shaolin 13: missing film reel", fr: "Shaolin 13 : bobine de film manquante" },
+    Entry { script: "cp_disco|13", en: "Shaolin 14: turnstile puzzle", fr: "Shaolin 14 : énigme du tourniquet" },
+    Entry { script: "cp_disco|14", en: "Shaolin 15: chi symbol", fr: "Shaolin 15 : symbole du chi" },
+    Entry { script: "cp_disco|15", en: "Shaolin 16: disco fever", fr: "Shaolin 16 : disco fever" },
+    Entry { script: "cp_disco|16", en: "Shaolin 17: final chi door", fr: "Shaolin 17 : dernière porte du chi" },
+    Entry { script: "cp_disco|17", en: "Shaolin 18: Rat King fight for the brain", fr: "Shaolin 18 : combat contre le Rat King pour le cerveau" },
+    Entry { script: "cp_disco|18", en: "Shaolin 19: everyone in the slime room", fr: "Shaolin 19 : tout le monde dans la salle à slime" },
+    Entry { script: "cp_final|0", en: "Beast from Beyond 1: retrieve N31L's head", fr: "Beast from Beyond 1 : récupérer la tête de N31L" },
+    Entry { script: "cp_final|1", en: "Beast from Beyond 2: place N31L's head", fr: "Beast from Beyond 2 : poser la tête de N31L" },
+    Entry { script: "cp_final|2", en: "Beast from Beyond 3: destroy the energy doors", fr: "Beast from Beyond 3 : détruire les portes d'énergie" },
+    Entry { script: "cp_final|3", en: "Beast from Beyond 4: fuse puzzle", fr: "Beast from Beyond 4 : énigme des fusibles" },
+    Entry { script: "cp_final|4", en: "Beast from Beyond 5: entangle the button", fr: "Beast from Beyond 5 : intriquer le bouton" },
+    Entry { script: "cp_final|5", en: "Beast from Beyond 6: press the button", fr: "Beast from Beyond 6 : appuyer sur le bouton" },
+    Entry { script: "cp_final|6", en: "Beast from Beyond 7: toggle puzzle", fr: "Beast from Beyond 7 : énigme des interrupteurs" },
+    Entry { script: "cp_final|7", en: "Beast from Beyond 8: enter the boss fight (rhino)", fr: "Beast from Beyond 8 : lancer le combat de boss (rhinocéros)" },
 ];
 
 #[cfg(test)]

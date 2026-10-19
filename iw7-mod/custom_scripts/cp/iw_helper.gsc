@@ -115,7 +115,7 @@ run_code(player, code)
         return run_pick(player, "place", code - 400);
     if (code >= 420 && code < 430)
         return run_pick(player, "pace", code - 420);
-    if (code >= 440 && code < 480)
+    if (code >= 440 && code < 540)
         return run_pick(player, "quest", code - 440);
 
     switch (code)
@@ -600,7 +600,65 @@ pick_list(kind)
                 "cp_zmb|8",
                 "cp_zmb|9",
                 "cp_zmb|10",
-                "cp_zmb|11"
+                "cp_zmb|11",
+                "cp_rave|0",
+                "cp_rave|1",
+                "cp_rave|2",
+                "cp_rave|3",
+                "cp_rave|4",
+                "cp_rave|5",
+                "cp_rave|6",
+                "cp_rave|7",
+                "cp_rave|8",
+                "cp_rave|9",
+                "cp_rave|10",
+                "cp_town|0",
+                "cp_town|1",
+                "cp_town|2",
+                "cp_town|3",
+                "cp_town|4",
+                "cp_town|5",
+                "cp_town|6",
+                "cp_town|7",
+                "cp_town|8",
+                "cp_town|9",
+                "cp_town|10",
+                "cp_town|11",
+                "cp_town|12",
+                "cp_town|13",
+                "cp_town|14",
+                "cp_town|15",
+                "cp_town|16",
+                "cp_town|17",
+                "cp_town|18",
+                "cp_town|19",
+                "cp_disco|0",
+                "cp_disco|1",
+                "cp_disco|2",
+                "cp_disco|3",
+                "cp_disco|4",
+                "cp_disco|5",
+                "cp_disco|6",
+                "cp_disco|7",
+                "cp_disco|8",
+                "cp_disco|9",
+                "cp_disco|10",
+                "cp_disco|11",
+                "cp_disco|12",
+                "cp_disco|13",
+                "cp_disco|14",
+                "cp_disco|15",
+                "cp_disco|16",
+                "cp_disco|17",
+                "cp_disco|18",
+                "cp_final|0",
+                "cp_final|1",
+                "cp_final|2",
+                "cp_final|3",
+                "cp_final|4",
+                "cp_final|5",
+                "cp_final|6",
+                "cp_final|7"
             ];
     }
 
@@ -1244,6 +1302,18 @@ quest_step(player, entry)
         case "cp_zmb":
             level thread spaceland_step(player, int(parts[1]));
             break;
+        case "cp_rave":
+            level thread rave_step(player, int(parts[1]));
+            break;
+        case "cp_town":
+            level thread town_step(player, int(parts[1]));
+            break;
+        case "cp_disco":
+            level thread shaolin_step(player, int(parts[1]));
+            break;
+        case "cp_final":
+            level thread beast_step(player, int(parts[1]));
+            break;
     }
 }
 
@@ -1316,6 +1386,177 @@ spaceland_step(player, step)
         player iprintln("iw-helper: Spaceland step " + (step + 1) + " validated");
     else
         player iprintln("iw-helper: Spaceland step " + (step + 1) + " not reached yet");
+}
+
+// Rave's main quest: Kevin Smith's three mementos (each found, charged in a circle fight, then given
+// to him), then the survivor and the Super Slasher. Most of its fields have no public name, so a circle
+// fight can only be won once started: the photo and the Slasher that follow stay to be done in game.
+rave_step(player, step)
+{
+    done = 1;
+    switch (step)
+    {
+        case 0:
+            done = use_quest_object(player, "j_mem_1");
+            break;
+        case 3:
+            done = use_quest_object(player, "j_mem_2");
+            break;
+        case 6:
+            done = use_quest_object(player, "j_mem_3");
+            break;
+        case 1:
+        case 4:
+        case 7:
+            level notify("speaker_defense_completed");
+            break;
+        case 2:
+            done = set_quest_flag("photo_1_kev_vo_done");
+            break;
+        case 5:
+            done = set_quest_flag("photo_2_kev_vo_done");
+            break;
+        case 8:
+            done = set_quest_flag("survivor_released");
+            break;
+        case 9:
+            done = set_quest_flag("survivor_got_to_island");
+            break;
+        case 10:
+            level notify("super_slasher_death");
+            kill_all(player);
+            break;
+    }
+
+    if (done)
+        player iprintln("iw-helper: Rave step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Rave step " + (step + 1) + " not reached yet");
+}
+
+// The object of a quest step, used as if by the player.
+use_quest_object(player, name)
+{
+    thing = getent(name, "targetname");
+    if (!isdefined(thing))
+        return 0;
+
+    thing notify("trigger", player);
+    return 1;
+}
+
+// Radioactive Thing: three lines that run side by side (launch codes, chemistry, death ray), each step
+// waiting for its own flag, which the game's end of step expects to find set; then the crab boss, whose
+// phases each end on an event.
+town_step(player, step)
+{
+    done = 1;
+    if (step < 4)
+    {
+        done = set_quest_flag("launchcode_step" + (step + 1));
+    }
+    else if (step < 8)
+    {
+        done = set_quest_flag("chemistry_step" + (step - 3));
+    }
+    else if (step < 15)
+    {
+        done = set_quest_flag("deathray_step" + (step - 7));
+    }
+    else
+    {
+        switch (step)
+        {
+            case 15:
+                level notify("crab_boss_quest_completed");
+                break;
+            case 16:
+                level notify("escort_sequence_ended");
+                break;
+            case 17:
+                // The weak spot's first hit, then enough damage to end the phase at once.
+                level notify("crab_boss_weak_spot_initial_hit");
+                wait 0.5;
+                level notify("crab_boss_weak_spot_hit", 9999999);
+                break;
+            case 18:
+                level notify("wall_of_death_completed");
+                break;
+            case 19:
+                level notify("sonic_ring_success");
+                break;
+        }
+    }
+
+    if (done)
+        player iprintln("iw-helper: Radioactive Thing step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Radioactive Thing step " + (step + 1) + " not reached yet");
+}
+
+// Shaolin's soul key quest: every step waits for its start flag, or the same flag ending in "dbg", which
+// the developers used to skip and which the game still answers with a branch of its own. A step is
+// skipped by starting the next one that way, once it has itself started, so the tasks stay in order.
+// Each entry: "flag that says the step started|flag to set".
+shaolin_step(player, step)
+{
+    steps = [
+        "|skq_phase_1dbg",
+        "skq_phase_1|skq_p2t1_0dbg",
+        "skq_p2t1_1|skq_p2t1_2dbg",
+        "skq_p2t1_2|skq_p2t1_3dbg",
+        "skq_p2t1_3|skq_p2t1_4dbg",
+        "skq_p2t1_4|skq_p2t1_5dbg",
+        "skq_p2t2_0|skq_p2t2_1dbg",
+        "skq_p2t2_1|skq_p2t2_3dbg",
+        "skq_p2t2_3|skq_p2t2_4dbg",
+        "skq_p2t2_4|skq_p2t2_5dbg",
+        "skq_p2t2_5|skq_p2t2_6dbg",
+        "skq_p2t2_6|skq_p2t2_7dbg",
+        "skq_p2t3_0|skq_p2t3_1dbg",
+        "skq_p2t3_1|skq_p2t3_2dbg",
+        "skq_p2t3_2|skq_p2t3_3dbg",
+        "skq_p2t3_3|skq_p2t3_4dbg",
+        "skq_p2t3_4|skq_p2t3_5dbg",
+        "skq_p2t3_5|skq_p2t3_6dbg",
+        "skq_p2t3_6|skq_phase_3dbg"
+    ];
+
+    parts = strtok(steps[step], "|");
+    started = 1;
+    if (parts.size > 1)
+        started = scripts\engine\utility::flag(parts[0]) || scripts\engine\utility::flag(parts[0] + "dbg");
+
+    target = parts[parts.size - 1];
+    if (!started || !scripts\engine\utility::flag_exist(target))
+    {
+        player iprintln("iw-helper: Shaolin step " + (step + 1) + " not reached yet");
+        return;
+    }
+
+    scripts\engine\utility::flag_set(target);
+    player iprintln("iw-helper: Shaolin step " + (step + 1) + " validated");
+}
+
+// Beast from Beyond: each step of N31L's quest waits for one flag, the one the developers' own
+// shortcut sets.
+beast_step(player, step)
+{
+    flags = [
+        "neil_head_found",
+        "neil_head_placed",
+        "security_doors_deactivated",
+        "fuse_puzzle_completed",
+        "button_entered_poster",
+        "toggle_puzzle_button_pressed",
+        "neils_head_placed_in_pap",
+        "players_triggered_bossfight"
+    ];
+
+    if (set_quest_flag(flags[step]))
+        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " not reached yet");
 }
 
 // --- Fun ------------------------------------------------------------------------------------------
