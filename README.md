@@ -339,8 +339,9 @@ and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat
   Thing and Beast from Beyond are out of reach: the game gives their functions no public name.
 - **Spawn a zombie**: a zombie of the kind chosen (clown, brute, grey, skeleton, crabs, cryptids…) a few steps
   in front of you, if the map has that kind. Bosses are not offered: they depend on their scripted fight.
-- **Go to**: Pack-a-Punch, a mystery wheel, a perk machine, the Fate & Fortune machine or the crafting station.
-  When the map has several of a kind, each use goes to the next one.
+- **Go to**: the next zone of the map (each use goes to the following one, through the whole map, and shows
+  its name), a fast travel portal, Pack-a-Punch, a mystery wheel, a perk machine, the Fate & Fortune machine
+  or the crafting station. When the map has several of a kind, each use goes to the next one.
 - **Zombie speed**: normal, all fast or all slow, for every zombie, new ones included.
 - **Easter egg step**: validates the step you are at in a map's main quest. Each step waits for a flag or an
   event, which the script gives; the game then runs its own end of step. A step not reached yet does

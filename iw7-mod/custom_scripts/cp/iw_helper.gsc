@@ -573,6 +573,8 @@ pick_list(kind)
         // pick: place
         case "place":
             return [
+                "zone",
+                "portal",
                 "weapon_upgrade",
                 "magic_wheel",
                 "perk",
@@ -962,12 +964,52 @@ keep_pace(scale)
     }
 }
 
-// Teleports to an interaction point of that kind ("perk": any perk machine) or to a mystery wheel.
+// The zones the game splits the map into (its zombies' spawn zones, by name), one per use, in turn: the
+// middle of the zone's spawn points, or the zone's own origin when it has one, on the walkable ground.
+go_to_next_zone(player)
+{
+    if (!isdefined(level.spawn_volume_array) || level.spawn_volume_array.size == 0)
+    {
+        player iprintln("iw-helper: no zones on this map");
+        return;
+    }
+
+    names = getarraykeys(level.spawn_volume_array);
+    turn = getdvarint("iwh_place_zone") % names.size;
+    setdvar("iwh_place_zone", turn + 1);
+    zone = level.spawn_volume_array[names[turn]];
+
+    spot = zone.origin;
+    if (spot == (0, 0, 0) && isdefined(zone.spawners) && zone.spawners.size > 0)
+    {
+        total = (0, 0, 0);
+        foreach (spawner in zone.spawners)
+            total = total + spawner.origin;
+        spot = total / zone.spawners.size;
+    }
+
+    player setorigin(getclosestpointonnavmesh(spot) + (0, 0, 2));
+    player iprintln("iw-helper: zone " + names[turn] + " (" + (turn + 1) + "/" + names.size + ")");
+}
+
+// Teleports to an interaction point of that kind ("perk": any perk machine), to a mystery wheel or to a
+// fast travel portal.
 // When the map has several, each use goes to the next one.
 go_to_place(player, place)
 {
+    if (place == "zone")
+        return go_to_next_zone(player);
+
     spots = [];
-    if (place == "magic_wheel")
+    if (place == "portal")
+    {
+        if (isdefined(level.fast_travel_spots))
+        {
+            foreach (portal in level.fast_travel_spots)
+                spots[spots.size] = portal.origin;
+        }
+    }
+    else if (place == "magic_wheel")
     {
         foreach (wheel in getentarray("magic_wheel", "script_noteworthy"))
             spots[spots.size] = wheel.origin;

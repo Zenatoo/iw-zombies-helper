@@ -79,8 +79,8 @@ impl Pick {
                 "Apparaît à quelques pas devant vous. Seulement les types que la carte possède ; les boss ne sont pas proposés.",
             ),
             Pick::Place => tr(
-                "Teleports you there. Again for the next one of the same kind, when the map has several.",
-                "Vous y téléporte. Encore une fois pour le suivant du même genre, quand la carte en a plusieurs.",
+                "Teleports you there. Again for the next one of the same kind; the zones go through the whole map, one per click, with their name.",
+                "Vous y téléporte. Encore une fois pour le suivant du même genre ; les zones parcourent toute la carte, une par clic, avec leur nom.",
             ),
             Pick::Pace => tr(
                 "For every zombie, new ones included, until set back to Normal.",
@@ -158,7 +158,7 @@ impl Pick {
 // without Irish Luck, which the game activates in its own way. Weapons: the raw names the game keys
 // its lists with; "name|full name|map" for the ones only one map has, outside those lists. Traps:
 // "script file|function|maps". Zombies: the agent types. Places: the kind of interaction point, "perk"
-// for any perk machine. Speeds: the zombies' move rate, in hundredths. Quest steps: "map|step", the step's
+// for any perk machine, "zone" for the map's zones in turn, "portal" for its fast travel portals. Speeds: the zombies' move rate, in hundredths. Quest steps: "map|step", the step's
 // number in the map's quest line (Spaceland: "ufo", which ends with the soul key; Rave: Kevin Smith's
 // mementos, then the Super Slasher; Radioactive Thing: its three parallel lines, launch codes, chemistry and
 // death ray, then the crab boss; Shaolin: the soul key quest, phase 1 then its three tasks; Beast from
@@ -318,7 +318,9 @@ const ZOMBIES: [Entry; 13] = [
     Entry { script: "alien_rhino", en: "Cryptid rhino (Beast from Beyond)", fr: "Rhino cryptide (Beast from Beyond)" },
 ];
 
-const PLACES: [Entry; 5] = [
+const PLACES: [Entry; 7] = [
+    Entry { script: "zone", en: "Next zone of the map", fr: "Zone suivante de la carte" },
+    Entry { script: "portal", en: "Fast travel portal", fr: "Portail de voyage rapide" },
     Entry { script: "weapon_upgrade", en: "Pack-a-Punch", fr: "Pack-a-Punch" },
     Entry { script: "magic_wheel", en: "Mystery wheel", fr: "Roue mystère" },
     Entry { script: "perk", en: "Perk machine", fr: "Machine à atout" },

@@ -433,7 +433,7 @@ function makeView(language: Lang): View {
       hint: t("Teleports you there. Again for the next one of the same kind, when the map has several.", "Vous y téléporte. Encore une fois pour le suivant du même genre, quand la carte en a plusieurs."),
       button: t("Go", "Y aller"),
       trial: true,
-      options: ["Pack-a-Punch", t("Mystery wheel", "Roue mystère"), t("Perk machine", "Machine à atout"), t("Fate & Fortune machine", "Machine Fate & Fortune"), t("Crafting station", "Atelier")],
+      options: [t("Next zone of the map", "Zone suivante de la carte"), t("Fast travel portal", "Portail de voyage rapide"), "Pack-a-Punch", t("Mystery wheel", "Roue mystère"), t("Perk machine", "Machine à atout"), t("Fate & Fortune machine", "Machine Fate & Fortune"), t("Crafting station", "Atelier")],
     },
     {
       key: "pace",
