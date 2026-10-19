@@ -102,7 +102,7 @@ watch_commands()
 run_code(player, code)
 {
     // The lists: cards from 100, weapons from 200, traps from 300, zombies from 320, places from 400,
-    // zombie speeds from 420.
+    // zombie speeds from 420, easter egg steps from 440.
     if (code >= 100 && code < 200)
         return run_pick(player, "card", code - 100);
     if (code >= 200 && code < 300)
@@ -115,6 +115,8 @@ run_code(player, code)
         return run_pick(player, "place", code - 400);
     if (code >= 420 && code < 430)
         return run_pick(player, "pace", code - 420);
+    if (code >= 440 && code < 480)
+        return run_pick(player, "quest", code - 440);
 
     switch (code)
     {
@@ -584,6 +586,22 @@ pick_list(kind)
                 "170",
                 "45"
             ];
+        // pick: quest
+        case "quest":
+            return [
+                "cp_zmb|0",
+                "cp_zmb|1",
+                "cp_zmb|2",
+                "cp_zmb|3",
+                "cp_zmb|4",
+                "cp_zmb|5",
+                "cp_zmb|6",
+                "cp_zmb|7",
+                "cp_zmb|8",
+                "cp_zmb|9",
+                "cp_zmb|10",
+                "cp_zmb|11"
+            ];
     }
 
     return [];
@@ -607,6 +625,7 @@ run_pick(player, kind, index)
         case "zombie": spawn_listed_zombie(player, entry); break;
         case "place": go_to_place(player, entry); break;
         case "pace": set_pace(player, entry); break;
+        case "quest": quest_step(player, entry); break;
     }
 }
 
@@ -1203,6 +1222,100 @@ keep_weapons(player)
 
         saved = player getweaponslistprimaries();
     }
+}
+
+// --- Easter egg steps -------------------------------------------------------------------------
+
+// "map|step": the step's number in the map's main quest line. Each step of the game's quest system
+// waits for a flag or a notification; giving it validates the step, and the game then runs its own end
+// of step (for the DJ's parts, it picks up the missing ones itself). Only the step in progress responds:
+// a later step's flag does not exist yet.
+quest_step(player, entry)
+{
+    parts = strtok(entry, "|");
+    if (parts[0] != level.script)
+    {
+        player iprintln("iw-helper: this step is for another map");
+        return;
+    }
+
+    switch (parts[0])
+    {
+        case "cp_zmb":
+            level thread spaceland_step(player, int(parts[1]));
+            break;
+    }
+}
+
+// Sets the flag if the game created it, that is if its step has been reached. True if set.
+set_quest_flag(name)
+{
+    if (!scripts\engine\utility::flag_exist(name))
+        return 0;
+
+    scripts\engine\utility::flag_set(name);
+    return 1;
+}
+
+// Spaceland's "ufo" quest line, which ends with the soul key.
+spaceland_step(player, step)
+{
+    done = 1;
+    switch (step)
+    {
+        case 0:
+            done = set_quest_flag("dj_fetch_quest_completed");
+            break;
+        case 1:
+            done = set_quest_flag("pap_portal_used");
+            level notify("wave_start_sound_done");
+            break;
+        case 2:
+        case 3:
+        case 4:
+            // The defense ends as if won; the game then waits for the speaker and the next round.
+            done = set_quest_flag("dj_request_defense_done");
+            wait 1;
+            level notify("speaker_defense_completed");
+            wait 0.1;
+            level notify("speaker_picked_up");
+            break;
+        case 5:
+            level notify("stop_wait_one_wave");
+            break;
+        case 6:
+            done = set_quest_flag("tone_generators_given");
+            break;
+        case 7:
+            done = set_quest_flag("all_center_positions_used");
+            break;
+        case 8:
+            done = set_quest_flag("tones_played_successfully");
+            break;
+        case 9:
+            // The sequence still stops on its debugging notification.
+            level notify("debug_beat_UFO_suicide_bomber");
+            if (isdefined(level.beam_trap_vfx))
+                level.beam_trap_vfx delete();
+            kill_all(player);
+            break;
+        case 10:
+            level notify("complete_alien_grey_fight");
+            kill_all(player);
+            break;
+        case 11:
+            // The only weapon the UFO takes damage from is the park's cannon: its own destruction follows.
+            if (isdefined(level.ufo))
+                level.ufo notify("damage", 100, player, (0, 0, 1), level.ufo.origin, "MOD_EXPLOSIVE", "", "", "", 0, "iw7_spaceland_wmd");
+            else
+                done = 0;
+            break;
+    }
+
+    if (done)
+        player iprintln("iw-helper: Spaceland step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Spaceland step " + (step + 1) + " not reached yet");
 }
 
 // --- Fun ------------------------------------------------------------------------------------------

@@ -326,8 +326,8 @@ compiled when a Zombies match loads. To remove it, delete that file.
 | Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
 | | `bonuses` | Lists the bonuses of the current map. |
 
-Six lists, from the window only, each with a choice and a button (trial). The long ones have a search field,
-and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat_place` and `repeat_pace` in
+Seven lists, from the window only, each with a choice and a button (trial). The long ones have a search field,
+and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat_place`, `repeat_pace` and `repeat_quest` in
 `[hotkeys]` give a key to the last choice made in each.
 
 - **Fate & Fortune card**: any of the game's 61 cards, by its name in the game. Its effect starts right away,
@@ -342,6 +342,9 @@ and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat
 - **Go to**: Pack-a-Punch, a mystery wheel, a perk machine, the Fate & Fortune machine or the crafting station.
   When the map has several of a kind, each use goes to the next one.
 - **Zombie speed**: normal, all fast or all slow, for every zombie, new ones included.
+- **Easter egg step**: validates the step you are at in a map's main quest, through the game's own quest
+  system (each step waits for a flag or an event, which the script gives). Spaceland for now: its 12 steps,
+  from the DJ's parts to the UFO and the soul key. A step not reached yet does nothing.
 
 The lists are kept in [src/picks.rs](src/picks.rs) and in the script in the same order; a test checks it.
 

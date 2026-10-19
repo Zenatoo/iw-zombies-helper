@@ -443,6 +443,21 @@ function makeView(language: Lang): View {
       trial: true,
       options: [t("Normal", "Normale"), t("All fast", "Tous rapides"), t("All slow", "Tous lents")],
     },
+    {
+      key: "quest",
+      label: t("Easter egg step", "Étape d'easter egg"),
+      hint: t(
+        "Validates the step you are at in the map's main quest. A step not reached yet does nothing: choose the one in progress.",
+        "Valide l'étape où vous en êtes dans la quête principale de la carte. Une étape pas encore atteinte ne fait rien : choisissez celle en cours.",
+      ),
+      button: t("Validate", "Valider"),
+      trial: true,
+      options: [
+        t("Spaceland 1: the DJ's three parts", "Spaceland 1 : les trois pièces du DJ"),
+        t("Spaceland 2: Pack-a-Punch portal", "Spaceland 2 : portail du Pack-a-Punch"),
+        t("Spaceland 12: destroy the UFO (soul key)", "Spaceland 12 : détruire l'OVNI (clé d'âme)"),
+      ],
+    },
   ];
 
   const keys = { allOff: t("End", "Fin"), savePosition: t("Page Up", "Page préc."), teleport: t("Page Down", "Page suiv.") };

@@ -1,5 +1,5 @@
 //! Choices the window offers for the iw7-mod script: Fate & Fortune cards, weapons, crafted traps,
-//! special zombies, places to go to and the zombies' speed. The script holds the same lists in the same order (`pick_list` in
+//! special zombies, places to go to, the zombies' speed and the steps of a map's main quest. The script holds the same lists in the same order (`pick_list` in
 //! iw7-mod/custom_scripts/cp/iw_helper.gsc) and receives `base + index`; a test checks they match.
 
 use crate::lang::tr;
@@ -25,10 +25,11 @@ pub enum Pick {
     Zombie,
     Place,
     Pace,
+    Quest,
 }
 
 impl Pick {
-    pub const ALL: [Pick; 6] = [Pick::Card, Pick::Weapon, Pick::Craftable, Pick::Zombie, Pick::Place, Pick::Pace];
+    pub const ALL: [Pick; 7] = [Pick::Card, Pick::Weapon, Pick::Craftable, Pick::Zombie, Pick::Place, Pick::Pace, Pick::Quest];
 
     /// Name used by the interface, and by the script for its list.
     pub fn key(self) -> &'static str {
@@ -39,6 +40,7 @@ impl Pick {
             Pick::Zombie => "zombie",
             Pick::Place => "place",
             Pick::Pace => "pace",
+            Pick::Quest => "quest",
         }
     }
 
@@ -54,6 +56,7 @@ impl Pick {
             Pick::Zombie => tr("Spawn a zombie", "Faire apparaître un zombie"),
             Pick::Place => tr("Go to", "Aller à"),
             Pick::Pace => tr("Zombie speed", "Vitesse des zombies"),
+            Pick::Quest => tr("Easter egg step", "Étape d'easter egg"),
         }
     }
 
@@ -83,6 +86,10 @@ impl Pick {
                 "For every zombie, new ones included, until set back to Normal.",
                 "Pour tous les zombies, nouveaux compris, jusqu'au retour à Normale.",
             ),
+            Pick::Quest => tr(
+                "Validates the step you are at in the map's main quest. A step not reached yet does nothing: choose the one in progress.",
+                "Valide l'étape où vous en êtes dans la quête principale de la carte. Une étape pas encore atteinte ne fait rien : choisissez celle en cours.",
+            ),
         }
     }
 
@@ -93,6 +100,7 @@ impl Pick {
             Pick::Zombie => tr("Spawn", "Faire apparaître"),
             Pick::Place => tr("Go", "Y aller"),
             Pick::Pace => tr("Apply", "Appliquer"),
+            Pick::Quest => tr("Validate", "Valider"),
         }
     }
 
@@ -110,6 +118,7 @@ impl Pick {
             Pick::Zombie => tr("Last zombie chosen", "Dernier zombie choisi"),
             Pick::Place => tr("Last place chosen", "Dernier endroit choisi"),
             Pick::Pace => tr("Last zombie speed chosen", "Dernière vitesse choisie"),
+            Pick::Quest => tr("Last easter egg step chosen", "Dernière étape d'easter egg choisie"),
         }
     }
 
@@ -126,6 +135,7 @@ impl Pick {
             Pick::Zombie => &ZOMBIES,
             Pick::Place => &PLACES,
             Pick::Pace => &PACES,
+            Pick::Quest => &QUEST_STEPS,
         }
     }
 
@@ -138,6 +148,7 @@ impl Pick {
             Pick::Zombie => 320,
             Pick::Place => 400,
             Pick::Pace => 420,
+            Pick::Quest => 440,
         };
         (index < self.entries().len()).then(|| base + index as i32)
     }
@@ -147,7 +158,8 @@ impl Pick {
 // without Irish Luck, which the game activates in its own way. Weapons: the raw names the game keys
 // its lists with; "name|full name|map" for the ones only one map has, outside those lists. Traps:
 // "script file|function|maps". Zombies: the agent types. Places: the kind of interaction point, "perk"
-// for any perk machine. Speeds: the zombies' move rate, in hundredths.
+// for any perk machine. Speeds: the zombies' move rate, in hundredths. Quest steps: "map|step", the step's
+// number in the map's quest line (Spaceland: "ufo", which ends with the soul key).
 const CARDS: [Entry; 61] = [
     Entry { script: "grenade_cooldown", en: "Nade Party (Fate)", fr: "Nade Party (Fate)" },
     Entry { script: "spawn_reboard_windows", en: "Shop Class (Fate)", fr: "Shop Class (Fate)" },
@@ -315,6 +327,21 @@ const PACES: [Entry; 3] = [
     Entry { script: "100", en: "Normal", fr: "Normale" },
     Entry { script: "170", en: "All fast", fr: "Tous rapides" },
     Entry { script: "45", en: "All slow", fr: "Tous lents" },
+];
+
+const QUEST_STEPS: [Entry; 12] = [
+    Entry { script: "cp_zmb|0", en: "Spaceland 1: the DJ's three parts", fr: "Spaceland 1 : les trois pièces du DJ" },
+    Entry { script: "cp_zmb|1", en: "Spaceland 2: Pack-a-Punch portal", fr: "Spaceland 2 : portail du Pack-a-Punch" },
+    Entry { script: "cp_zmb|2", en: "Spaceland 3: first speaker defense", fr: "Spaceland 3 : première défense de l'enceinte" },
+    Entry { script: "cp_zmb|3", en: "Spaceland 4: second speaker defense", fr: "Spaceland 4 : deuxième défense de l'enceinte" },
+    Entry { script: "cp_zmb|4", en: "Spaceland 5: third speaker defense", fr: "Spaceland 5 : troisième défense de l'enceinte" },
+    Entry { script: "cp_zmb|5", en: "Spaceland 6: wait one round", fr: "Spaceland 6 : attendre une manche" },
+    Entry { script: "cp_zmb|6", en: "Spaceland 7: tone generators from the DJ", fr: "Spaceland 7 : générateurs de tonalité du DJ" },
+    Entry { script: "cp_zmb|7", en: "Spaceland 8: place the tone generators", fr: "Spaceland 8 : poser les générateurs" },
+    Entry { script: "cp_zmb|8", en: "Spaceland 9: match the UFO's tones", fr: "Spaceland 9 : reproduire les tonalités de l'OVNI" },
+    Entry { script: "cp_zmb|9", en: "Spaceland 10: the UFO's kamikaze clowns", fr: "Spaceland 10 : les clowns kamikazes de l'OVNI" },
+    Entry { script: "cp_zmb|10", en: "Spaceland 11: the greys fight", fr: "Spaceland 11 : le combat contre les gris" },
+    Entry { script: "cp_zmb|11", en: "Spaceland 12: destroy the UFO (soul key)", fr: "Spaceland 12 : détruire l'OVNI (clé d'âme)" },
 ];
 
 #[cfg(test)]

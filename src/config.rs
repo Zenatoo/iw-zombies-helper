@@ -191,6 +191,7 @@ fn default_hotkeys() -> BTreeMap<String, String> {
         ("repeat_zombie", ""),
         ("repeat_place", ""),
         ("repeat_pace", ""),
+        ("repeat_quest", ""),
         (ACTION_SAVE_POSITION, "PageUp"),
         (ACTION_TELEPORT, "PageDown"),
         (ACTION_ALL_OFF, "End"),
