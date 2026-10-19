@@ -30,6 +30,14 @@
 //   maxpap         upgrade every player's weapons two levels at once
 //   revives        switch unlimited self-revives (solo) on or off
 //   lucky          switch a bonus per zombie killed on or off
+//   deck           refill your Fate & Fortune card deck
+//   money          $10000 for every player
+//   bring          bring every other player next to you
+//   follow         go next to another player (the next one each time)
+//   horde          ten zombies of the kind last spawned from the window, around you
+//   gungame        switch gun game on or off: a random weapon every 5 kills
+//   stats          show or hide a timer and the zombies killed
+//   keep           switch on or off: your weapons come back when you get up after going down
 // From the window only: a Fate & Fortune card, a weapon, a crafted trap, a zombie, a place to go to or the
 // zombies' speed, chosen in a list.
 //   drop <bonus>   drop a bonus in front of you: ammo, kill, instakill, cash, upgrade, fire, infinite,
@@ -49,6 +57,10 @@ init()
     setdvar("iwh_revives", 0);
     setdvar("iwh_lucky", 0);
     setdvar("iwh_pace", 100);
+    setdvar("iwh_gungame", 0);
+    setdvar("iwh_stats", 0);
+    setdvar("iwh_keep", 0);
+    setdvar("iwh_last_zombie", "");
     level.command_given = 7700;
     level thread watch_commands();
 }
@@ -131,6 +143,14 @@ run_code(player, code)
         case 31: level thread max_pap(player); break;
         case 32: switch_unlimited_revives(player); break;
         case 33: switch_bonus_on_kill(player); break;
+        case 34: refill_deck(player); break;
+        case 35: money_for_everyone(player); break;
+        case 36: bring_players(player); break;
+        case 37: go_to_player(player); break;
+        case 38: level thread horde(player); break;
+        case 39: switch_gun_game(player); break;
+        case 40: switch_stats(player); break;
+        case 41: switch_keep_weapons(player); break;
         default: player iprintln("iw-helper: unknown command " + code); break;
     }
 }
@@ -159,9 +179,17 @@ run_word(player, command, argument)
         case "maxpap": level thread max_pap(player); break;
         case "revives": switch_unlimited_revives(player); break;
         case "lucky": switch_bonus_on_kill(player); break;
+        case "deck": refill_deck(player); break;
+        case "money": money_for_everyone(player); break;
+        case "bring": bring_players(player); break;
+        case "follow": go_to_player(player); break;
+        case "horde": level thread horde(player); break;
+        case "gungame": switch_gun_game(player); break;
+        case "stats": switch_stats(player); break;
+        case "keep": switch_keep_weapons(player); break;
         case "drop": drop_bonus(player, argument); break;
         case "bonuses": list_bonuses(player); break;
-        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, xray, maxpap, revives, lucky, drop <bonus>, bonuses"); break;
+        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, xray, maxpap, revives, lucky, deck, money, bring, follow, horde, gungame, stats, keep, drop <bonus>, bonuses"); break;
     }
 }
 
@@ -687,6 +715,7 @@ spawn_listed_zombie(player, kind)
         return;
     }
 
+    setdvar("iwh_last_zombie", kind);
     spawner = spawnstruct();
     spawner.origin = player.origin + anglestoforward((0, player.angles[1], 0)) * 220;
     spawner.angles = (0, player.angles[1] + 180, 0);
@@ -892,6 +921,288 @@ go_to_place(player, place)
     setdvar("iwh_place_" + place, turn + 1);
     player setorigin(getclosestpointonnavmesh(spots[turn]) + (0, 0, 2));
     player iprintln("iw-helper: " + place + " " + (turn + 1) + "/" + spots.size);
+}
+
+// --- Cards, co-op, horde, gun game, statistics, weapons kept -----------------------------------
+
+// The deck comes back the way the game gives a new one (as after the bomb on Radioactive Thing): the
+// meter starts again from zero.
+refill_deck(player)
+{
+    player notify("give_new_deck");
+    player.consumable_meter = 0;
+    player thread scripts\cp\zombies\zombies_consumables::init_consumable_meter();
+    player thread scripts\cp\zombies\zombies_consumables::lightbar_off();
+    player setclientomnvar("zm_dpad_up_activated", 5);
+    player setclientomnvar("zm_consumable_selection_ready", 0);
+    player thread scripts\cp\zombies\zombies_consumables::turn_on_cards();
+    player iprintln("iw-helper: card deck refilled");
+}
+
+// The game's own way to give money: the counter follows right away.
+money_for_everyone(player)
+{
+    foreach (other in level.players)
+        other scripts\cp\cp_persistence::give_player_currency(10000, undefined, undefined, 1);
+    player iprintln("iw-helper: $10000 for " + level.players.size + " players");
+}
+
+bring_players(player)
+{
+    count = 0;
+    foreach (other in level.players)
+    {
+        if (other == player)
+            continue;
+
+        count++;
+        other setorigin(getclosestpointonnavmesh(player.origin + anglestoforward((0, count * 90, 0)) * 60) + (0, 0, 2));
+    }
+
+    player iprintln("iw-helper: " + count + " players brought");
+}
+
+// Next to another player; each use goes to the next one.
+go_to_player(player)
+{
+    others = [];
+    foreach (other in level.players)
+    {
+        if (other != player)
+            others[others.size] = other;
+    }
+
+    if (others.size == 0)
+    {
+        player iprintln("iw-helper: no other player");
+        return;
+    }
+
+    turn = getdvarint("iwh_follow") % others.size;
+    setdvar("iwh_follow", turn + 1);
+    player setorigin(getclosestpointonnavmesh(others[turn].origin + (40, 0, 0)) + (0, 0, 2));
+    player iprintln("iw-helper: next to " + others[turn].name);
+}
+
+// Ten zombies of the kind last spawned from the list (regular zombies otherwise), in a circle.
+horde(player)
+{
+    kind = getdvar("iwh_last_zombie");
+    if (kind == "")
+        kind = "generic_zombie";
+
+    if (!isdefined(level.agent_definition) || !isdefined(level.agent_definition[kind]))
+    {
+        player iprintln("iw-helper: no " + kind + " on this map");
+        return;
+    }
+
+    count = 0;
+    for (i = 0; i < 10; i++)
+    {
+        spawner = spawnstruct();
+        spawner.origin = player.origin + anglestoforward((0, i * 36, 0)) * 320;
+        spawner.angles = (0, i * 36 + 180, 0);
+        enemy = spawner scripts\cp\zombies\zombies_spawning::spawn_wave_enemy(kind, 1);
+        if (isdefined(enemy))
+            count++;
+        wait 0.2;
+    }
+
+    player iprintln("iw-helper: horde of " + count + " " + kind);
+}
+
+// Zombies killed, counted from the round's death counter (which starts again at every round).
+kills_since(last)
+{
+    now = level.current_enemy_deaths;
+    if (!isdefined(now))
+        return 0;
+    if (!isdefined(last) || now < last)
+        return now;
+    return now - last;
+}
+
+switch_gun_game(player)
+{
+    if (getdvarint("iwh_gungame") == 1)
+    {
+        setdvar("iwh_gungame", 0);
+        level notify("iwh_gungame_stop");
+        player iprintln("iw-helper: gun game off");
+        return;
+    }
+
+    setdvar("iwh_gungame", 1);
+    level thread gun_game(player);
+    player iprintln("iw-helper: gun game on, a new weapon every 5 kills");
+}
+
+gun_game(player)
+{
+    player endon("disconnect");
+    level endon("game_ended");
+    level endon("iwh_gungame_stop");
+
+    last = level.current_enemy_deaths;
+    count = 0;
+    for (;;)
+    {
+        wait 0.2;
+        count = count + kills_since(last);
+        last = level.current_enemy_deaths;
+        if (count < 5)
+            continue;
+
+        count = 0;
+        gun_game_swap(player);
+    }
+}
+
+// The weapon in hand is replaced by a random one from the map's list.
+gun_game_swap(player)
+{
+    if (!isdefined(level.magic_weapons) || level.magic_weapons.size == 0)
+        return;
+    if (scripts\engine\utility::istrue(player.inlaststand))
+        return;
+
+    names = getarraykeys(level.magic_weapons);
+    weapon = level.magic_weapons[names[randomint(names.size)]];
+    current = player getcurrentweapon();
+    base = scripts\cp\utility::getrawbaseweaponname(current);
+    player takeweapon(current);
+    if (isdefined(player.pap[base]))
+        player.pap[base] = undefined;
+
+    given = player scripts\cp\utility::_giveweapon(weapon, undefined, undefined, 0);
+    if (!isdefined(given))
+        given = weapon;
+
+    entry = spawnstruct();
+    entry.lvl = 1;
+    player.pap[scripts\cp\utility::getrawbaseweaponname(given)] = entry;
+    player notify("weapon_level_changed");
+    player switchtoweapon(given);
+}
+
+// A timer from the moment it is switched on, and the zombies killed since.
+switch_stats(player)
+{
+    if (getdvarint("iwh_stats") == 1)
+    {
+        setdvar("iwh_stats", 0);
+        player notify("iwh_stats_stop");
+        return;
+    }
+
+    setdvar("iwh_stats", 1);
+    player thread stats_hud();
+}
+
+stats_hud()
+{
+    self endon("disconnect");
+    self endon("iwh_stats_stop");
+    level endon("game_ended");
+
+    title = newclienthudelem(self);
+    timer = newclienthudelem(self);
+    kills = newclienthudelem(self);
+    foreach (element in [title, timer, kills])
+    {
+        element.alignx = "left";
+        element.aligny = "top";
+        element.horzalign = "left";
+        element.vertalign = "top";
+        element.x = 16;
+        element.hidewheninmenu = 1;
+        element.archived = 0;
+        element.foreground = 1;
+    }
+
+    title.y = 200;
+    title.fontscale = 1.1;
+    title settext("Time / Kills");
+    timer.y = 216;
+    timer.fontscale = 1.5;
+    timer settimerup(0);
+    kills.y = 236;
+    kills.fontscale = 1.5;
+    self thread remove_stats(title, timer, kills);
+
+    total = 0;
+    last = level.current_enemy_deaths;
+    for (;;)
+    {
+        total = total + kills_since(last);
+        last = level.current_enemy_deaths;
+        kills setvalue(total);
+        wait 0.25;
+    }
+}
+
+remove_stats(title, timer, kills)
+{
+    self waittill("iwh_stats_stop");
+    title destroy();
+    timer destroy();
+    kills destroy();
+}
+
+// The weapons carried while standing are given back when the player gets up after going down.
+switch_keep_weapons(player)
+{
+    if (getdvarint("iwh_keep") == 1)
+    {
+        setdvar("iwh_keep", 0);
+        level notify("iwh_keep_stop");
+        player iprintln("iw-helper: weapons no longer kept");
+        return;
+    }
+
+    setdvar("iwh_keep", 1);
+    level thread keep_weapons(player);
+    player iprintln("iw-helper: weapons kept when you go down");
+}
+
+keep_weapons(player)
+{
+    player endon("disconnect");
+    level endon("game_ended");
+    level endon("iwh_keep_stop");
+
+    saved = player getweaponslistprimaries();
+    was_down = 0;
+    for (;;)
+    {
+        wait 0.5;
+        down = !isalive(player) || scripts\engine\utility::istrue(player.inlaststand) || scripts\cp\zombies\zombie_afterlife_arcade::is_in_afterlife_arcade(player);
+        if (down)
+        {
+            was_down = 1;
+            continue;
+        }
+
+        if (was_down)
+        {
+            was_down = 0;
+            // Let the game give its own weapons first.
+            wait 1.5;
+            foreach (weapon in saved)
+            {
+                if (!player hasweapon(weapon))
+                {
+                    player giveweapon(weapon);
+                    player givemaxammo(weapon);
+                }
+            }
+            player iprintln("iw-helper: weapons given back");
+            continue;
+        }
+
+        saved = player getweaponslistprimaries();
+    }
 }
 
 // --- Fun ------------------------------------------------------------------------------------------

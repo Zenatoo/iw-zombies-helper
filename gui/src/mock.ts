@@ -295,6 +295,86 @@ function makeView(language: Lang): View {
       button: t("Switch", "Basculer"),
       trial: true,
     },
+    {
+      key: "refill_deck",
+      label: t("Refill the card deck", "Recharger le paquet de cartes"),
+      hint: t(
+        "Your Fate & Fortune cards all come back, as from the machine. The meter starts again from zero.",
+        "Toutes vos cartes Fate & Fortune reviennent, comme à la machine. La jauge repart de zéro.",
+      ),
+      button: t("Refill", "Recharger"),
+      trial: true,
+    },
+    {
+      key: "money_for_all",
+      label: t("$10,000 for everyone", "10 000 $ pour tout le monde"),
+      hint: t(
+        "Every player gets $10,000, the game's own way: the counter follows right away.",
+        "Chaque joueur reçoit 10 000 $, à la manière du jeu : le compteur suit tout de suite.",
+      ),
+      button: t("Give", "Donner"),
+      trial: true,
+    },
+    {
+      key: "bring_players",
+      label: t("Bring everyone to me", "Ramener tout le monde"),
+      hint: t(
+        "Every other player is teleported next to you (co-op).",
+        "Tous les autres joueurs sont téléportés à côté de vous (coop).",
+      ),
+      button: t("Bring", "Ramener"),
+      trial: true,
+    },
+    {
+      key: "go_to_player",
+      label: t("Go to a player", "Aller vers un joueur"),
+      hint: t(
+        "Teleports you next to another player; again for the next one (co-op).",
+        "Vous téléporte à côté d'un autre joueur ; encore une fois pour le suivant (coop).",
+      ),
+      button: t("Go", "Y aller"),
+      trial: true,
+    },
+    {
+      key: "horde",
+      label: t("Spawn a horde", "Faire apparaître une horde"),
+      hint: t(
+        "Ten zombies around you, of the kind last chosen in Spawn a zombie (regular zombies otherwise).",
+        "Dix zombies autour de vous, du type choisi en dernier dans Faire apparaître un zombie (des zombies normaux sinon).",
+      ),
+      button: t("Spawn", "Faire apparaître"),
+      trial: true,
+    },
+    {
+      key: "gun_game",
+      label: t("Gun game", "Gun game"),
+      hint: t(
+        "Switches on or off: every 5 zombies killed, the weapon in hand becomes a random one.",
+        "S'active ou se coupe : tous les 5 zombies tués, l'arme en main est remplacée au hasard.",
+      ),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
+    {
+      key: "match_stats",
+      label: t("Timer and kills", "Chrono et kills"),
+      hint: t(
+        "Shows on screen the time since switched on and the zombies killed since. Again to hide it.",
+        "Affiche à l'écran le temps écoulé et les zombies tués depuis l'activation. Encore une fois pour le cacher.",
+      ),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
+    {
+      key: "keep_weapons",
+      label: t("Keep weapons", "Garder ses armes"),
+      hint: t(
+        "Switches on or off: the weapons you carried come back when you get up after going down.",
+        "S'active ou se coupe : vos armes reviennent quand vous vous relevez après être tombé.",
+      ),
+      button: t("Switch", "Basculer"),
+      trial: true,
+    },
   ];
 
   // Choices from the script's lists (src/picks.rs), a few of each.

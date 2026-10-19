@@ -637,10 +637,18 @@ pub enum OneShot {
     MaxPap,
     UnlimitedRevives,
     BonusOnKill,
+    RefillDeck,
+    MoneyForAll,
+    BringPlayers,
+    GoToPlayer,
+    Horde,
+    GunGame,
+    MatchStats,
+    KeepWeapons,
 }
 
 impl OneShot {
-    pub const ALL: [OneShot; 31] = [
+    pub const ALL: [OneShot; 39] = [
         OneShot::RefillAmmo,
         OneShot::AddMoney,
         OneShot::WeakenZombies,
@@ -672,6 +680,14 @@ impl OneShot {
         OneShot::MaxPap,
         OneShot::UnlimitedRevives,
         OneShot::BonusOnKill,
+        OneShot::RefillDeck,
+        OneShot::MoneyForAll,
+        OneShot::BringPlayers,
+        OneShot::GoToPlayer,
+        OneShot::Horde,
+        OneShot::GunGame,
+        OneShot::MatchStats,
+        OneShot::KeepWeapons,
     ];
 
     /// Name used by the interface and in the configuration (keyboard shortcuts).
@@ -708,6 +724,14 @@ impl OneShot {
             OneShot::MaxPap => "max_pap",
             OneShot::UnlimitedRevives => "unlimited_revives",
             OneShot::BonusOnKill => "bonus_on_kill",
+            OneShot::RefillDeck => "refill_deck",
+            OneShot::MoneyForAll => "money_for_all",
+            OneShot::BringPlayers => "bring_players",
+            OneShot::GoToPlayer => "go_to_player",
+            OneShot::Horde => "horde",
+            OneShot::GunGame => "gun_game",
+            OneShot::MatchStats => "match_stats",
+            OneShot::KeepWeapons => "keep_weapons",
         }
     }
 
@@ -744,6 +768,14 @@ impl OneShot {
             OneShot::MaxPap => tr("Pack-a-Punch to the top", "Pack-a-Punch au maximum"),
             OneShot::UnlimitedRevives => tr("Unlimited self-revives", "Auto-réanimations illimitées"),
             OneShot::BonusOnKill => tr("A bonus per zombie killed", "Un bonus par zombie tué"),
+            OneShot::RefillDeck => tr("Refill the card deck", "Recharger le paquet de cartes"),
+            OneShot::MoneyForAll => tr("$10,000 for everyone", "10\u{a0}000\u{a0}$ pour tout le monde"),
+            OneShot::BringPlayers => tr("Bring everyone to me", "Ramener tout le monde"),
+            OneShot::GoToPlayer => tr("Go to a player", "Aller vers un joueur"),
+            OneShot::Horde => tr("Spawn a horde", "Faire apparaître une horde"),
+            OneShot::GunGame => tr("Gun game", "Gun game"),
+            OneShot::MatchStats => tr("Timer and kills", "Chrono et kills"),
+            OneShot::KeepWeapons => tr("Keep weapons", "Garder ses armes"),
         }
     }
 
@@ -780,6 +812,14 @@ impl OneShot {
             OneShot::MaxPap => tr("Every player's weapons go up two levels at once.", "Les armes de tous les joueurs montent de deux niveaux d'un coup."),
             OneShot::UnlimitedRevives => tr("Switches on or off: in solo, the revive machine never stops selling.", "S'active ou se coupe : en solo, la machine de réanimation n'arrête jamais de vendre."),
             OneShot::BonusOnKill => tr("Switches on or off: every zombie that spawns from now drops a random bonus when it dies.", "S'active ou se coupe : chaque zombie qui apparaît ensuite lâche un bonus au hasard en mourant."),
+            OneShot::RefillDeck => tr("Your Fate & Fortune cards all come back, as from the machine. The meter starts again from zero.", "Toutes vos cartes Fate & Fortune reviennent, comme à la machine. La jauge repart de zéro."),
+            OneShot::MoneyForAll => tr("Every player gets $10,000, the game's own way: the counter follows right away.", "Chaque joueur reçoit 10\u{a0}000\u{a0}$, à la manière du jeu : le compteur suit tout de suite."),
+            OneShot::BringPlayers => tr("Every other player is teleported next to you (co-op).", "Tous les autres joueurs sont téléportés à côté de vous (coop)."),
+            OneShot::GoToPlayer => tr("Teleports you next to another player; again for the next one (co-op).", "Vous téléporte à côté d'un autre joueur ; encore une fois pour le suivant (coop)."),
+            OneShot::Horde => tr("Ten zombies around you, of the kind last chosen in Spawn a zombie (regular zombies otherwise).", "Dix zombies autour de vous, du type choisi en dernier dans Faire apparaître un zombie (des zombies normaux sinon)."),
+            OneShot::GunGame => tr("Switches on or off: every 5 zombies killed, the weapon in hand becomes a random one.", "S'active ou se coupe : tous les 5 zombies tués, l'arme en main est remplacée au hasard."),
+            OneShot::MatchStats => tr("Shows on screen the time since switched on and the zombies killed since. Again to hide it.", "Affiche à l'écran le temps écoulé et les zombies tués depuis l'activation. Encore une fois pour le cacher."),
+            OneShot::KeepWeapons => tr("Switches on or off: the weapons you carried come back when you get up after going down.", "S'active ou se coupe : vos armes reviennent quand vous vous relevez après être tombé."),
         }
     }
 
@@ -796,10 +836,20 @@ impl OneShot {
             OneShot::OpenDoors => tr("Open", "Ouvrir"),
             OneShot::NextCharacter => tr("Change", "Changer"),
             OneShot::Revive => tr("Revive", "Relever"),
-            OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::XRay | OneShot::UnlimitedRevives | OneShot::BonusOnKill => {
+            OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::XRay
+            | OneShot::UnlimitedRevives
+            | OneShot::BonusOnKill
+            | OneShot::GunGame
+            | OneShot::MatchStats
+            | OneShot::KeepWeapons => {
                 tr("Switch", "Basculer")
             }
             OneShot::MaxPap => tr("Upgrade", "Améliorer"),
+            OneShot::RefillDeck => tr("Refill", "Recharger"),
+            OneShot::MoneyForAll => tr("Give", "Donner"),
+            OneShot::BringPlayers => tr("Bring", "Ramener"),
+            OneShot::GoToPlayer => tr("Go", "Y aller"),
+            OneShot::Horde => tr("Spawn", "Faire apparaître"),
             OneShot::BonusRain => tr("Drop", "Faire tomber"),
             OneShot::LaunchZombies => tr("Launch", "Lancer"),
             OneShot::BurnZombies => tr("Ignite", "Enflammer"),
@@ -815,7 +865,7 @@ impl OneShot {
     /// True as long as the action has not been seen working on the real game. The other iw7-mod
     /// extras were seen working, from the console and from the window, on 2026-10-16.
     pub fn trial(self) -> bool {
-        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint | OneShot::XRay | OneShot::MaxPap | OneShot::UnlimitedRevives | OneShot::BonusOnKill)
+        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint | OneShot::XRay | OneShot::MaxPap | OneShot::UnlimitedRevives | OneShot::BonusOnKill | OneShot::RefillDeck | OneShot::MoneyForAll | OneShot::BringPlayers | OneShot::GoToPlayer | OneShot::Horde | OneShot::GunGame | OneShot::MatchStats | OneShot::KeepWeapons)
     }
 
     /// Number of the command for the iw7-mod script, for the actions it carries out. Keep in step
@@ -847,6 +897,14 @@ impl OneShot {
             OneShot::MaxPap => 31,
             OneShot::UnlimitedRevives => 32,
             OneShot::BonusOnKill => 33,
+            OneShot::RefillDeck => 34,
+            OneShot::MoneyForAll => 35,
+            OneShot::BringPlayers => 36,
+            OneShot::GoToPlayer => 37,
+            OneShot::Horde => 38,
+            OneShot::GunGame => 39,
+            OneShot::MatchStats => 40,
+            OneShot::KeepWeapons => 41,
             _ => return None,
         })
     }
@@ -1214,7 +1272,15 @@ impl Trainer {
             | OneShot::XRay
             | OneShot::MaxPap
             | OneShot::UnlimitedRevives
-            | OneShot::BonusOnKill => self.send_to_script(p, action),
+            | OneShot::BonusOnKill
+            | OneShot::RefillDeck
+            | OneShot::MoneyForAll
+            | OneShot::BringPlayers
+            | OneShot::GoToPlayer
+            | OneShot::Horde
+            | OneShot::GunGame
+            | OneShot::MatchStats
+            | OneShot::KeepWeapons => self.send_to_script(p, action),
         }
     }
 

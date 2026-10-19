@@ -315,6 +315,14 @@ compiled when a Zombies match loads. To remove it, delete that file.
 | Pack-a-Punch to the top (`max_pap`), trial | `maxpap` | Every player's weapons go up two levels at once. |
 | Unlimited self-revives (`unlimited_revives`), trial | `revives` | Switches on or off: in solo, the revive machine never stops selling. |
 | A bonus per zombie killed (`bonus_on_kill`), trial | `lucky` | Switches on or off: every zombie that spawns from now drops a random bonus when it dies. |
+| Refill the card deck (`refill_deck`), trial | `deck` | Your Fate & Fortune cards all come back, as from the machine; the meter starts again from zero. |
+| $10,000 for everyone (`money_for_all`), trial | `money` | Every player gets $10,000, the game's own way: the counter follows right away. |
+| Bring everyone to me (`bring_players`), trial | `bring` | Every other player is teleported next to you (co-op). |
+| Go to a player (`go_to_player`), trial | `follow` | Next to another player; again for the next one (co-op). |
+| Spawn a horde (`horde`), trial | `horde` | Ten zombies around you, of the kind last chosen in Spawn a zombie. |
+| Gun game (`gun_game`), trial | `gungame` | Switches on or off: every 5 zombies killed, the weapon in hand becomes a random one. |
+| Timer and kills (`match_stats`), trial | `stats` | Shows on screen the time and the zombies killed since switched on; again to hide it. |
+| Keep weapons (`keep_weapons`), trial | `keep` | Switches on or off: the weapons you carried come back when you get up after going down. |
 | Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
 | | `bonuses` | Lists the bonuses of the current map. |
 
