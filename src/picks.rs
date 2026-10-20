@@ -290,16 +290,14 @@ const WEAPONS: [Entry; 60] = [
     Entry { script: "vr", en: "X-Eon", fr: "X-Eon" },
 ];
 
-const CRAFTABLES: [Entry; 9] = [
+const CRAFTABLES: [Entry; 7] = [
     Entry { script: "scripts/cp/cp_weapon_autosentry|give_crafted_sentry|cp_zmb cp_rave cp_disco", en: "Sentry turret (Spaceland, Rave, Shaolin)", fr: "Tourelle (Spaceland, Rave, Shaolin)" },
-    Entry { script: "scripts/cp/zombies/craftables/_boombox|give_crafted_boombox|cp_zmb cp_rave cp_disco", en: "Boombox (Spaceland, Rave, Shaolin)", fr: "Boombox (Spaceland, Rave, Shaolin)" },
-    Entry { script: "scripts/cp/zombies/craftables/_fireworks_trap|give_crafted_fireworks_trap|cp_zmb cp_rave", en: "Fireworks trap (Spaceland, Rave)", fr: "Piège feu d'artifice (Spaceland, Rave)" },
-    Entry { script: "scripts/cp/zombies/craftables/_electric_trap|give_crafted_trap|cp_zmb cp_rave", en: "Electric trap (Spaceland, Rave)", fr: "Piège électrique (Spaceland, Rave)" },
-    Entry { script: "scripts/cp/zombies/craftables/_zm_soul_collector|give_crafted_medusa|cp_zmb cp_rave", en: "Medusa (Spaceland, Rave)", fr: "Méduse (Spaceland, Rave)" },
-    Entry { script: "scripts/cp/zombies/craftables/_revocator|give_crafted_revocator|cp_zmb cp_rave", en: "Revocator (Spaceland, Rave)", fr: "Révocateur (Spaceland, Rave)" },
-    Entry { script: "scripts/cp/zombies/craftables/_gascan|give_crafted_gascan|cp_zmb cp_rave", en: "Gas can (Spaceland, Rave)", fr: "Bidon d'essence (Spaceland, Rave)" },
-    Entry { script: "scripts/cp/crafted_trap_balloons|give_crafted_trap|cp_rave", en: "Balloon trap (Rave)", fr: "Piège à ballons (Rave)" },
-    Entry { script: "scripts/cp/crafted_trap_mower|give_crafted_trap|cp_rave", en: "Lawn mower trap (Rave)", fr: "Piège tondeuse (Rave)" },
+    Entry { script: "scripts/cp/crafted_trap_boombox|give_crafted_boombox|cp_zmb cp_rave cp_disco", en: "Boombox (Spaceland, Rave, Shaolin)", fr: "Boombox (Spaceland, Rave, Shaolin)" },
+    Entry { script: "scripts/cp/crafted_trap_fireworks|give_crafted_fireworks_trap|cp_zmb cp_rave", en: "Fireworks trap (Spaceland, Rave)", fr: "Piège feu d'artifice (Spaceland, Rave)" },
+    Entry { script: "scripts/cp/crafted_trap_electric|give_crafted_trap|cp_zmb cp_rave", en: "Electric trap (Spaceland, Rave)", fr: "Piège électrique (Spaceland, Rave)" },
+    Entry { script: "scripts/cp/cp_weapon_medusa|give_crafted_medusa|cp_zmb cp_rave", en: "Medusa (Spaceland, Rave)", fr: "Méduse (Spaceland, Rave)" },
+    Entry { script: "scripts/cp/crafted_trap_revocator|give_crafted_revocator|cp_zmb cp_rave", en: "Revocator (Spaceland, Rave)", fr: "Révocateur (Spaceland, Rave)" },
+    Entry { script: "scripts/cp/crafted_trap_gascan|give_crafted_gascan|cp_zmb cp_rave", en: "Gas can (Spaceland, Rave)", fr: "Bidon d'essence (Spaceland, Rave)" },
 ];
 
 const ZOMBIES: [Entry; 13] = [

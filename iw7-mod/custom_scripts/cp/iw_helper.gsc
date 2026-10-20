@@ -226,13 +226,74 @@ kill_all(player)
     player iprintln("iw-helper: " + count + " zombies killed");
 }
 
-// What the game's direct boss fight mode runs at the start: each map's own way to turn on the power
-// and open its doors (or the generic one: generators, paid doors, chi doors, team doors). Calling it a
-// second time does nothing.
+// What the game's direct boss fight mode runs at the start: generators on, paid doors opened for free,
+// Spaceland's donations done, team door switches used. Done here rather than by calling that mode's
+// script, whose name the game does not publish: a script that refers to it fails to load.
 open_doors(player)
 {
-    level thread scripts\cp\zombies\direct_boss_fight::open_sesame();
+    if (scripts\engine\utility::istrue(level.open_sesame))
+    {
+        player iprintln("iw-helper: doors already opened");
+        return;
+    }
+
+    level.open_sesame = 1;
+    level thread open_doors_now();
     player iprintln("iw-helper: power on, doors opening");
+}
+
+open_doors_now()
+{
+    if (isdefined(level.generators))
+    {
+        foreach (generator in level.generators)
+        {
+            thread scripts\cp\zombies\zombie_power::generic_generator(generator);
+            wait 0.1;
+        }
+    }
+
+    foreach (door in getentarray("door_buy", "targetname"))
+    {
+        door notify("trigger", "open_sesame");
+        wait 0.1;
+    }
+
+    level.moon_donations = 3;
+    level.kepler_donations = 3;
+    level.triton_donations = 3;
+
+    switches = [];
+    foreach (spot in scripts\engine\utility::getstructarray("interaction", "targetname"))
+    {
+        if (isdefined(spot.script_noteworthy) && spot.script_noteworthy == "team_door_switch")
+            switches[switches.size] = spot;
+    }
+
+    // Its script is loaded on the maps that have such switches only, hence the lookup by name.
+    if (switches.size > 0)
+        level thread use_team_door_switches(switches);
+
+    if (scripts\engine\utility::flag_exist("restorepower_step1"))
+        scripts\engine\utility::flag_set("restorepower_step1");
+}
+
+use_team_door_switches(switches)
+{
+    use = getfunction("scripts/cp/zombies/interaction_openareas", "use_team_door_switch");
+    used = [];
+    foreach (spot in switches)
+    {
+        if (isdefined(spot.target))
+        {
+            if (isdefined(used[spot.target]))
+                continue;
+
+            used[spot.target] = 1;
+        }
+
+        [[use]](spot, level.players[0]);
+    }
 }
 
 // Every perk the map registered, given the way a perk machine does.
@@ -544,14 +605,12 @@ pick_list(kind)
         case "craftable":
             return [
                 "scripts/cp/cp_weapon_autosentry|give_crafted_sentry|cp_zmb cp_rave cp_disco",
-                "scripts/cp/zombies/craftables/_boombox|give_crafted_boombox|cp_zmb cp_rave cp_disco",
-                "scripts/cp/zombies/craftables/_fireworks_trap|give_crafted_fireworks_trap|cp_zmb cp_rave",
-                "scripts/cp/zombies/craftables/_electric_trap|give_crafted_trap|cp_zmb cp_rave",
-                "scripts/cp/zombies/craftables/_zm_soul_collector|give_crafted_medusa|cp_zmb cp_rave",
-                "scripts/cp/zombies/craftables/_revocator|give_crafted_revocator|cp_zmb cp_rave",
-                "scripts/cp/zombies/craftables/_gascan|give_crafted_gascan|cp_zmb cp_rave",
-                "scripts/cp/crafted_trap_balloons|give_crafted_trap|cp_rave",
-                "scripts/cp/crafted_trap_mower|give_crafted_trap|cp_rave"
+                "scripts/cp/crafted_trap_boombox|give_crafted_boombox|cp_zmb cp_rave cp_disco",
+                "scripts/cp/crafted_trap_fireworks|give_crafted_fireworks_trap|cp_zmb cp_rave",
+                "scripts/cp/crafted_trap_electric|give_crafted_trap|cp_zmb cp_rave",
+                "scripts/cp/cp_weapon_medusa|give_crafted_medusa|cp_zmb cp_rave",
+                "scripts/cp/crafted_trap_revocator|give_crafted_revocator|cp_zmb cp_rave",
+                "scripts/cp/crafted_trap_gascan|give_crafted_gascan|cp_zmb cp_rave"
             ];
         // pick: zombie
         case "zombie":

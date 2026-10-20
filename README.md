@@ -335,7 +335,7 @@ and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat
 - **Weapon**: the map's weapons, its wonder weapons included (Dischord, Shredder, harpoons, Venom-X…). Only
   what the current map has.
 - **Crafted trap**: ready to place, as if built at the crafting station: turret, boombox, fireworks, electric
-  trap, Medusa, revocator, gas can, balloons, mower, on the maps named in the list. The traps of Radioactive
+  trap, Medusa, revocator, gas can, on the maps named in the list. The traps of Radioactive
   Thing and Beast from Beyond are out of reach: the game gives their functions no public name.
 - **Spawn a zombie**: a zombie of the kind chosen (clown, brute, grey, skeleton, crabs, cryptids…) a few steps
   in front of you, if the map has that kind. Bosses are not offered: they depend on their scripted fight.
