@@ -226,12 +226,19 @@ kill_all(player)
     player iprintln("iw-helper: " + count + " zombies killed");
 }
 
+// Defined and true. The game's own version of this check fails to link from this script ("script link
+// error"), so it is kept here.
+is_true(value)
+{
+    return isdefined(value) && value;
+}
+
 // What the game's direct boss fight mode runs at the start: generators on, paid doors opened for free,
 // Spaceland's donations done, team door switches used. Done here rather than by calling that mode's
 // script, whose name the game does not publish: a script that refers to it fails to load.
 open_doors(player)
 {
-    if (scripts\engine\utility::istrue(level.open_sesame))
+    if (is_true(level.open_sesame))
     {
         player iprintln("iw-helper: doors already opened");
         return;
@@ -395,7 +402,7 @@ revive_players(player)
     count = 0;
     foreach (other in level.players)
     {
-        if (!scripts\engine\utility::istrue(scripts\cp\cp_laststand::player_in_laststand(other)) && !scripts\cp\zombies\zombie_afterlife_arcade::is_in_afterlife_arcade(other))
+        if (!is_true(scripts\cp\cp_laststand::player_in_laststand(other)) && !scripts\cp\zombies\zombie_afterlife_arcade::is_in_afterlife_arcade(other))
             continue;
 
         other scripts\cp\cp_laststand::instant_revive(other);
@@ -1242,7 +1249,7 @@ gun_game_swap(player)
 {
     if (!isdefined(level.magic_weapons) || level.magic_weapons.size == 0)
         return;
-    if (scripts\engine\utility::istrue(player.inlaststand))
+    if (is_true(player.inlaststand))
         return;
 
     names = getarraykeys(level.magic_weapons);
@@ -1355,7 +1362,7 @@ keep_weapons(player)
     for (;;)
     {
         wait 0.5;
-        down = !isalive(player) || scripts\engine\utility::istrue(player.inlaststand) || scripts\cp\zombies\zombie_afterlife_arcade::is_in_afterlife_arcade(player);
+        down = !isalive(player) || is_true(player.inlaststand) || scripts\cp\zombies\zombie_afterlife_arcade::is_in_afterlife_arcade(player);
         if (down)
         {
             was_down = 1;
