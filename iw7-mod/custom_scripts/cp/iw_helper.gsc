@@ -1528,24 +1528,47 @@ push_speaker_defense()
 }
 
 // The UFO's clowns: it spawns 51 of them over about half a minute and leaves once 50 are dead. They
-// are killed as they come. 1 once the 50 are dead, 0 after three minutes without it.
+// are killed as they come, the last one included. 1 once the 50 are dead and no clown is left, 0 after
+// three minutes without it.
 finish_ufo_clowns(player)
 {
     level endon("game_ended");
-    for (waited = 0; !isdefined(level.num_ufo_zombies_killed) || level.num_ufo_zombies_killed < 50; waited++)
+    for (waited = 0; waited < 360; waited++)
     {
-        if (waited >= 360)
-            return 0;
-
         kill_enemies();
+        if (isdefined(level.num_ufo_zombies_killed) && level.num_ufo_zombies_killed >= 50 && !clown_left())
+        {
+            // The 51st may still be on its way.
+            for (i = 0; i < 6; i++)
+            {
+                wait 0.5;
+                kill_enemies();
+            }
+
+            return 1;
+        }
+
         wait 0.5;
     }
 
-    return 1;
+    return 0;
 }
 
-// The greys: the fight ends with the last grey's death, the game's own way, so they are killed as
-// soon as they appear. 1 once none is left, 0 after three minutes without it.
+// One of the UFO's clowns is still alive.
+clown_left()
+{
+    foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+    {
+        if (isdefined(enemy) && is_true(enemy.is_suicide_bomber))
+            return 1;
+    }
+
+    return 0;
+}
+
+// The greys: the fight ends with the last grey's death, the game's own way, so they are struck down as
+// soon as they appear, and the zombies around them killed. 1 once no grey is left, 0 after three
+// minutes without it.
 finish_grey_fight(player)
 {
     level endon("game_ended");
@@ -1556,9 +1579,12 @@ finish_grey_fight(player)
         {
             seen = 1;
             foreach (grey in level.spawned_grey)
+                hit_grey(player, grey);
+
+            foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
             {
-                if (isdefined(grey) && isalive(grey))
-                    grey dodamage(grey.health + 100, grey.origin);
+                if (isdefined(enemy) && isalive(enemy) && !is_grey(enemy))
+                    enemy dodamage(enemy.health + 100, enemy.origin);
             }
         }
         else if (seen)
@@ -1570,6 +1596,36 @@ finish_grey_fight(player)
     }
 
     return 0;
+}
+
+is_grey(enemy)
+{
+    foreach (grey in level.spawned_grey)
+    {
+        if (grey == enemy)
+            return 1;
+    }
+
+    return 0;
+}
+
+// A grey low on health goes down to regenerate and ignores damage, except a melee blow on the fuse it
+// shows in its back, which takes one of its regenerations away: that blow, struck as a player would.
+// Standing, it gets no more regeneration and enough damage to go down, or to die.
+hit_grey(player, grey)
+{
+    if (!isdefined(grey) || !isalive(grey))
+        return;
+
+    grey.can_do_health_regen = 0;
+    if (is_true(grey.is_regening_health))
+    {
+        if (isdefined(grey.alien_fuse_exposed))
+            grey dodamage(1, grey.alien_fuse_exposed.origin, player, player, "MOD_MELEE");
+        return;
+    }
+
+    grey dodamage(grey.health + 100, grey.origin, player, player);
 }
 
 // The only weapon the UFO takes damage from is the park's cannon: a hit from it, and the UFO's own
