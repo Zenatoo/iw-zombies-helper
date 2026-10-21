@@ -261,12 +261,13 @@ const CARDS: [Entry; 61] = [
     Entry { script: "double_pap_weap", en: "Packin' Heat (Fortune)", fr: "Packin' Heat (Fortune)" },
 ];
 
-const WEAPONS: [Entry; 60] = [
+const WEAPONS: [Entry; 61] = [
     Entry { script: "dischord", en: "Dischord (Spaceland)", fr: "Dischord (Spaceland)" },
     Entry { script: "facemelter", en: "Face Melter (Spaceland)", fr: "Face Melter (Spaceland)" },
     Entry { script: "headcutter", en: "Headcutter (Spaceland)", fr: "Headcutter (Spaceland)" },
     Entry { script: "shredder", en: "Shredder (Spaceland)", fr: "Shredder (Spaceland)" },
     Entry { script: "forgefreeze", en: "Forge Freeze (Spaceland)", fr: "Forge Freeze (Spaceland)" },
+    Entry { script: "wylerdagger|iw7_wylerdagger_zm|cp_zmb", en: "Willard's blade (Spaceland)", fr: "Lame de Willard (Spaceland)" },
     Entry { script: "harpoon1|iw7_harpoon1_zm|cp_rave", en: "Acid Rain harpoon (Rave)", fr: "Harpon Acid Rain (Rave)" },
     Entry { script: "harpoon2|iw7_harpoon2_zm|cp_rave", en: "Ben Franklin harpoon (Rave)", fr: "Harpon Ben Franklin (Rave)" },
     Entry { script: "harpoon3|iw7_harpoon3_zm+akimbo|cp_rave", en: "Trap-O-Matic harpoon (Rave)", fr: "Harpon Trap-O-Matic (Rave)" },

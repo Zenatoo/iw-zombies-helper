@@ -577,6 +577,7 @@ pick_list(kind)
                 "headcutter",
                 "shredder",
                 "forgefreeze",
+                "wylerdagger|iw7_wylerdagger_zm|cp_zmb",
                 "harpoon1|iw7_harpoon1_zm|cp_rave",
                 "harpoon2|iw7_harpoon2_zm|cp_rave",
                 "harpoon3|iw7_harpoon3_zm+akimbo|cp_rave",

@@ -341,7 +341,7 @@ and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat
 
 - **Fate & Fortune card**: any of the game's 61 cards, by its name in the game. Its effect starts right away,
   without using a card from your deck; a card with a duration stops at its end.
-- **Weapon**: the map's weapons, its wonder weapons included (Dischord, Shredder, harpoons, Venom-X…). Only
+- **Weapon**: the map's weapons, its wonder weapons included (Dischord, Shredder, Willard's blade, harpoons, Venom-X…). Only
   what the current map has.
 - **Crafted trap**: ready to place, as if built at the crafting station: turret, boombox, fireworks, electric
   trap, Medusa, revocator, gas can, on the maps named in the list. The traps of Radioactive
