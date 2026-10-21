@@ -5,7 +5,7 @@
 use iw_helper::config::{self, Config, Priority};
 use iw_helper::engine::{FeatureState, Game, Snapshot};
 use iw_helper::lang::{self, tr, trs};
-use iw_helper::picks::{Entry, Pick};
+use iw_helper::picks::{self, Pick};
 use iw_helper::trainer::{Feature, OneShot, Tweak};
 use iw_helper::winsettings::GraphicsSettings;
 use iw_helper::{cpu, profile};
@@ -47,6 +47,9 @@ pub struct View {
     pub picks: Vec<PickRow>,
     /// The game is iw7-mod: script extras are offered, account actions are not.
     pub mod_client: bool,
+    /// Name of the match's map, once the iw7-mod script has reported it: the extras and their lists
+    /// then keep what has a use there. `None` in the menus, where everything is listed.
+    pub map: Option<&'static str>,
     pub keys: Keys,
     pub saved_position: Option<[f32; 3]>,
     /// Code of the character requested for the next match, when the profile is readable.
@@ -119,8 +122,15 @@ pub struct PickRow {
     pub hint: &'static str,
     pub button: &'static str,
     pub trial: bool,
-    /// Labels of the choices, in the order the script knows them: the page sends the index.
-    pub options: Vec<&'static str>,
+    /// The choices that have a use on the map, each with its index in the script's list: the page
+    /// sends that index.
+    pub options: Vec<PickOption>,
+}
+
+#[derive(Serialize)]
+pub struct PickOption {
+    pub index: usize,
+    pub label: &'static str,
 }
 
 #[derive(Serialize)]
@@ -233,10 +243,12 @@ pub fn build(input: &Input) -> View {
     };
     let key = |action: &str| config.hotkey(action).map(key_label).unwrap_or_default();
     let mod_client = snapshot.game.as_ref().is_some_and(|game| game.name.eq_ignore_ascii_case(config::MOD_CLIENT));
+    let map = snapshot.map;
+    let fits = |label: &str| map.is_none_or(|map| picks::label_fits(label, map));
     let action_rows = |by_script: bool| {
         OneShot::ALL
             .iter()
-            .filter(|action| action.script_code().is_some() == by_script)
+            .filter(|action| action.script_code().is_some() == by_script && fits(action.label()))
             .map(|&action| ActionRow { key: action.key(), label: action.label(), hint: action.hint(), button: action.button(), trial: action.trial() })
             .collect()
     };
@@ -258,9 +270,23 @@ pub fn build(input: &Input) -> View {
         extras: action_rows(true),
         picks: Pick::ALL
             .iter()
-            .map(|&pick| PickRow { key: pick.key(), label: pick.label(), hint: pick.hint(), button: pick.button(), trial: pick.trial(), options: pick.entries().iter().map(Entry::label).collect() })
+            .map(|&pick| PickRow {
+                key: pick.key(),
+                label: pick.label(),
+                hint: pick.hint(),
+                button: pick.button(),
+                trial: pick.trial(),
+                options: pick
+                    .entries()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, entry)| map.is_none_or(|map| entry.fits(map)))
+                    .map(|(index, entry)| PickOption { index, label: entry.label() })
+                    .collect(),
+            })
             .collect(),
         mod_client,
+        map: map.and_then(picks::map_label),
         keys: Keys { all_off: key(config::ACTION_ALL_OFF), save_position: key(config::ACTION_SAVE_POSITION), teleport: key(config::ACTION_TELEPORT) },
         saved_position: snapshot.saved_position,
         character: snapshot.character,
@@ -489,6 +515,7 @@ pub fn demo_snapshot() -> Snapshot {
         tweaks: Tweak::ALL.iter().map(|&tweak| (tweak, Some(tweak.default()))).collect(),
         watching: false,
         character: Some(0),
+        map: None,
         finished: false,
     }
 }
@@ -589,8 +616,8 @@ mod tests {
         let (config, cores, graphics, snapshot) = (Config::default(), [0b11], GraphicsSettings::default(), demo_snapshot());
         let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None });
         let json = serde_json::to_value(&view).unwrap();
-        let expected: [(&serde_json::Value, &[&str]); 15] = [
-            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "modClient", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
+        let expected: [(&serde_json::Value, &[&str]); 16] = [
+            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "modClient", "map", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
             (&json["message"], &["text", "tone"]),
             (&json["groups"][0], &["title", "options"]),
             (&json["groups"][0]["options"][0], &["key", "label", "hint", "hotkey", "on", "code", "trial"]),
@@ -598,6 +625,7 @@ mod tests {
             (&json["actions"][0], &["key", "label", "hint", "button", "trial"]),
             (&json["extras"][0], &["key", "label", "hint", "button", "trial"]),
             (&json["picks"][0], &["key", "label", "hint", "button", "trial", "options"]),
+            (&json["picks"][0]["options"][0], &["index", "label"]),
             (&json["keys"], &["allOff", "savePosition", "teleport"]),
             (&json["characters"][0], &["code", "name", "map"]),
             (&json["hotkeys"][0], &["label", "key"]),
@@ -625,7 +653,19 @@ mod tests {
         assert!(steam.actions.iter().all(|row| row.key != "upgrade_weapons") && steam.extras.iter().any(|row| row.key == "upgrade_weapons"));
         assert_eq!(steam.actions.len() + steam.extras.len(), OneShot::ALL.len());
         snapshot.game.as_mut().unwrap().name = "IW7-MOD.exe".to_string();
-        assert!(view_of(&snapshot).mod_client);
+        let menu = view_of(&snapshot);
+        assert!(menu.mod_client && menu.map.is_none());
+        // In the menus, every choice; on a map, its own and the shared ones, with their index in the full list.
+        let quest = |view: &View| view.picks.iter().find(|pick| pick.key == "quest").map(|pick| pick.options.iter().map(|option| option.index).collect::<Vec<_>>()).unwrap();
+        assert_eq!(quest(&menu).len(), Pick::Quest.entries().len());
+        snapshot.map = Some("cp_rave");
+        let rave = view_of(&snapshot);
+        assert_eq!(rave.map, Some("Rave"));
+        assert_eq!(quest(&rave), (12..23).collect::<Vec<_>>());
+        // The whole easter egg names its maps: not offered on Rave yet, offered on Spaceland.
+        assert!(rave.extras.iter().all(|row| row.key != "whole_quest") && menu.extras.iter().any(|row| row.key == "whole_quest"));
+        snapshot.map = Some("cp_zmb");
+        assert!(view_of(&snapshot).extras.iter().any(|row| row.key == "whole_quest"));
     }
 
     #[test]

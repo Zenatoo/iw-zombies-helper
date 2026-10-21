@@ -178,6 +178,16 @@ function makeView(language: Lang): View {
   const drop = (key: string, label: string): Action => ({ key, label, hint: bonus, button: t("Drop", "Faire apparaître"), trial: false });
   const extras: Action[] = [
     {
+      key: "whole_quest",
+      label: t("Whole easter egg (Spaceland)", "Tout le secret (Spaceland)"),
+      hint: t(
+        "Every step of the main easter egg, one after the other, from wherever the match is up to the soul key. A few minutes: messages in game follow it.",
+        "Toutes les étapes du grand secret, l'une après l'autre, depuis là où en est la partie jusqu'à la clé d'âme. Quelques minutes : des messages en jeu suivent l'avancée.",
+      ),
+      button: t("Run", "Lancer"),
+      trial: true,
+    },
+    {
       key: "upgrade_weapons",
       label: "Pack-a-Punch",
       hint: t("Every player's weapons go up one level. Again for the next level.", "Les armes de tous les joueurs montent d'un niveau. Encore une fois pour le niveau suivant."),
@@ -377,7 +387,8 @@ function makeView(language: Lang): View {
     },
   ];
 
-  // Choices from the script's lists (src/picks.rs), a few of each.
+  // Choices from the script's lists (src/picks.rs), a few of each, numbered as the script would.
+  const list = (labels: string[]) => labels.map((label, index) => ({ index, label }));
   const picks: Pick[] = [
     {
       key: "card",
@@ -385,7 +396,7 @@ function makeView(language: Lang): View {
       hint: t("Its effect starts right away, without using a card from your deck. A card with a duration stops at its end.", "Son effet démarre tout de suite, sans utiliser de carte du paquet. Une carte à durée s'arrête à la fin."),
       button: t("Use", "Utiliser"),
       trial: true,
-      options: ["Nade Party (Fate)", "Mana Up (Fate)", "Black Hole Fun (Fortune)", "Kabooom! (Fortune)", "Packin' Heat (Fortune)"],
+      options: list(["Nade Party (Fate)", "Mana Up (Fate)", "Black Hole Fun (Fortune)", "Kabooom! (Fortune)", "Packin' Heat (Fortune)"]),
     },
     {
       key: "weapon",
@@ -394,7 +405,7 @@ function makeView(language: Lang): View {
       button: t("Get", "Obtenir"),
       trial: true,
       // Long enough to show the search field.
-      options: [
+      options: list([
         "Dischord (Spaceland)",
         "Face Melter (Spaceland)",
         "Headcutter (Spaceland)",
@@ -409,7 +420,7 @@ function makeView(language: Lang): View {
         "R3K",
         "Volk",
         "Widowmaker",
-      ],
+      ]),
     },
     {
       key: "craftable",
@@ -417,7 +428,7 @@ function makeView(language: Lang): View {
       hint: t("Ready to place, as if built at the crafting station. Only on the maps named.", "Prêt à poser, comme s'il sortait de l'atelier. Seulement sur les cartes indiquées."),
       button: t("Get", "Obtenir"),
       trial: true,
-      options: [t("Sentry turret (Spaceland, Rave, Shaolin)", "Tourelle (Spaceland, Rave, Shaolin)"), t("Boombox (Spaceland, Rave, Shaolin)", "Boombox (Spaceland, Rave, Shaolin)")],
+      options: list([t("Sentry turret (Spaceland, Rave, Shaolin)", "Tourelle (Spaceland, Rave, Shaolin)"), t("Boombox (Spaceland, Rave, Shaolin)", "Boombox (Spaceland, Rave, Shaolin)")]),
     },
     {
       key: "zombie",
@@ -425,7 +436,7 @@ function makeView(language: Lang): View {
       hint: t("Appears a few steps in front of you. Only the kinds the current map has; bosses are not offered.", "Apparaît à quelques pas devant vous. Seulement les types que la carte possède ; les boss ne sont pas proposés."),
       button: t("Spawn", "Faire apparaître"),
       trial: true,
-      options: ["Zombie", "Clown (Spaceland)", "Brute", t("Grey alien", "Extraterrestre gris")],
+      options: list(["Zombie", "Clown (Spaceland)", "Brute", t("Grey alien", "Extraterrestre gris")]),
     },
     {
       key: "place",
@@ -433,7 +444,7 @@ function makeView(language: Lang): View {
       hint: t("Teleports you there. Again for the next one of the same kind, when the map has several.", "Vous y téléporte. Encore une fois pour le suivant du même genre, quand la carte en a plusieurs."),
       button: t("Go", "Y aller"),
       trial: true,
-      options: [t("Next zone of the map", "Zone suivante de la carte"), t("Fast travel portal", "Portail de voyage rapide"), "Pack-a-Punch", t("Mystery wheel", "Roue mystère"), t("Perk machine", "Machine à atout"), t("Fate & Fortune machine", "Machine Fate & Fortune"), t("Crafting station", "Atelier")],
+      options: list([t("Next zone of the map", "Zone suivante de la carte"), t("Fast travel portal", "Portail de voyage rapide"), "Pack-a-Punch", t("Mystery wheel", "Roue mystère"), t("Perk machine", "Machine à atout"), t("Fate & Fortune machine", "Machine Fate & Fortune"), t("Crafting station", "Atelier")]),
     },
     {
       key: "pace",
@@ -441,7 +452,7 @@ function makeView(language: Lang): View {
       hint: t("For every zombie, new ones included, until set back to Normal.", "Pour tous les zombies, nouveaux compris, jusqu'au retour à Normale."),
       button: t("Apply", "Appliquer"),
       trial: true,
-      options: [t("Normal", "Normale"), t("All fast", "Tous rapides"), t("All slow", "Tous lents")],
+      options: list([t("Normal", "Normale"), t("All fast", "Tous rapides"), t("All slow", "Tous lents")]),
     },
     {
       key: "quest",
@@ -452,11 +463,11 @@ function makeView(language: Lang): View {
       ),
       button: t("Validate", "Valider"),
       trial: true,
-      options: [
+      options: list([
         t("Spaceland 1: the DJ's three parts", "Spaceland 1 : les trois pièces du DJ"),
         t("Spaceland 2: Pack-a-Punch portal", "Spaceland 2 : portail du Pack-a-Punch"),
         t("Spaceland 12: destroy the UFO (soul key)", "Spaceland 12 : détruire l'OVNI (clé d'âme)"),
-      ],
+      ]),
     },
   ];
 
@@ -484,6 +495,8 @@ function makeView(language: Lang): View {
     picks,
     // `?client=mod`: the game is iw7-mod.
     modClient: game !== "absent" && params.get("client") === "mod",
+    // In a match on iw7-mod, the script reports its map.
+    map: playing && params.get("client") === "mod" ? "Spaceland" : null,
     keys,
     savedPosition: playing ? [1204, -388, 64] : null,
     character: game === "absent" ? null : 0,

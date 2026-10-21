@@ -290,15 +290,18 @@ compiled when a Zombies match loads. To remove it, delete that file.
 - **From the window**: page **Match**, section **iw7-mod extras**, shown only when the game is
   `iw7-mod.exe`. The tool writes the command's number into a script field, `level.command_given`, which the
   script reads ten times a second; nothing is written there on the Steam game. Each one can get a key in
-  `[hotkeys]` (names in the table).
+  `[hotkeys]` (names in the table). In a match, the script also tells the window which map it runs on: the
+  section then only lists what has a use there (the map's own weapons, traps, zombies and easter egg steps,
+  plus what works everywhere). In the menus, everything is listed.
 - **From the iw7-mod console**: `set iwh <command>`, or bind a key once, for example `bind F5 "set iwh pap"`.
   This works without the tool.
 
 | Window (`[hotkeys]` name) | Console | Effect |
 | --- | --- | --- |
+| Whole easter egg, Spaceland (`whole_quest`), trial | `quest` | Every step of the map's main easter egg, one after the other, from wherever the match is up to the soul key; messages in game follow it. Spaceland only for now. |
 | Pack-a-Punch (`upgrade_weapons`) | `pap` | Every player's weapons go up one Pack-a-Punch level; again for the next level. |
 | Kill every zombie (`kill_all`) | `killall` | Every zombie alive, at once (bosses may resist). |
-| Open doors and turn on power (`open_doors`) | `doors` | What the game's direct boss fight mode runs: the map's own way to turn on the power and open its doors. |
+| Open doors and turn on power (`open_doors`) | `doors` | What the game's direct boss fight mode does at its start: generators on, paid doors opened for free, team door switches used. |
 | All perks (`all_perks`) | `perks` | Every perk the map has, given the way a perk machine does. |
 | Mystery weapon (`box_weapon`) | `weapon` | A random weapon from the map's list, in place of the one in hand if you carry the maximum. |
 | Change character (`next_character`) | `character` | The next of the map's characters, hidden ones included (Hasselhoff and Wyler on Spaceland, Kevin Smith on Rave, Pam Grier on Shaolin). Characters of another map are not possible: each map only loads its own. |

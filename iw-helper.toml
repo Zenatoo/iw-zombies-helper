@@ -8,7 +8,7 @@ process_names = ["iw7_ship.exe", "iw7-mod.exe"]
 [interface]
 # Language of the interface, the log and the command line: "en" (English) or "fr" (Français).
 # Full survey files stay in French.
-language = "en"
+language = "fr"
 
 # --- Processor ----------------------------------------------------------------
 # Writes nothing into the game's memory: affinity + priority, like Task Manager.
@@ -114,6 +114,7 @@ horde = ""
 gun_game = ""
 match_stats = ""
 keep_weapons = ""
+whole_quest = ""
 # The last choice made in each list of the iw7-mod extras, again.
 repeat_card = ""
 repeat_weapon = ""

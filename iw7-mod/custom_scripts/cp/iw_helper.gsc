@@ -38,6 +38,7 @@
 //   gungame        switch gun game on or off: a random weapon every 5 kills
 //   stats          show or hide a timer and the zombies killed
 //   keep           switch on or off: your weapons come back when you get up after going down
+//   quest          the map's whole main easter egg, step after step, up to its end (Spaceland)
 // From the window only: a Fate & Fortune card, a weapon, a crafted trap, a zombie, a place to go to or the
 // zombies' speed, chosen in a list.
 //   drop <bonus>   drop a bonus in front of you: ammo, kill, instakill, cash, upgrade, fire, infinite,
@@ -45,8 +46,9 @@
 //   bonuses        list the bonuses of this map
 //   help           list the commands
 
-// The mailbox: iw-helper writes 7700 + a command number, the script runs it and writes
-// 7700 back. Numbers kept in step with OneShot::script_code in src/trainer.rs.
+// The mailbox: the script waits with 7600 + the map's number (idle_value), iw-helper writes 7700 + a
+// command number, the script runs it and writes its waiting value back. Numbers kept in step with
+// OneShot::script_code in src/trainer.rs.
 init()
 {
     setdvarifuninitialized("iwh", "");
@@ -61,13 +63,15 @@ init()
     setdvar("iwh_stats", 0);
     setdvar("iwh_keep", 0);
     setdvar("iwh_last_zombie", "");
-    level.command_given = 7700;
+    setdvar("iwh_quest_running", 0);
+    level.command_given = idle_value();
     level thread watch_commands();
 }
 
 watch_commands()
 {
     level endon("game_ended");
+    idle = idle_value();
 
     for (;;)
     {
@@ -78,10 +82,10 @@ watch_commands()
         if (!isdefined(player))
             continue;
 
-        if (level.command_given != 7700)
+        if (level.command_given >= 7700)
         {
             code = level.command_given - 7700;
-            level.command_given = 7700;
+            level.command_given = idle;
             run_code(player, code);
         }
 
@@ -96,6 +100,20 @@ watch_commands()
             argument = words[1];
         run_word(player, words[0], argument);
     }
+}
+
+// What the mailbox holds while waiting: 7600 plus the map's number, from 1 in the order of MAPS in
+// src/picks.rs (0 for a map not listed), so that the window knows the map without asking.
+idle_value()
+{
+    names = ["cp_zmb", "cp_rave", "cp_disco", "cp_town", "cp_final"];
+    for (i = 0; i < names.size; i++)
+    {
+        if (names[i] == level.script)
+            return 7601 + i;
+    }
+
+    return 7600;
 }
 
 // Commands from iw-helper, by number.
@@ -153,6 +171,7 @@ run_code(player, code)
         case 39: switch_gun_game(player); break;
         case 40: switch_stats(player); break;
         case 41: switch_keep_weapons(player); break;
+        case 42: level thread whole_quest(player); break;
         default: player iprintln("iw-helper: unknown command " + code); break;
     }
 }
@@ -189,9 +208,10 @@ run_word(player, command, argument)
         case "gungame": switch_gun_game(player); break;
         case "stats": switch_stats(player); break;
         case "keep": switch_keep_weapons(player); break;
+        case "quest": level thread whole_quest(player); break;
         case "drop": drop_bonus(player, argument); break;
         case "bonuses": list_bonuses(player); break;
-        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, xray, maxpap, revives, lucky, deck, money, bring, follow, horde, gungame, stats, keep, drop <bonus>, bonuses"); break;
+        default: player iprintln("iw-helper: pap, killall, doors, perks, weapon, character, revive, thirdperson, explosive, counter, rain, launch, burn, shock, sprint, xray, maxpap, revives, lucky, deck, money, bring, follow, horde, gungame, stats, keep, quest, drop <bonus>, bonuses"); break;
     }
 }
 
@@ -211,10 +231,15 @@ upgrade_weapons(player)
 
 kill_all(player)
 {
-    enemies = scripts\cp\cp_agent_utils::get_alive_enemies();
-    count = 0;
+    count = kill_enemies();
+    player iprintln("iw-helper: " + count + " zombies killed");
+}
 
-    foreach (enemy in enemies)
+// Every enemy alive, killed; how many.
+kill_enemies()
+{
+    count = 0;
+    foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
     {
         if (!isdefined(enemy) || !isalive(enemy))
             continue;
@@ -223,7 +248,7 @@ kill_all(player)
         count++;
     }
 
-    player iprintln("iw-helper: " + count + " zombies killed");
+    return count;
 }
 
 // Defined and true. The game's own version of this check fails to link from this script ("script link
@@ -1436,6 +1461,8 @@ set_quest_flag(name)
 }
 
 // Spaceland's "ufo" quest line, which ends with the soul key.
+// Each step of the game's sequence runs inside one thread of the quest: a step is never skipped by a
+// notification its function ends on ("endon"), which would end the whole quest with it.
 spaceland_step(player, step)
 {
     done = 1;
@@ -1451,15 +1478,14 @@ spaceland_step(player, step)
         case 2:
         case 3:
         case 4:
-            // The defense ends as if won; the game then waits for the speaker and the next round.
-            done = set_quest_flag("dj_request_defense_done");
-            wait 1;
-            level notify("speaker_defense_completed");
-            wait 0.1;
-            level notify("speaker_picked_up");
+            // The defense ends as if won; its step then waits for the speaker and a round start.
+            done = scripts\engine\utility::flag_exist("dj_request_defense_done");
+            if (done)
+                level thread push_speaker_defense();
             break;
         case 5:
-            level notify("stop_wait_one_wave");
+            // The step waits for the next round to start; that start's own signal ends it.
+            level notify("regular_wave_starting");
             break;
         case 6:
             done = set_quest_flag("tone_generators_given");
@@ -1471,22 +1497,15 @@ spaceland_step(player, step)
             done = set_quest_flag("tones_played_successfully");
             break;
         case 9:
-            // The sequence still stops on its debugging notification.
-            level notify("debug_beat_UFO_suicide_bomber");
-            if (isdefined(level.beam_trap_vfx))
-                level.beam_trap_vfx delete();
-            kill_all(player);
+            done = isdefined(level.num_ufo_zombies_killed);
+            if (done)
+                level thread finish_ufo_clowns(player);
             break;
         case 10:
-            level notify("complete_alien_grey_fight");
-            kill_all(player);
+            level thread finish_grey_fight(player);
             break;
         case 11:
-            // The only weapon the UFO takes damage from is the park's cannon: its own destruction follows.
-            if (isdefined(level.ufo))
-                level.ufo notify("damage", 100, player, (0, 0, 1), level.ufo.origin, "MOD_EXPLOSIVE", "", "", "", 0, "iw7_spaceland_wmd");
-            else
-                done = 0;
+            done = hit_ufo(player);
             break;
     }
 
@@ -1494,6 +1513,196 @@ spaceland_step(player, step)
         player iprintln("iw-helper: Spaceland step " + (step + 1) + " validated");
     else
         player iprintln("iw-helper: Spaceland step " + (step + 1) + " not reached yet");
+}
+
+// A speaker defense, won: requested from the DJ, completed, the speaker picked up and a round
+// started, the four things its step waits for in turn.
+push_speaker_defense()
+{
+    scripts\engine\utility::flag_set("dj_request_defense_done");
+    wait 0.3;
+    level notify("speaker_defense_completed");
+    wait 0.3;
+    level notify("speaker_picked_up");
+    level notify("regular_wave_starting");
+}
+
+// The UFO's clowns: it spawns 51 of them over about half a minute and leaves once 50 are dead. They
+// are killed as they come. 1 once the 50 are dead, 0 after three minutes without it.
+finish_ufo_clowns(player)
+{
+    level endon("game_ended");
+    for (waited = 0; !isdefined(level.num_ufo_zombies_killed) || level.num_ufo_zombies_killed < 50; waited++)
+    {
+        if (waited >= 360)
+            return 0;
+
+        kill_enemies();
+        wait 0.5;
+    }
+
+    return 1;
+}
+
+// The greys: the fight ends with the last grey's death, the game's own way, so they are killed as
+// soon as they appear. 1 once none is left, 0 after three minutes without it.
+finish_grey_fight(player)
+{
+    level endon("game_ended");
+    seen = 0;
+    for (waited = 0; waited < 360; waited++)
+    {
+        if (isdefined(level.spawned_grey) && level.spawned_grey.size > 0)
+        {
+            seen = 1;
+            foreach (grey in level.spawned_grey)
+            {
+                if (isdefined(grey) && isalive(grey))
+                    grey dodamage(grey.health + 100, grey.origin);
+            }
+        }
+        else if (seen)
+        {
+            return 1;
+        }
+
+        wait 0.5;
+    }
+
+    return 0;
+}
+
+// The only weapon the UFO takes damage from is the park's cannon: a hit from it, and the UFO's own
+// destruction follows.
+hit_ufo(player)
+{
+    if (!isdefined(level.ufo))
+        return 0;
+
+    level.ufo notify("damage", 100, player, (0, 0, 1), level.ufo.origin, "MOD_EXPLOSIVE", "", "", "", 0, "iw7_spaceland_wmd");
+    return 1;
+}
+
+// --- Whole easter egg ---------------------------------------------------------------------------------
+
+// The map's whole main easter egg, from the step the match is at. One run at a time.
+whole_quest(player)
+{
+    if (getdvarint("iwh_quest_running") == 1)
+    {
+        player iprintln("iw-helper: the easter egg is already running");
+        return;
+    }
+
+    if (level.script != "cp_zmb")
+    {
+        player iprintln("iw-helper: the whole easter egg is not available on this map yet: use its steps");
+        return;
+    }
+
+    setdvar("iwh_quest_running", 1);
+    whole_spaceland(player);
+    setdvar("iwh_quest_running", 0);
+}
+
+// Spaceland's UFO quest up to the soul key. Each step is pushed the way its own button does, then the
+// next waits until the game has truly moved on: its flag created, its fight started.
+whole_spaceland(player)
+{
+    level endon("game_ended");
+
+    if (!scripts\engine\utility::flag_exist("dj_fetch_quest_completed"))
+    {
+        player iprintln("iw-helper: Spaceland's easter egg has not started yet");
+        return;
+    }
+
+    quest_news(player, "1/12, the DJ's parts");
+    scripts\engine\utility::flag_set("dj_fetch_quest_completed");
+
+    // The portal, the three defenses and the round after them wait for signals: sent again until the
+    // tone generators' step has begun, each pass moving the quest one step at most.
+    quest_news(player, "2-6/12, portal, speaker defenses, one round");
+    for (waited = 0; !scripts\engine\utility::flag_exist("tone_generators_given"); waited++)
+    {
+        if (waited >= 120)
+            return quest_stuck(player, "2-6");
+
+        set_quest_flag("pap_portal_used");
+        level notify("wave_start_sound_done");
+        if (scripts\engine\utility::flag_exist("dj_request_defense_done"))
+            push_speaker_defense();
+        else
+            wait 0.6;
+
+        wait 0.5;
+    }
+
+    quest_news(player, "7/12, tone generators");
+    scripts\engine\utility::flag_set("tone_generators_given");
+    if (!wait_quest_flag("all_center_positions_used", 60))
+        return quest_stuck(player, 8);
+
+    quest_news(player, "8/12, tone generators placed");
+    scripts\engine\utility::flag_set("all_center_positions_used");
+    if (!wait_quest_flag("tones_played_successfully", 60))
+        return quest_stuck(player, 9);
+
+    // The UFO first flies to the middle of the park, as when the players play the tones.
+    for (waited = 0; waited < 60 && !(scripts\engine\utility::flag_exist("ufo_intro_reach_center_portal") && scripts\engine\utility::flag("ufo_intro_reach_center_portal")); waited++)
+        wait 0.5;
+
+    quest_news(player, "9/12, the UFO's tones");
+    scripts\engine\utility::flag_set("tones_played_successfully");
+
+    quest_news(player, "10/12, the UFO's clowns");
+    if (!finish_ufo_clowns(player))
+        return quest_stuck(player, 10);
+
+    quest_news(player, "11/12, the greys");
+    if (!finish_grey_fight(player))
+        return quest_stuck(player, 11);
+
+    // The end of the grey fight takes five seconds before the last step begins.
+    wait 8;
+    quest_news(player, "12/12, the UFO");
+    for (waited = 0; !(scripts\engine\utility::flag_exist("ufo_quest_finished") && scripts\engine\utility::flag("ufo_quest_finished")); waited++)
+    {
+        if (waited >= 30)
+            return quest_stuck(player, 12);
+
+        if (!scripts\engine\utility::flag("ufo_destroyed"))
+            hit_ufo(player);
+
+        wait 2;
+    }
+
+    quest_news(player, "done, the soul key drops");
+}
+
+// Waits up to that many seconds for a quest flag to exist, which the game does when the step that
+// uses it begins.
+wait_quest_flag(name, seconds)
+{
+    for (waited = 0; waited < seconds * 2; waited++)
+    {
+        if (scripts\engine\utility::flag_exist(name))
+            return 1;
+
+        wait 0.5;
+    }
+
+    return 0;
+}
+
+quest_news(player, text)
+{
+    player iprintlnbold("Easter egg: " + text);
+}
+
+quest_stuck(player, step)
+{
+    player iprintlnbold("Easter egg stopped at step " + step + ": the game did not move on");
 }
 
 // Rave's main quest: Kevin Smith's three mementos (each found, charged in a circle fight, then given

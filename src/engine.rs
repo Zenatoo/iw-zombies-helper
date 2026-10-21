@@ -103,6 +103,8 @@ pub struct Snapshot {
     pub watching: bool,
     /// Code of the character requested for the next match, when the profile is readable.
     pub character: Option<u8>,
+    /// Map of the match ("cp_zmb"…), as the iw7-mod script reports it; `None` elsewhere.
+    pub map: Option<&'static str>,
     /// In launcher mode: the game is closed, there is nothing left to follow.
     pub finished: bool,
 }
@@ -459,6 +461,9 @@ impl Worker {
             self.log.line(tr("Match ended.", "Partie terminée."));
         }
         s.in_match = in_match;
+        if let Some(trainer) = s.trainer.as_mut() {
+            trainer.follow_script_map(&s.game);
+        }
         if in_match {
             // The round variable can only be captured during the first match: we watch for it.
             if let Some((name, neighbours)) = s.trainer.as_mut().and_then(|trainer| trainer.learn_round_variable(&s.game)) {
@@ -707,6 +712,7 @@ impl Worker {
         };
         snapshot.watching = s.watch.is_some();
         snapshot.character = if s.memory && s.recognised == Some(true) { profile::read_character(&s.game) } else { None };
+        snapshot.map = s.trainer.as_ref().and_then(Trainer::script_map);
     }
 
     fn close(&mut self, s: Session) {

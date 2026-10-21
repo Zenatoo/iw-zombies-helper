@@ -48,9 +48,10 @@ export interface Action {
   trial: boolean;
 }
 
-/** A choice from one of the iw7-mod script's lists: the page sends the chosen index. */
+/** A choice from one of the iw7-mod script's lists: the page sends the chosen option's index. */
 export interface Pick extends Action {
-  options: string[];
+  /** The choices that have a use on the current map, each with its index in the script's list. */
+  options: { index: number; label: string }[];
 }
 
 export interface Group {
@@ -110,6 +111,9 @@ export interface View {
   picks: Pick[];
   /** The game is iw7-mod: script extras are offered, account actions are not. */
   modClient: boolean;
+  /** Name of the match's map once the iw7-mod script has reported it; extras and lists then keep
+   * what has a use there. `null` in the menus, where everything is listed. */
+  map: string | null;
   keys: { allOff: string; savePosition: string; teleport: string };
   savedPosition: [number, number, number] | null;
   /** Code of the character requested for the next match, when the profile is readable. */

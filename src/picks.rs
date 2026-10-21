@@ -4,6 +4,31 @@
 
 use crate::lang::tr;
 
+/// The Zombies maps, as the game names them (`level.script`) and as the labels name them. The
+/// script reports the map by its number here, from 1, in its mailbox.
+pub const MAPS: [(&str, &str); 5] = [
+    ("cp_zmb", "Spaceland"),
+    ("cp_rave", "Rave"),
+    ("cp_disco", "Shaolin"),
+    ("cp_town", "Radioactive Thing"),
+    ("cp_final", "Beast from Beyond"),
+];
+
+/// Name of a map in the labels ("Spaceland" for "cp_zmb").
+pub fn map_label(map: &str) -> Option<&'static str> {
+    MAPS.iter().find(|(name, _)| *name == map).map(|&(_, label)| label)
+}
+
+/// Whether something labelled this way has a use on that map: a label ending with maps in brackets,
+/// "Medusa (Spaceland, Rave)", is for those maps only; any other label is for every map.
+pub fn label_fits(label: &str, map: &str) -> bool {
+    let Some(inside) = label.strip_suffix(')').and_then(|rest| rest.rsplit_once('(')).map(|(_, inside)| inside) else {
+        return true;
+    };
+    let named: Vec<&str> = inside.split(", ").filter(|word| MAPS.iter().any(|(_, label)| label == word)).collect();
+    named.is_empty() || map_label(map).is_some_and(|wanted| named.contains(&wanted))
+}
+
 /// One choice: the script's name for it, then its label in English and in French.
 pub struct Entry {
     pub script: &'static str,
@@ -14,6 +39,15 @@ pub struct Entry {
 impl Entry {
     pub fn label(&self) -> &'static str {
         tr(self.en, self.fr)
+    }
+
+    /// Whether the choice has a use on that map: an easter egg step belongs to the map its script
+    /// name starts with; the other choices go by their label (`label_fits`).
+    pub fn fits(&self, map: &str) -> bool {
+        match self.script.split_once('|') {
+            Some((prefix, _)) if map_label(prefix).is_some() => prefix == map,
+            _ => label_fits(self.en, map),
+        }
     }
 }
 
@@ -435,5 +469,25 @@ mod tests {
         assert_eq!(codes.len(), count);
         assert!(codes.iter().all(|code| (100..1000).contains(code)));
         assert_eq!(Pick::Zombie.code(Pick::Zombie.entries().len()), None);
+    }
+
+    #[test]
+    fn each_map_keeps_its_own_choices_and_the_shared_ones() {
+        let shown = |pick: Pick, map: &str| pick.entries().iter().filter(|entry| entry.fits(map)).map(|entry| entry.en).collect::<Vec<_>>();
+        // Easter egg steps: those of the map only, all of them.
+        let steps = shown(Pick::Quest, "cp_zmb");
+        assert_eq!(steps.len(), 12);
+        assert!(steps.iter().all(|label| label.starts_with("Spaceland ")));
+        assert_eq!(MAPS.iter().map(|(map, _)| shown(Pick::Quest, map).len()).sum::<usize>(), QUEST_STEPS.len());
+        // Labels with maps in brackets: on those maps; without: everywhere.
+        let rave = shown(Pick::Craftable, "cp_rave");
+        assert!(rave.contains(&"Medusa (Spaceland, Rave)") && !shown(Pick::Craftable, "cp_disco").contains(&"Medusa (Spaceland, Rave)"));
+        assert!(shown(Pick::Weapon, "cp_final").contains(&"Venom-X (Beast from Beyond)") && shown(Pick::Weapon, "cp_final").contains(&"Volk"));
+        assert!(!shown(Pick::Weapon, "cp_final").contains(&"Dischord (Spaceland)"));
+        assert_eq!(shown(Pick::Card, "cp_town").len(), CARDS.len());
+        assert!(label_fits("Small crab (Radioactive Thing)", "cp_town") && !label_fits("Small crab (Radioactive Thing)", "cp_zmb"));
+        // Brackets that name no map do not hide anything.
+        assert!(label_fits("Something (other)", "cp_zmb"));
+        assert_eq!((map_label("cp_disco"), map_label("mp_frontend")), (Some("Shaolin"), None));
     }
 }

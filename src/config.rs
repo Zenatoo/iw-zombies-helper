@@ -184,6 +184,7 @@ fn default_hotkeys() -> BTreeMap<String, String> {
         ("gun_game", ""),
         ("match_stats", ""),
         ("keep_weapons", ""),
+        ("whole_quest", ""),
         // The last choice made in each of the script's lists, again.
         ("repeat_card", ""),
         ("repeat_weapon", ""),

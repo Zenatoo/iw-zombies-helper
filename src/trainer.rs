@@ -13,9 +13,10 @@
 
 use crate::config;
 use crate::lang::{self, tr, trs};
-use crate::picks::Pick;
+use crate::picks::{self, Pick};
 use crate::process::Process;
 use crate::state::Pending;
+use std::time::{Duration, Instant};
 use windows_sys::Win32::Media::Audio::{PlaySoundW, SND_ASYNC, SND_MEMORY, SND_NODEFAULT};
 
 pub(crate) const BASE: usize = 0x1_4000_0000;
@@ -137,11 +138,14 @@ const CARD_METER_MAX_NAME: u32 = 0x4563;
 const TICKETS_NAME: u32 = 0xC206;
 /// `level.command_given`: the mailbox of the iw7-mod script (iw7-mod/custom_scripts/cp/iw_helper.gsc).
 /// A name from the public list that no Zombies script gives `level` (only zombie agents use it). The
-/// script keeps it at `SCRIPT_READY`, runs the command written as `SCRIPT_READY + code`, then puts
-/// it back.
+/// script waits with `SCRIPT_IDLE` plus the map's number (`picks::MAPS`, from 1; 0 for a map it does
+/// not know), runs the command written as `SCRIPT_COMMAND + code`, then puts its waiting value back.
 const SCRIPT_MAILBOX_NAME: u32 = 0x441A;
-const SCRIPT_READY: i32 = 7_700;
-const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_READY..=SCRIPT_READY + 999;
+const SCRIPT_IDLE: i32 = 7_600;
+const SCRIPT_COMMAND: i32 = 7_700;
+const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_IDLE..=SCRIPT_COMMAND + 999;
+/// How often the map is read from the mailbox, which takes a walk through `level` when its slot moved.
+const SCRIPT_MAP_PERIOD: Duration = Duration::from_secs(1);
 
 // --- Server-side players (`client_t`, 0xAEA98 bytes per player) ------------------------------
 /// `svs_clients`: pointer to the server's player array, allocated when the match starts.
@@ -645,16 +649,18 @@ pub enum OneShot {
     GunGame,
     MatchStats,
     KeepWeapons,
+    WholeQuest,
 }
 
 impl OneShot {
-    pub const ALL: [OneShot; 39] = [
+    pub const ALL: [OneShot; 40] = [
         OneShot::RefillAmmo,
         OneShot::AddMoney,
         OneShot::WeakenZombies,
         OneShot::EndRound,
         OneShot::ChargeCards,
         OneShot::AddTickets,
+        OneShot::WholeQuest,
         OneShot::UpgradeWeapons,
         OneShot::KillAll,
         OneShot::OpenDoors,
@@ -732,6 +738,7 @@ impl OneShot {
             OneShot::GunGame => "gun_game",
             OneShot::MatchStats => "match_stats",
             OneShot::KeepWeapons => "keep_weapons",
+            OneShot::WholeQuest => "whole_quest",
         }
     }
 
@@ -776,6 +783,8 @@ impl OneShot {
             OneShot::GunGame => tr("Gun game", "Gun game"),
             OneShot::MatchStats => tr("Timer and kills", "Chrono et kills"),
             OneShot::KeepWeapons => tr("Keep weapons", "Garder ses armes"),
+            // The maps in brackets: the window offers it on those only (`picks::label_fits`).
+            OneShot::WholeQuest => tr("Whole easter egg (Spaceland)", "Tout le secret (Spaceland)"),
         }
     }
 
@@ -820,6 +829,10 @@ impl OneShot {
             OneShot::GunGame => tr("Switches on or off: every 5 zombies killed, the weapon in hand becomes a random one.", "S'active ou se coupe : tous les 5 zombies tués, l'arme en main est remplacée au hasard."),
             OneShot::MatchStats => tr("Shows on screen the time since switched on and the zombies killed since. Again to hide it.", "Affiche à l'écran le temps écoulé et les zombies tués depuis l'activation. Encore une fois pour le cacher."),
             OneShot::KeepWeapons => tr("Switches on or off: the weapons you carried come back when you get up after going down.", "S'active ou se coupe : vos armes reviennent quand vous vous relevez après être tombé."),
+            OneShot::WholeQuest => tr(
+                "Every step of the main easter egg, one after the other, from wherever the match is up to the soul key. A few minutes: messages in game follow it.",
+                "Toutes les étapes du grand secret, l'une après l'autre, depuis là où en est la partie jusqu'à la clé d'âme. Quelques minutes : des messages en jeu suivent l'avancée.",
+            ),
         }
     }
 
@@ -845,6 +858,7 @@ impl OneShot {
                 tr("Switch", "Basculer")
             }
             OneShot::MaxPap => tr("Upgrade", "Améliorer"),
+            OneShot::WholeQuest => tr("Run", "Lancer"),
             OneShot::RefillDeck => tr("Refill", "Recharger"),
             OneShot::MoneyForAll => tr("Give", "Donner"),
             OneShot::BringPlayers => tr("Bring", "Ramener"),
@@ -865,7 +879,7 @@ impl OneShot {
     /// True as long as the action has not been seen working on the real game. The other iw7-mod
     /// extras were seen working, from the console and from the window, on 2026-10-16.
     pub fn trial(self) -> bool {
-        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint | OneShot::XRay | OneShot::MaxPap | OneShot::UnlimitedRevives | OneShot::BonusOnKill | OneShot::RefillDeck | OneShot::MoneyForAll | OneShot::BringPlayers | OneShot::GoToPlayer | OneShot::Horde | OneShot::GunGame | OneShot::MatchStats | OneShot::KeepWeapons)
+        matches!(self, OneShot::Revive | OneShot::ThirdPerson | OneShot::ExplosiveBullets | OneShot::ZombieCounter | OneShot::BonusRain | OneShot::LaunchZombies | OneShot::BurnZombies | OneShot::ShockZombies | OneShot::SuperSprint | OneShot::XRay | OneShot::MaxPap | OneShot::UnlimitedRevives | OneShot::BonusOnKill | OneShot::RefillDeck | OneShot::MoneyForAll | OneShot::BringPlayers | OneShot::GoToPlayer | OneShot::Horde | OneShot::GunGame | OneShot::MatchStats | OneShot::KeepWeapons | OneShot::WholeQuest)
     }
 
     /// Number of the command for the iw7-mod script, for the actions it carries out. Keep in step
@@ -905,6 +919,7 @@ impl OneShot {
             OneShot::GunGame => 39,
             OneShot::MatchStats => 40,
             OneShot::KeepWeapons => 41,
+            OneShot::WholeQuest => 42,
             _ => return None,
         })
     }
@@ -968,6 +983,9 @@ pub struct Trainer {
     paused_zombies: Option<i32>,
     /// Slot of each `level` field already found, so its whole partition is not read again on every pass.
     level_slots: std::collections::HashMap<u32, usize>,
+    /// Map the iw7-mod script says it runs on (`picks::MAPS` name), and when it was last read.
+    script_map: Option<&'static str>,
+    script_map_read: Option<Instant>,
 }
 
 impl Trainer {
@@ -992,7 +1010,33 @@ impl Trainer {
             cash_scalar: None,
             paused_zombies: None,
             level_slots: std::collections::HashMap::new(),
+            script_map: None,
+            script_map_read: None,
         }
+    }
+
+    /// Reads, at most once per `SCRIPT_MAP_PERIOD`, which map the iw7-mod script runs on. Nothing
+    /// outside iw7-mod or a match, or while the script is busy with a command (the last map stays).
+    pub fn follow_script_map(&mut self, p: &Process) {
+        if !p.name.eq_ignore_ascii_case(config::MOD_CLIENT) || !in_match(p) {
+            self.script_map = None;
+            return;
+        }
+        if self.script_map_read.is_some_and(|read| read.elapsed() < SCRIPT_MAP_PERIOD) {
+            return;
+        }
+        self.script_map_read = Some(Instant::now());
+        match self.level_int(p, SCRIPT_MAILBOX_NAME, &SANE_MAILBOX) {
+            Some((_, value)) if value < SCRIPT_COMMAND => self.script_map = map_of_idle(value),
+            Some(_) => {}
+            None => self.script_map = None,
+        }
+    }
+
+    /// Map of the match, as the iw7-mod script reported it: `None` on Steam, in the menus, or
+    /// without the script.
+    pub fn script_map(&self) -> Option<&'static str> {
+        self.script_map
     }
 
     /// `level` integer named by its name, if it is within bounds: its slot and value.
@@ -1280,7 +1324,8 @@ impl Trainer {
             | OneShot::Horde
             | OneShot::GunGame
             | OneShot::MatchStats
-            | OneShot::KeepWeapons => self.send_to_script(p, action),
+            | OneShot::KeepWeapons
+            | OneShot::WholeQuest => self.send_to_script(p, action),
         }
     }
 
@@ -1307,10 +1352,10 @@ impl Trainer {
         let (index, current) = self
             .level_int(p, SCRIPT_MAILBOX_NAME, &SANE_MAILBOX)
             .ok_or(tr("iw7-mod script not loaded, see the README", "script iw7-mod non chargé, voir le README"))?;
-        if current != SCRIPT_READY {
+        if current >= SCRIPT_COMMAND {
             return Err(tr("the script is busy, try again", "le script est occupé, réessayez"));
         }
-        if !write_child_int(p, index, SCRIPT_READY + code) {
+        if !write_child_int(p, index, SCRIPT_COMMAND + code) {
             return Err(tr("write refused", "écriture refusée"));
         }
         Ok(tr("sent to the script", "envoyé au script").to_string())
@@ -1331,6 +1376,8 @@ impl Trainer {
         self.cash_scalar = None;
         self.paused_zombies = None;
         self.level_slots.clear();
+        self.script_map = None;
+        self.script_map_read = None;
     }
 
     /// What this session changed in the game and has not restored yet: what must be undone if the
@@ -1737,6 +1784,12 @@ fn level_int(p: &Process, name: u32, sane: &std::ops::RangeInclusive<i32>, cache
     let still_there = cached.and_then(|index| read_child(p, index).map(|var| (index, var))).filter(|(_, var)| var.name == name && is_field_of(var, level));
     let (index, var) = still_there.or_else(|| object_fields(p, level).into_iter().find(|(_, var)| var.name == name))?;
     (var.kind == VAR_INTEGER && sane.contains(&var.value)).then_some((index, var.value))
+}
+
+/// Map named by the script's waiting value: `SCRIPT_IDLE` plus the map's number, 0 for none it knows.
+fn map_of_idle(value: i32) -> Option<&'static str> {
+    let number = usize::try_from(value - SCRIPT_IDLE).ok()?;
+    picks::MAPS.get(number.checked_sub(1)?).map(|&(name, _)| name)
 }
 
 /// Writes an integer into the slot of a script field already read.

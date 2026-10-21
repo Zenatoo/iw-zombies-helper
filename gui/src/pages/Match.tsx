@@ -29,9 +29,9 @@ function PickRow({ pick, disabled, act }: PickRowProps) {
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState("");
   const wanted = search.trim().toLowerCase();
-  // The options that match the search, each with its index in the full list (the one the script knows).
-  const shown = pick.options.map((label, at) => ({ label, at })).filter(({ label }) => label.toLowerCase().includes(wanted));
-  const chosen = shown.find(({ at }) => at === index) ?? shown[0];
+  // The options that match the search, each with its index in the script's list.
+  const shown = pick.options.filter(({ label }) => label.toLowerCase().includes(wanted));
+  const chosen = shown.find((option) => option.index === index) ?? shown[0];
   return (
     <Row label={pick.label} hint={pick.hint} trial={pick.trial} off={disabled}>
       {pick.options.length > SEARCHABLE && (
@@ -50,9 +50,9 @@ function PickRow({ pick, disabled, act }: PickRowProps) {
         value={chosen ? shown.indexOf(chosen) : 0}
         options={chosen ? shown.map(({ label }) => label) : [t("Nothing found", "Aucun résultat")]}
         disabled={disabled || !chosen}
-        onChange={(position) => setIndex(shown[position]?.at ?? index)}
+        onChange={(position) => setIndex(shown[position]?.index ?? index)}
       />
-      <button type="button" className="btn" disabled={disabled || !chosen} onClick={() => chosen && act(api.runPick(pick.key, chosen.at))}>
+      <button type="button" className="btn" disabled={disabled || !chosen} onClick={() => chosen && act(api.runPick(pick.key, chosen.index))}>
         {pick.button}
       </button>
     </Row>
@@ -189,10 +189,14 @@ export function Match({ view, act }: Props) {
       {extras.length > 0 && (
         <Section
           title={t("iw7-mod extras", "Extras iw7-mod")}
-          note={t(
-            "Carried out by the iw_helper.gsc script, which iw7-mod loads from its custom_scripts folder: see the README, iw7-mod extras.",
-            "Réalisés par le script iw_helper.gsc, qu'iw7-mod charge depuis son dossier custom_scripts : voir le README, iw7-mod extras.",
-          )}
+          note={
+            view.map
+              ? t(`Map: ${view.map}. Only what has a use on it is listed.`, `Carte : ${view.map}. Seul ce qui sert sur cette carte est proposé.`)
+              : t(
+                  "Carried out by the iw_helper.gsc script, which iw7-mod loads from its custom_scripts folder: see the README, iw7-mod extras.",
+                  "Réalisés par le script iw_helper.gsc, qu'iw7-mod charge depuis son dossier custom_scripts : voir le README, iw7-mod extras.",
+                )
+          }
         >
           {extras.map((action) => (
             <Row key={action.key} label={action.label} hint={action.hint} trial={action.trial} off={!playing}>
