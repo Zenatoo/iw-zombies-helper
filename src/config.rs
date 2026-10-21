@@ -22,6 +22,7 @@ pub struct Config {
     pub fps: Fps,
     pub trainer: Trainer,
     pub interface: Interface,
+    pub launch: Launcher,
     /// Action name -> key name. An empty string removes the shortcut.
     pub hotkeys: BTreeMap<String, String>,
 }
@@ -85,6 +86,51 @@ pub struct Interface {
     pub language: Lang,
 }
 
+/// What the tool starts when Steam starts it (`-- %command%`), on an install that also has iw7-mod.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct Launcher {
+    pub game: LaunchGame,
+}
+
+#[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq)]
+pub enum LaunchGame {
+    /// A window asks each time, when iw7-mod is in the game folder.
+    #[default]
+    #[serde(rename = "ask")]
+    Ask,
+    /// The game Steam gives, as without iw7-mod.
+    #[serde(rename = "steam")]
+    Steam,
+    /// iw7-mod, from the game folder.
+    #[serde(rename = "iw7-mod")]
+    Mod,
+}
+
+impl LaunchGame {
+    pub const ALL: [LaunchGame; 3] = [LaunchGame::Ask, LaunchGame::Steam, LaunchGame::Mod];
+
+    /// Value written in the configuration file.
+    pub fn key(self) -> &'static str {
+        match self {
+            LaunchGame::Ask => "ask",
+            LaunchGame::Steam => "steam",
+            LaunchGame::Mod => "iw7-mod",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|game| game.key() == key)
+    }
+}
+
+/// iw7-mod's executable in the folder of the game Steam starts (`%command%`), if this install has it.
+pub fn mod_client_beside(command: &[String]) -> Option<PathBuf> {
+    let game = command.iter().map(Path::new).find(|arg| arg.file_name().is_some_and(|name| name.eq_ignore_ascii_case(STEAM_CLIENT)))?;
+    let exe = game.parent()?.join(MOD_CLIENT);
+    exe.is_file().then_some(exe)
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Trainer {
@@ -104,6 +150,7 @@ impl Default for Config {
             fps: Fps::default(),
             trainer: Trainer::default(),
             interface: Interface::default(),
+            launch: Launcher::default(),
             hotkeys: default_hotkeys(),
         }
     }
@@ -429,5 +476,26 @@ mod tests {
         assert_eq!(c.cpu.max_cores, 6);
         let updated = set_in_document(&updated, "cpu", "priority", Setting::Text("normal")).unwrap();
         assert_eq!(parse(&updated).unwrap().cpu.priority, Priority::Normal);
+        let updated = set_in_document(&updated, "launch", "game", Setting::Text(LaunchGame::Mod.key())).unwrap();
+        assert_eq!(parse(&updated).unwrap().launch.game, LaunchGame::Mod);
+    }
+
+    #[test]
+    fn the_game_to_launch_is_asked_by_default_and_iw7_mod_is_found_next_to_steam_s() {
+        assert_eq!(parse("").unwrap().launch.game, LaunchGame::Ask);
+        assert_eq!(parse("[launch]\ngame = \"steam\"").unwrap().launch.game, LaunchGame::Steam);
+        assert!(parse("[launch]\ngame = \"mod\"").is_err());
+        assert!(LaunchGame::ALL.iter().all(|&game| LaunchGame::from_key(game.key()) == Some(game)));
+
+        let folder = std::env::temp_dir().join(format!("iw-helper-launch-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).unwrap();
+        let command = vec![folder.join("iw7_ship.exe").to_string_lossy().into_owned(), "-some_flag".to_string()];
+        // Without iw7-mod in the folder: nothing to offer.
+        assert_eq!(mod_client_beside(&command), None);
+        std::fs::write(folder.join(MOD_CLIENT), b"").unwrap();
+        assert_eq!(mod_client_beside(&command), Some(folder.join(MOD_CLIENT)));
+        // Steam's command without the game in it: nothing either.
+        assert_eq!(mod_client_beside(&["-some_flag".to_string()]), None);
+        std::fs::remove_dir_all(&folder).unwrap();
     }
 }

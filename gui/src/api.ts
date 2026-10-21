@@ -86,6 +86,9 @@ export interface Settings {
   onTop: boolean;
   /** Confirmation sound on actions and shortcuts. */
   sound: boolean;
+  /** The game started when Steam starts the tool: "ask", "steam" or "iw7-mod". Without iw7-mod in the
+   * game folder (`modInstalled` false), the Steam game starts whatever it says. */
+  launch: { game: string; choices: { key: string; label: string }[]; modInstalled: boolean };
 }
 
 export interface View {
@@ -165,6 +168,7 @@ export const api = {
   applyWindowsSettings: () => call<void>("apply_windows_settings"),
   setOnTop: (on: boolean) => call<void>("set_on_top", { on }),
   setSound: (on: boolean) => call<void>("set_sound", { on }),
+  setLaunchGame: (game: string) => call<void>("set_launch_game", { game }),
   setLanguage: (language: Lang) => call<void>("set_language", { language }),
   openLogs: () => call<void>("open_logs"),
 };

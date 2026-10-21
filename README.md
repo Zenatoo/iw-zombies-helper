@@ -135,6 +135,12 @@ In Steam: right-click the game > Properties > General > Launch options, and past
 
 Then start the game from Steam as usual. The tool's window opens with the game and closes with it.
 
+**With iw7-mod installed** (`iw7-mod.exe` in the game folder), a small window first asks which game to
+start: **Infinite Warfare (Steam)** or **iw7-mod**. Tick *Remember this choice* to skip it next time; Settings >
+Launch from Steam changes it back (`[launch] game` in `iw-helper.toml`: `"ask"`, `"steam"` or `"iw7-mod"`).
+Closing the window starts nothing. Without iw7-mod in the game folder, nothing is asked: the Steam game
+starts as before. The memory options still follow `memory.allow_steam_client` for the Steam game.
+
 Why through Steam: the engine measures the CPU at startup and again during play. If the affinity changes
 in between, the two measures differ and the game asks "Apply optimal settings?" on every launch. Started
 by the tool, the game inherits the affinity from its very first moment. Opening `iw-helper-gui.exe` by hand

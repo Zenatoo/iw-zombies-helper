@@ -18,6 +18,9 @@ serde = { version = "1", features = ["derive"] }
 # "custom-protocol": the pages from gui/dist are built into the executable, even by a plain
 # `cargo build`. So there is nothing to serve or download while the program runs.
 tauri = { version = "2", features = ["custom-protocol"] }
+# The window asking which game to start (Windows task dialog, from comctl32 6, which the executable's
+# manifest asks for).
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_UI_Controls", "Win32_UI_WindowsAndMessaging"] }
 
 [dev-dependencies]
 # The tests check the names of the fields sent to the pages.

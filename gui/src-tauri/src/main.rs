@@ -3,9 +3,10 @@
 //! clicks on to it. This is the program the Steam launch options start.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod launch_choice;
 mod view;
 
-use iw_helper::config::{self, Config, Priority, Setting};
+use iw_helper::config::{self, Config, LaunchGame, Priority, Setting};
 use iw_helper::engine::{Command, Engine, Launch, Snapshot};
 use iw_helper::lang::{self, tr, trs, Lang};
 use iw_helper::logbook::Logbook;
@@ -121,6 +122,7 @@ fn view(app: State<App>) -> view::View {
         graphics: inner.game_exe.as_ref().map(|_| &inner.graphics),
         on_top: inner.on_top,
         log_path: app.log.path().map(|path| path.display().to_string()),
+        mod_installed: inner.game_exe.as_ref().is_some_and(|exe| config::mod_client_beside(std::slice::from_ref(exe)).is_some()),
     })
 }
 
@@ -254,6 +256,14 @@ fn set_sound(app: State<App>, on: bool) {
     }
 }
 
+/// Game started when Steam starts the tool, on an install that also has iw7-mod; used from the next launch.
+#[tauri::command]
+fn set_launch_game(app: State<App>, game: String) {
+    if let Some(game) = LaunchGame::from_key(&game) {
+        app.set("launch", "game", Setting::Text(game.key()), |config| config.launch.game = game);
+    }
+}
+
 #[tauri::command]
 fn apply_windows_settings(app: State<App>) {
     let mut inner = app.inner.lock().unwrap();
@@ -349,6 +359,29 @@ fn main() {
     if let Some(error) = &load_error {
         log.line(error);
     }
+    let mut config = config;
+    // Started by Steam on an install that also has iw7-mod: the game started is the one chosen.
+    if let Some(mod_exe) = config::mod_client_beside(&game_command) {
+        let game = match config.launch.game {
+            LaunchGame::Ask => {
+                let answer = launch_choice::ask();
+                if let (Some(game), true) = (answer.game, answer.remember) {
+                    config.launch.game = game;
+                    if let Err(e) = config::save(&config_path, "launch", "game", Setting::Text(game.key())) {
+                        log.line(trs(format!("Choice not saved: {e}"), format!("Choix non enregistré : {e}")));
+                    }
+                }
+                answer.game
+            }
+            chosen => Some(chosen),
+        };
+        match game {
+            Some(LaunchGame::Mod) => game_command = vec![mod_exe.to_string_lossy().into_owned()],
+            Some(_) => {}
+            // The window was closed: nothing starts, and Steam sees the game closed.
+            None => return,
+        }
+    }
     let wrapped = !game_command.is_empty();
     // The engine starts, and starts the game if needed, before the window and its web view exist:
     // the game does not wait for the interface, and the web view does not inherit the game's affinity.
@@ -413,6 +446,7 @@ fn main() {
             set_priority,
             set_fps,
             set_sound,
+            set_launch_game,
             apply_windows_settings,
             set_on_top,
             set_language,

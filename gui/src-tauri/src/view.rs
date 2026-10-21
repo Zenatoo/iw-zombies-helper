@@ -2,7 +2,7 @@
 //! ready to display. The pages (gui/src) decide nothing; `gui/src/api.ts` describes the same data
 //! on the TypeScript side.
 
-use iw_helper::config::{self, Config, Priority};
+use iw_helper::config::{self, Config, LaunchGame, Priority};
 use iw_helper::engine::{FeatureState, Game, Snapshot};
 use iw_helper::lang::{self, tr, trs};
 use iw_helper::picks::{self, Pick};
@@ -166,6 +166,18 @@ pub struct Settings {
     pub on_top: bool,
     /// Confirmation sound on actions and shortcuts.
     pub sound: bool,
+    pub launch: LaunchSettings,
+}
+
+/// The game started when Steam starts the tool.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LaunchSettings {
+    /// "ask", "steam" or "iw7-mod".
+    pub game: &'static str,
+    pub choices: Vec<Choice>,
+    /// iw7-mod.exe is in the game folder: without it, the Steam game starts whatever the setting.
+    pub mod_installed: bool,
 }
 
 #[derive(Serialize)]
@@ -225,6 +237,8 @@ pub struct Input<'a> {
     pub graphics: Option<&'a GraphicsSettings>,
     pub on_top: bool,
     pub log_path: Option<String>,
+    /// iw7-mod.exe is in the folder of the game.
+    pub mod_installed: bool,
 }
 
 pub fn build(input: &Input) -> View {
@@ -394,6 +408,20 @@ fn settings(input: &Input) -> Settings {
             .map(|graphics| WindowsSettings { dedicated_gpu: graphics.dedicated_gpu, windowed_optimizations_off: graphics.windowed_optimizations_off }),
         on_top: input.on_top,
         sound: config.trainer.sound,
+        launch: LaunchSettings {
+            game: config.launch.game.key(),
+            choices: LaunchGame::ALL.iter().map(|&game| Choice { key: game.key(), label: launch_label(game) }).collect(),
+            mod_installed: input.mod_installed,
+        },
+    }
+}
+
+/// Short name of a game to start, to fit a three-choice selector.
+fn launch_label(game: LaunchGame) -> &'static str {
+    match game {
+        LaunchGame::Ask => tr("Ask", "Demander"),
+        LaunchGame::Steam => "Steam",
+        LaunchGame::Mod => "iw7-mod",
     }
 }
 
@@ -580,7 +608,7 @@ mod tests {
     fn tweaks_and_actions_are_listed_with_the_names_the_pages_expect() {
         let (config, cores) = (Config::default(), [0b11]);
         let view = |snapshot: &Snapshot| {
-            build(&Input { snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: None, on_top: false, log_path: None })
+            build(&Input { snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: None, on_top: false, log_path: None, mod_installed: false })
         };
         // Without a game: settings are listed at their original value.
         let idle = view(&Snapshot::default());
@@ -614,9 +642,9 @@ mod tests {
             value.as_object().map(|object| object.keys().map(String::as_str).collect()).unwrap_or_default()
         }
         let (config, cores, graphics, snapshot) = (Config::default(), [0b11], GraphicsSettings::default(), demo_snapshot());
-        let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None });
+        let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None, mod_installed: false });
         let json = serde_json::to_value(&view).unwrap();
-        let expected: [(&serde_json::Value, &[&str]); 16] = [
+        let expected: [(&serde_json::Value, &[&str]); 17] = [
             (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "modClient", "map", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
             (&json["message"], &["text", "tone"]),
             (&json["groups"][0], &["title", "options"]),
@@ -629,7 +657,8 @@ mod tests {
             (&json["keys"], &["allOff", "savePosition", "teleport"]),
             (&json["characters"][0], &["code", "name", "map"]),
             (&json["hotkeys"][0], &["label", "key"]),
-            (&json["settings"], &["cpu", "fps", "windows", "onTop", "sound"]),
+            (&json["settings"], &["cpu", "fps", "windows", "onTop", "sound", "launch"]),
+            (&json["settings"]["launch"], &["game", "choices", "modInstalled"]),
             (&json["settings"]["cpu"], &["enabled", "smt", "cores", "coreCount", "priority", "priorities", "outcome", "threads", "totalThreads"]),
             (&json["settings"]["fps"], &["enabled", "limit", "effective"]),
             (&json["settings"]["windows"], &["dedicatedGpu", "windowedOptimizationsOff"]),
@@ -647,7 +676,7 @@ mod tests {
     fn script_extras_are_kept_apart_and_offered_on_iw7_mod_only() {
         let (config, cores, graphics) = (Config::default(), [0b11], GraphicsSettings::default());
         let mut snapshot = demo_snapshot();
-        let view_of = |snapshot: &Snapshot| build(&Input { snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None });
+        let view_of = |snapshot: &Snapshot| build(&Input { snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None, mod_installed: false });
         let steam = view_of(&snapshot);
         assert!(!steam.mod_client);
         assert!(steam.actions.iter().all(|row| row.key != "upgrade_weapons") && steam.extras.iter().any(|row| row.key == "upgrade_weapons"));
@@ -721,7 +750,7 @@ mod tests {
         let (config, cores, graphics) = (Config { trainer: config::Trainer { enabled: true, ..Default::default() }, ..Config::default() }, [0b11, 0b1100], GraphicsSettings::default());
         let mut snapshot = Snapshot::default();
         let view = |snapshot: &Snapshot, feedback: Option<&Feedback>| {
-            build(&Input { snapshot, config: &config, cores: &cores, start_tab: "accueil", accent: "#60cdff", notice: None, feedback, graphics: Some(&graphics), on_top: false, log_path: None })
+            build(&Input { snapshot, config: &config, cores: &cores, start_tab: "accueil", accent: "#60cdff", notice: None, feedback, graphics: Some(&graphics), on_top: false, log_path: None, mod_installed: false })
         };
         // Without a game: nothing responds, and the top line says to start it. Every option stays listed.
         let idle = view(&snapshot, None);

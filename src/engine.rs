@@ -271,6 +271,10 @@ impl Worker {
     fn spawn(&self, command: &[String]) -> Option<(u32, String)> {
         let mut game = std::process::Command::new(&command[0]);
         game.args(&command[1..]);
+        // Started from its own folder, as Steam does: iw7-mod looks for the game's files there.
+        if let Some(folder) = Path::new(&command[0]).parent().filter(|folder| folder.is_dir()) {
+            game.current_dir(folder);
+        }
         if self.config.cpu.enabled {
             if let Err(e) = process::set_current_affinity(self.mask) {
                 self.log.line(trs(format!("Affinity not applied: {e}"), format!("Affinité non appliquée : {e}")));

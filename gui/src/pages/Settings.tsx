@@ -25,12 +25,32 @@ function State({ ok, done, todo }: { ok: boolean; done: string; todo: string }) 
 }
 
 export function Settings({ view, act }: Props) {
-  const { cpu, fps, windows, onTop, sound } = view.settings;
+  const { cpu, fps, windows, onTop, sound, launch } = view.settings;
   return (
     <>
       <Section title={t("Language", "Langue")}>
         <Row label={t("Interface and log language", "Langue de l'interface et du journal")} hint={t("Saved in iw-helper.toml.", "Enregistrée dans iw-helper.toml.")}>
           <Segmented label={t("Language", "Langue")} value={view.language} choices={LANGUAGES} onChange={(language) => act(api.setLanguage(language))} />
+        </Row>
+      </Section>
+
+      <Section title={t("Launch from Steam", "Lancement depuis Steam")}>
+        <Row
+          label={t("Game to start", "Jeu à lancer")}
+          hint={
+            launch.modInstalled
+              ? t("iw7-mod is in the game folder. Ask: a window offers both at each launch.", "iw7-mod est dans le dossier du jeu. Demander : une fenêtre propose les deux à chaque lancement.")
+              : t("iw7-mod is not in the game folder: the Steam game starts.", "iw7-mod n'est pas dans le dossier du jeu : c'est le jeu Steam qui se lance.")
+          }
+          off={!launch.modInstalled}
+        >
+          <Segmented
+            label={t("Game to start", "Jeu à lancer")}
+            value={launch.game}
+            choices={launch.choices.map(({ key, label }) => ({ value: key, label }))}
+            disabled={!launch.modInstalled}
+            onChange={(game) => act(api.setLaunchGame(game))}
+          />
         </Row>
       </Section>
 

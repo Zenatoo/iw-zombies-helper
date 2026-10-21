@@ -538,6 +538,16 @@ function makeView(language: Lang): View {
       windows: { dedicatedGpu: true, windowedOptimizationsOff: false },
       onTop: false,
       sound: true,
+      launch: {
+        game: "ask",
+        choices: [
+          { key: "ask", label: t("Ask", "Demander") },
+          { key: "steam", label: "Steam" },
+          { key: "iw7-mod", label: "iw7-mod" },
+        ],
+        // `?client=mod`: this install has iw7-mod.
+        modInstalled: params.get("client") === "mod",
+      },
     },
     logPath: "C:\\iw-helper\\logs\\session-20261013-190214.log",
   };
@@ -657,6 +667,9 @@ export function respond(command: string, args: Record<string, unknown>): unknown
       return;
     case "set_sound":
       view.settings.sound = Boolean(args.on);
+      return;
+    case "set_launch_game":
+      view.settings.launch.game = String(args.game);
       return;
     default:
       return;

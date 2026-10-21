@@ -10,6 +10,13 @@ process_names = ["iw7_ship.exe", "iw7-mod.exe"]
 # Full survey files stay in French.
 language = "fr"
 
+# --- Launch from Steam ----------------------------------------------------------
+# When Steam starts the tool (launch options "...\iw-helper-gui.exe" -- %command%) and iw7-mod.exe
+# is in the game folder: "ask" (a window offers both, each time), "steam" (the Steam game) or
+# "iw7-mod". Without iw7-mod in the game folder, the Steam game starts, whatever this says.
+[launch]
+game = "ask"
+
 # --- Processor ----------------------------------------------------------------
 # Writes nothing into the game's memory: affinity + priority, like Task Manager.
 # No risk with the anti-cheat.
