@@ -783,8 +783,7 @@ impl OneShot {
             OneShot::GunGame => tr("Gun game", "Gun game"),
             OneShot::MatchStats => tr("Timer and kills", "Chrono et kills"),
             OneShot::KeepWeapons => tr("Keep weapons", "Garder ses armes"),
-            // The maps in brackets: the window offers it on those only (`picks::label_fits`).
-            OneShot::WholeQuest => tr("Whole easter egg (Spaceland)", "Tout le secret (Spaceland)"),
+            OneShot::WholeQuest => tr("Whole easter egg", "Tout le secret"),
         }
     }
 
@@ -830,8 +829,8 @@ impl OneShot {
             OneShot::MatchStats => tr("Shows on screen the time since switched on and the zombies killed since. Again to hide it.", "Affiche à l'écran le temps écoulé et les zombies tués depuis l'activation. Encore une fois pour le cacher."),
             OneShot::KeepWeapons => tr("Switches on or off: the weapons you carried come back when you get up after going down.", "S'active ou se coupe : vos armes reviennent quand vous vous relevez après être tombé."),
             OneShot::WholeQuest => tr(
-                "Every step of the main easter egg, one after the other, from wherever the match is up to the soul key. A few minutes: messages in game follow it.",
-                "Toutes les étapes du grand secret, l'une après l'autre, depuis là où en est la partie jusqu'à la clé d'âme. Quelques minutes : des messages en jeu suivent l'avancée.",
+                "Every step of the map's main easter egg, one after the other, from wherever the match is. A few minutes: messages in game follow it. Left to you: the Rat King's last fight, the crab's bomb code, the Beast's boss.",
+                "Toutes les étapes du grand secret de la carte, l'une après l'autre, depuis là où en est la partie. Quelques minutes : des messages en jeu suivent l'avancée. Restent pour vous : le dernier combat du Rat King, le code de la bombe du crabe, le boss de Beast.",
             ),
         }
     }

@@ -38,7 +38,7 @@
 //   gungame        switch gun game on or off: a random weapon every 5 kills
 //   stats          show or hide a timer and the zombies killed
 //   keep           switch on or off: your weapons come back when you get up after going down
-//   quest          the map's whole main easter egg, step after step, up to its end (Spaceland)
+//   quest          the map's whole main easter egg, step after step, from where the match is
 // From the window only: a Fate & Fortune card, a weapon, a crafted trap, a zombie, a place to go to or the
 // zombies' speed, chosen in a list.
 //   drop <bonus>   drop a bonus in front of you: ammo, kill, instakill, cash, upgrade, fire, infinite,
@@ -1651,14 +1651,29 @@ whole_quest(player)
         return;
     }
 
-    if (level.script != "cp_zmb")
+    setdvar("iwh_quest_running", 1);
+    switch (level.script)
     {
-        player iprintln("iw-helper: the whole easter egg is not available on this map yet: use its steps");
-        return;
+        case "cp_zmb":
+            whole_spaceland(player);
+            break;
+        case "cp_rave":
+            whole_rave(player);
+            break;
+        case "cp_disco":
+            whole_shaolin(player);
+            break;
+        case "cp_town":
+            whole_town(player);
+            break;
+        case "cp_final":
+            whole_beast(player);
+            break;
+        default:
+            player iprintln("iw-helper: no easter egg known on this map");
+            break;
     }
 
-    setdvar("iwh_quest_running", 1);
-    whole_spaceland(player);
     setdvar("iwh_quest_running", 0);
 }
 
@@ -1735,6 +1750,223 @@ whole_spaceland(player)
     }
 
     quest_news(player, "done, the soul key drops");
+}
+
+// Rave in the Redwoods: Kevin Smith's three mementos, each one found, its circle fight won, the charged
+// photo taken, the Slasher beaten and the photo it drops picked up, then given to Kevin; then the
+// survivor, the island and the Super Slasher, up to the soul key.
+whole_rave(player)
+{
+    level endon("game_ended");
+    circles = ["circle_org_arm", "circle_org_leg", "circle_org_head"];
+
+    for (k = 0; k < 3; k++)
+    {
+        quest_news(player, (k * 3 + 1) + "/11, memento " + (k + 1));
+        thing = getent("j_mem_" + (k + 1), "targetname");
+        circle = scripts\engine\utility::getstruct(circles[k], "targetname");
+        if (!isdefined(circle))
+            return quest_stuck(player, k * 3 + 1);
+
+        // The memento is picked up again and again until its circle shows the photo to place.
+        photo = undefined;
+        for (waited = 0; !isdefined(photo); waited++)
+        {
+            if (waited >= 360)
+                return quest_stuck(player, k * 3 + 1);
+            if (k == 0 && waited == 20)
+                player iprintlnbold("Easter egg: talk to Kevin Smith first");
+
+            if (isdefined(thing))
+                thing notify("trigger", player);
+            wait 0.5;
+            photo = rave_photo(circle);
+        }
+
+        quest_news(player, (k * 3 + 2) + "/11, circle fight " + (k + 1));
+        if (!rave_circle(player, photo))
+            return quest_stuck(player, k * 3 + 2);
+
+        // Kevin takes the first two photos once his own line is over; the third goes by itself.
+        if (k < 2)
+        {
+            quest_news(player, (k * 3 + 3) + "/11, the photo to Kevin");
+            set_quest_flag("photo_" + (k + 1) + "_kev_vo_done");
+        }
+
+        wait 3;
+    }
+
+    quest_news(player, "9/11, the survivor");
+    for (waited = 0; !set_quest_flag("survivor_released"); waited++)
+    {
+        if (waited >= 60)
+            return quest_stuck(player, 9);
+        wait 0.5;
+    }
+
+    quest_news(player, "10/11, to the island");
+    if (!wait_quest_flag("survivor_got_to_island", 120))
+        return quest_stuck(player, 10);
+    scripts\engine\utility::flag_set("survivor_got_to_island");
+
+    // The fight starts after its intro, about ten seconds.
+    quest_news(player, "11/11, the Super Slasher");
+    if (!wait_quest_flag("super_slasher_fight_complete", 120))
+        return quest_stuck(player, 11);
+    wait 10;
+    for (waited = 0; !scripts\engine\utility::flag("super_slasher_fight_complete"); waited++)
+    {
+        if (waited >= 30)
+            return quest_stuck(player, 11);
+
+        level notify("super_slasher_death");
+        wait 1;
+        foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+        {
+            if (isdefined(enemy) && isdefined(enemy.agent_type) && enemy.agent_type == "superslasher")
+                enemy suicide();
+        }
+
+        wait 1;
+    }
+
+    quest_news(player, "done, the soul key drops");
+}
+
+// The photo a circle fight starts from: an unnamed model the game puts on the ground under the circle.
+rave_photo(circle)
+{
+    foreach (thing in getentarray("script_model", "classname"))
+    {
+        if (!isdefined(thing.targetname) && distance2d(thing.origin, circle.origin) < 24 && abs(thing.origin[2] - circle.origin[2]) < 120)
+            return thing;
+    }
+
+    return undefined;
+}
+
+// One circle fight, from the photo placed to the photo picked up after the Slasher. The photo is only
+// placed with every player close by and out of rave mode, so the players are brought to it. The
+// game's own signals are then sent again until its loop ends, which deletes the photo: 1, or 0 after
+// four minutes.
+rave_circle(player, photo)
+{
+    level endon("game_ended");
+    for (i = 0; i < level.players.size; i++)
+    {
+        angle = i * 90;
+        level.players[i] setorigin(getclosestpointonnavmesh(photo.origin + (cos(angle) * 80, sin(angle) * 80, 0)) + (0, 0, 2));
+    }
+
+    for (waited = 0; waited < 480; waited++)
+    {
+        if (!isdefined(photo))
+            return 1;
+        if (waited == 10 && is_true(player.rave_mode))
+            player iprintlnbold("Easter egg: leave rave mode to start the circle");
+
+        // Placed, then taken once charged, then picked up where the Slasher dropped it.
+        photo notify("trigger", player);
+        level notify("speaker_defense_completed");
+        foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
+        {
+            if (isdefined(enemy) && isdefined(enemy.agent_type) && enemy.agent_type == "slasher")
+                enemy notify("fake_death");
+        }
+
+        wait 0.5;
+    }
+
+    return 0;
+}
+
+// Shaolin's soul key quest: each step, once the game has started it, then the next. The Rat King's
+// last fight, which follows, is the players' own.
+whole_shaolin(player)
+{
+    level endon("game_ended");
+    for (step = 0; step < 19; step++)
+    {
+        quest_news(player, (step + 1) + "/19");
+        for (waited = 0; !shaolin_try(step); waited++)
+        {
+            if (waited >= 360)
+                return quest_stuck(player, step + 1);
+            wait 0.5;
+        }
+
+        wait 3;
+    }
+
+    quest_news(player, "done, the Rat King's last fight is yours");
+}
+
+// Radioactive Thing: launch codes, chemistry and death ray, then the crab's phases. Their signals are
+// sent again until the fight ends: each phase only answers its own. Entering the bomb's code, at the
+// end, is the players' own.
+whole_town(player)
+{
+    level endon("game_ended");
+    for (step = 0; step < 15; step++)
+    {
+        quest_news(player, (step + 1) + "/20");
+        name = "";
+        if (step < 4)
+            name = "launchcode_step" + (step + 1);
+        else if (step < 8)
+            name = "chemistry_step" + (step - 3);
+        else
+            name = "deathray_step" + (step - 7);
+
+        for (waited = 0; !set_quest_flag(name); waited++)
+        {
+            if (waited >= 120)
+                return quest_stuck(player, step + 1);
+            wait 0.5;
+        }
+
+        wait 2;
+    }
+
+    quest_news(player, "16-20/20, the crab; enter the bomb's code at the end");
+    for (waited = 0; !(scripts\engine\utility::flag_exist("boss_fight_finished") && scripts\engine\utility::flag("boss_fight_finished")); waited++)
+    {
+        if (waited >= 300)
+            return quest_stuck(player, "16-20");
+
+        level notify("crab_boss_quest_completed");
+        level notify("escort_sequence_ended");
+        level notify("crab_boss_weak_spot_initial_hit");
+        wait 0.5;
+        level notify("crab_boss_weak_spot_hit", 9999999);
+        level notify("wall_of_death_completed");
+        level notify("sonic_ring_success");
+        wait 1.5;
+    }
+
+    quest_news(player, "done, the soul key drops");
+}
+
+// The Beast from Beyond: N31L's quest, one flag per step, each step given time to run its end. The boss
+// fight it leads to is the players' own.
+whole_beast(player)
+{
+    level endon("game_ended");
+    for (step = 0; step < 8; step++)
+    {
+        quest_news(player, (step + 1) + "/8");
+        for (waited = 0; !set_quest_flag(beast_flag(step)); waited++)
+        {
+            if (waited >= 120)
+                return quest_stuck(player, step + 1);
+            wait 0.5;
+        }
+
+        wait 4;
+    }
+
+    quest_news(player, "done, the boss fight is yours");
 }
 
 // Waits up to that many seconds for a quest flag to exist, which the game does when the step that
@@ -1874,6 +2106,14 @@ town_step(player, step)
 // Each entry: "flag that says the step started|flag to set".
 shaolin_step(player, step)
 {
+    if (shaolin_try(step))
+        player iprintln("iw-helper: Shaolin step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Shaolin step " + (step + 1) + " not reached yet");
+}
+
+shaolin_try(step)
+{
     steps = [
         "|skq_phase_1dbg",
         "skq_phase_1|skq_p2t1_0dbg",
@@ -1903,18 +2143,23 @@ shaolin_step(player, step)
 
     target = parts[parts.size - 1];
     if (!started || !scripts\engine\utility::flag_exist(target))
-    {
-        player iprintln("iw-helper: Shaolin step " + (step + 1) + " not reached yet");
-        return;
-    }
+        return 0;
 
     scripts\engine\utility::flag_set(target);
-    player iprintln("iw-helper: Shaolin step " + (step + 1) + " validated");
+    return 1;
 }
 
 // Beast from Beyond: each step of N31L's quest waits for one flag, the one the developers' own
 // shortcut sets.
 beast_step(player, step)
+{
+    if (set_quest_flag(beast_flag(step)))
+        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " validated");
+    else
+        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " not reached yet");
+}
+
+beast_flag(step)
 {
     flags = [
         "neil_head_found",
@@ -1927,10 +2172,7 @@ beast_step(player, step)
         "players_triggered_bossfight"
     ];
 
-    if (set_quest_flag(flags[step]))
-        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " validated");
-    else
-        player iprintln("iw-helper: Beast from Beyond step " + (step + 1) + " not reached yet");
+    return flags[step];
 }
 
 // --- Fun ------------------------------------------------------------------------------------------

@@ -691,10 +691,8 @@ mod tests {
         let rave = view_of(&snapshot);
         assert_eq!(rave.map, Some("Rave"));
         assert_eq!(quest(&rave), (12..23).collect::<Vec<_>>());
-        // The whole easter egg names its maps: not offered on Rave yet, offered on Spaceland.
-        assert!(rave.extras.iter().all(|row| row.key != "whole_quest") && menu.extras.iter().any(|row| row.key == "whole_quest"));
-        snapshot.map = Some("cp_zmb");
-        assert!(view_of(&snapshot).extras.iter().any(|row| row.key == "whole_quest"));
+        // The whole easter egg is for every map.
+        assert!(rave.extras.iter().any(|row| row.key == "whole_quest") && menu.extras.iter().any(|row| row.key == "whole_quest"));
     }
 
     #[test]
