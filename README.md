@@ -304,7 +304,7 @@ compiled when a Zombies match loads. To remove it, delete that file.
 
 | Window (`[hotkeys]` name) | Console | Effect |
 | --- | --- | --- |
-| Whole easter egg (`whole_quest`), trial | `quest` | Every step of the map's main easter egg, one after the other, from wherever the match is; messages in game follow it. Spaceland and Rave go up to the soul key (on Rave, the players are brought to each circle); left to the players: the Rat King's last fight on Shaolin, the bomb's code at the end of the crab on Radioactive Thing, and the boss fight N31L's quest leads to on Beast from Beyond. |
+| Whole easter egg (`whole_quest`), trial | `quest` | Every step of the map's main easter egg, one after the other, from wherever the match is; messages in game follow it. Spaceland, Rave and Radioactive Thing go up to the soul key (on Rave, the players are brought to each circle; on Radioactive Thing, the bomb cart goes to its end and the bomb's code is entered on every player's panel); left to the players: the Rat King's last fight on Shaolin and the boss fight N31L's quest leads to on Beast from Beyond. |
 | Pack-a-Punch (`upgrade_weapons`) | `pap` | Every player's weapons go up one Pack-a-Punch level; again for the next level. |
 | Kill every zombie (`kill_all`) | `killall` | Every zombie alive, at once (bosses may resist). |
 | Open doors and turn on power (`open_doors`) | `doors` | What the game's direct boss fight mode does at its start: generators on, paid doors opened for free, team door switches used. |

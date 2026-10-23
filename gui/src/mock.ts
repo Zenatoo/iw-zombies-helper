@@ -181,8 +181,8 @@ function makeView(language: Lang): View {
       key: "whole_quest",
       label: t("Whole easter egg", "Tout le secret"),
       hint: t(
-        "Every step of the map's main easter egg, one after the other, from wherever the match is. A few minutes: messages in game follow it. Left to you: the Rat King's last fight, the crab's bomb code, the Beast's boss.",
-        "Toutes les étapes du grand secret de la carte, l'une après l'autre, depuis là où en est la partie. Quelques minutes : des messages en jeu suivent l'avancée. Restent pour vous : le dernier combat du Rat King, le code de la bombe du crabe, le boss de Beast.",
+        "Every step of the map's main easter egg, one after the other, from wherever the match is. A few minutes: messages in game follow it. Left to you: the Rat King's last fight on Shaolin and the Beast's boss.",
+        "Toutes les étapes du grand secret de la carte, l'une après l'autre, depuis là où en est la partie. Quelques minutes : des messages en jeu suivent l'avancée. Restent pour vous : le dernier combat du Rat King sur Shaolin et le boss de Beast.",
       ),
       button: t("Run", "Lancer"),
       trial: true,

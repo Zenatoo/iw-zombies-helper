@@ -1902,9 +1902,9 @@ whole_shaolin(player)
     quest_news(player, "done, the Rat King's last fight is yours");
 }
 
-// Radioactive Thing: launch codes, chemistry and death ray, then the crab's phases. Their signals are
-// sent again until the fight ends: each phase only answers its own. Entering the bomb's code, at the
-// end, is the players' own.
+// Radioactive Thing: launch codes, chemistry and death ray, then the crab's phases up to its death: the
+// bomb cart taken to its end, the phases' signals sent again until the fight ends (each phase only
+// answers its own), and the bomb's code entered on every player's panel inside the crab.
 whole_town(player)
 {
     level endon("game_ended");
@@ -1929,23 +1929,114 @@ whole_town(player)
         wait 2;
     }
 
-    quest_news(player, "16-20/20, the crab; enter the bomb's code at the end");
+    // Some routes to the beach are behind doors.
+    quest_news(player, "16-20/20, the crab");
+    open_doors(player);
+    entered = 0;
     for (waited = 0; !(scripts\engine\utility::flag_exist("boss_fight_finished") && scripts\engine\utility::flag("boss_fight_finished")); waited++)
     {
         if (waited >= 300)
             return quest_stuck(player, "16-20");
 
         level notify("crab_boss_quest_completed");
-        level notify("escort_sequence_ended");
+        if (waited % 8 == 0)
+            level thread push_escort_vehicle();
         level notify("crab_boss_weak_spot_initial_hit");
         wait 0.5;
         level notify("crab_boss_weak_spot_hit", 9999999);
         level notify("wall_of_death_completed");
         level notify("sonic_ring_success");
+
+        // The players are inside the crab, weapons put away, while the bomb's timer runs.
+        if (player hasweapon("iw7_gunless_zm"))
+        {
+            if (!entered)
+            {
+                entered = 1;
+                wait 5;
+                enter_bomb_codes();
+            }
+        }
+        else
+        {
+            entered = 0;
+        }
+
         wait 1.5;
     }
 
     quest_news(player, "done, the soul key drops");
+}
+
+// The bomb cart: the game follows it from one node of its path to the next, each one triggered as the
+// cart passes it, and ends the escort at the last one, launching the bomb. Every node is triggered in
+// order, which ends the escort the game's own way.
+push_escort_vehicle()
+{
+    node = getvehiclenode("bomb_vehicle_start", "targetname");
+    for (i = 0; i < 300 && isdefined(node) && isdefined(node.target); i++)
+    {
+        node = getvehiclenode(node.target, "targetname");
+        if (!isdefined(node))
+            return;
+
+        node notify("trigger");
+        if (isdefined(node.script_noteworthy) && node.script_noteworthy == "bomb_vehicle_end")
+            return;
+
+        wait 0.05;
+    }
+}
+
+// After the sonic beam, the players go inside the crab: their codes are entered once they are there.
+enter_bomb_codes_inside(player)
+{
+    level endon("game_ended");
+    for (waited = 0; waited < 60; waited++)
+    {
+        if (player hasweapon("iw7_gunless_zm"))
+        {
+            wait 5;
+            enter_bomb_codes();
+            return;
+        }
+
+        wait 0.5;
+    }
+}
+
+// Inside the crab, every player has a panel and the same five-digit code, which the game also keeps
+// in an interface value. Each panel is opened as when its player uses it, then the digits are sent the
+// way the interface sends them.
+enter_bomb_codes()
+{
+    if (!isdefined(level.interactions) || !isdefined(level.interactions["bomb_start"]))
+        return;
+
+    code = getomnvar("zm_speaker_defense_timer");
+    digits = [];
+    for (i = 4; i >= 0; i--)
+    {
+        digits[i] = code % 10;
+        code = int(code / 10);
+    }
+
+    panels = scripts\engine\utility::getstructarray("bomb_start", "script_noteworthy");
+    foreach (other in level.players)
+        level thread enter_bomb_code_for(other, panels, digits);
+}
+
+enter_bomb_code_for(player, panels, digits)
+{
+    player endon("disconnect");
+    panel = scripts\engine\utility::getclosest(player.origin, panels);
+    level thread [[level.interactions["bomb_start"].activation_func]](panel, player);
+    wait 1.5;
+    for (i = 0; i < digits.size; i++)
+    {
+        player notify("luinotifyserver", "bomb_counter_digit", digits[i]);
+        wait 0.4;
+    }
 }
 
 // The Beast from Beyond: N31L's quest, one flag per step, each step given time to run its end. The boss
@@ -2077,7 +2168,7 @@ town_step(player, step)
                 level notify("crab_boss_quest_completed");
                 break;
             case 16:
-                level notify("escort_sequence_ended");
+                level thread push_escort_vehicle();
                 break;
             case 17:
                 // The weak spot's first hit, then enough damage to end the phase at once.
@@ -2090,6 +2181,7 @@ town_step(player, step)
                 break;
             case 19:
                 level notify("sonic_ring_success");
+                level thread enter_bomb_codes_inside(player);
                 break;
         }
     }
