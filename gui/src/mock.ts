@@ -477,11 +477,11 @@ function makeView(language: Lang): View {
     language,
     accent: "#60cdff",
     game,
-    state: { absent: t("Game not running", "Jeu non lancé"), menu: t("Game running, not in a match", "Jeu lancé, hors partie"), match: t("In a match", "En partie") }[game],
+    state: { absent: t("Game not running", "Jeu non lancé"), menu: t("Game running, no match hosted", "Jeu lancé, pas de partie hébergée"), match: t("In a match", "En partie") }[game],
     message: {
       absent: { text: t("Start Infinite Warfare from Steam: this window will follow it.", "Lancez Infinite Warfare depuis Steam : cette fenêtre le suivra."), tone: "guide" as const },
       menu: {
-        text: t("Options unlock once the round has started. The game runs on 12 threads.", "Les options se débloquent une fois la manche commencée. Le jeu tourne sur 12 threads."),
+        text: t("Options unlock once the round has started, in a match you host. The game runs on 12 threads.", "Les options se débloquent une fois la manche commencée, dans une partie que vous hébergez. Le jeu tourne sur 12 threads."),
         tone: "guide" as const,
       },
       match: { text: t("Click an option, or use its key in game. The game runs on 12 threads.", "Cliquez une option, ou utilisez sa touche en jeu. Le jeu tourne sur 12 threads."), tone: "guide" as const },

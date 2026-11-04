@@ -185,7 +185,8 @@ fullscreen, use Alt+Tab or the keyboard shortcuts.
 | Elvira | Attack of the Radioactive Thing |
 
 Choose in the lobby, before starting the match. The choice lasts for one match, on that character's map
-only; the game then goes back to the normal draw.
+only: the game reads it as the match loads, then goes back to the normal draw by itself. The page only shows
+that value and only writes it when you click, so a code typed in the game is not overwritten.
 
 ## Keyboard shortcuts
 

@@ -247,7 +247,7 @@ pub fn build(input: &Input) -> View {
     let (game, state) = match &snapshot.game {
         None => ("absent", tr("Game not running", "Jeu non lancé")),
         Some(game) if game.in_match => ("match", tr("In a match", "En partie")),
-        Some(_) => ("menu", tr("Game running, not in a match", "Jeu lancé, hors partie")),
+        Some(_) => ("menu", tr("Game running, no match hosted", "Jeu lancé, pas de partie hébergée")),
     };
     // A single line at the top: the current error, otherwise the last action's result, otherwise what to do.
     let message = match (input.notice, input.feedback) {
@@ -449,7 +449,7 @@ fn guidance(config: &Config, snapshot: &Snapshot) -> String {
     match game.recognised {
         Some(false) => tr("Game version not recognised: nothing will be changed.", "Version du jeu non reconnue : rien ne sera modifié.").to_string(),
         None => tr("Checking the game version…", "Contrôle de la version du jeu en cours…").to_string(),
-        Some(true) if !game.in_match => trs(format!("Options unlock once the round has started. The game runs on {threads} threads."), format!("Les options se débloquent une fois la manche commencée. Le jeu tourne sur {threads} threads.")),
+        Some(true) if !game.in_match => trs(format!("Options unlock once the round has started, in a match you host. The game runs on {threads} threads."), format!("Les options se débloquent une fois la manche commencée, dans une partie que vous hébergez. Le jeu tourne sur {threads} threads.")),
         Some(true) => trs(format!("Click an option, or use its key in game. The game runs on {threads} threads."), format!("Cliquez une option, ou utilisez sa touche en jeu. Le jeu tourne sur {threads} threads.")),
     }
 }

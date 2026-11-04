@@ -43,8 +43,8 @@ export function Lobby({ view, act }: Props) {
         </div>
         <p className="caption">
           {t(
-            "The choice lasts for one match, on the map shown. The game then goes back to Normal draw. Set it in the lobby, before starting the match.",
-            "Le choix vaut pour une seule partie, sur la carte indiquée. Le jeu revient ensuite à « Tirage normal ». À régler dans le salon, avant de lancer la partie.",
+            "The choice lasts for one match, on the map shown. Set it in the lobby, before starting the match: the game reads it as the match loads, then goes back to Normal draw by itself. This page only shows that value, and only writes it when you click.",
+            "Le choix vaut pour une seule partie, sur la carte indiquée. À régler dans le salon, avant de lancer la partie : le jeu le lit au chargement, puis revient de lui-même à « Tirage normal ». Cette page ne fait qu'afficher cette valeur, et ne l'écrit que si vous cliquez.",
           )}
         </p>
       </section>

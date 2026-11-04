@@ -925,7 +925,7 @@ impl OneShot {
 }
 
 fn not_in_match() -> &'static str {
-    tr("not in a match", "pas en partie")
+    tr("not in a match you host", "pas en partie, ou vous n'êtes pas l'hôte")
 }
 
 /// What was captured about the round variable when the fixed address pointed to it.
