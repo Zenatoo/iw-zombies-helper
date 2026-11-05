@@ -298,6 +298,12 @@ impl Config {
         self.memory.allow_steam_client || !process_name.eq_ignore_ascii_case(STEAM_CLIENT)
     }
 
+    /// iw7-mod registers its own FPS limit, `com_maxfps`, with its own default and saved in its settings:
+    /// the tool's limit is for the Steam game only.
+    pub fn fps_limit_applies_to(&self, process_name: &str) -> bool {
+        self.fps.enabled && !process_name.eq_ignore_ascii_case(MOD_CLIENT)
+    }
+
     /// Key bound to an action, if it has one.
     pub fn hotkey(&self, action: &str) -> Option<&str> {
         self.hotkeys.get(action).map(String::as_str).filter(|key| !key.trim().is_empty())
@@ -409,6 +415,16 @@ fn set_in_document(text: &str, table: &str, key: &str, value: Setting) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_fps_limit_leaves_iw7_mod_alone() {
+        let mut config = Config::default();
+        config.fps.enabled = true;
+        assert!(config.fps_limit_applies_to(STEAM_CLIENT));
+        assert!(!config.fps_limit_applies_to("IW7-Mod.exe"));
+        config.fps.enabled = false;
+        assert!(!config.fps_limit_applies_to(STEAM_CLIENT));
+    }
 
     #[test]
     fn empty_file_gives_safe_defaults() {

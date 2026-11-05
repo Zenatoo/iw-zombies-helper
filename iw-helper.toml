@@ -45,6 +45,7 @@ reapply_minutes = 0
 allow_steam_client = true
 
 # Sets the engine's internal FPS limit (91 frames per second by default in Zombies).
+# Steam game only: iw7-mod has its own limit, com_maxfps, which the tool leaves as it is.
 # The engine counts a frame's length in whole milliseconds: 240 gives 250 in practice,
 # 200 gives 200, 144 gives 166. The setting's original bounds (0 to 100) are not applied.
 [fps]

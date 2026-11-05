@@ -6,7 +6,7 @@ stutter fix, an FPS limit unlock, and a Zombies trainer, in one small Windows ap
 | Feature | What it does |
 | --- | --- |
 | CPU fix | Sets the game's CPU affinity and priority from the moment it starts. |
-| FPS limit | Replaces the engine's internal limit (91 FPS in Zombies) with the value you pick. |
+| FPS limit | Replaces the engine's internal limit (91 FPS in Zombies) with the value you pick. Steam game only: iw7-mod has its own limit, `com_maxfps`. |
 | Zombies trainer | God mode, no target, noclip, jump pack, infinite ammo and money, one-hit kill, pause zombies, game and movement speed, jump height, round change, teleport, and more. Solo and private matches, as the host. |
 | Lobby | Special character for the next match, contracts (bounties). |
 | Account | Read the profile, level 999, weapon XP, Director's Cut, account reset. |
@@ -251,7 +251,7 @@ it offers by itself; the rest is changed by hand, then takes effect when the gam
 | `[interface]` | `language`: `en` or `fr`. |
 | `[cpu]` | CPU fix: one thread per physical core or not (`smt`), number of cores, priority. |
 | `[memory]` | `allow_steam_client`: allows memory features on the Steam client. |
-| `[fps]` | FPS limit. The engine counts a frame in whole milliseconds: 240 requested gives 250 in practice, 144 gives 166. |
+| `[fps]` | FPS limit of the Steam game. The engine counts a frame in whole milliseconds: 240 requested gives 250 in practice, 144 gives 166. On iw7-mod the tool leaves the limit alone: set `com_maxfps` in its console. |
 | `[trainer]` | Zombies options: target game speed, infinite money amount, confirmation sound. |
 | `[hotkeys]` | One key per action; an empty string removes the shortcut. |
 
@@ -419,7 +419,7 @@ it will delete and asks before doing anything:
   nothing else is left in it;
 - the interface's data in `%LOCALAPPDATA%\fr.zen.iw-helper`;
 - if you say yes to a second question, the two Windows graphics settings the tool can apply to the game
-  (Settings page). Other options Windows keeps for the game are left as they are.
+  and to iw7-mod (Settings page). Other options Windows keeps for the game are left as they are.
 
 Then, in Steam, clear the game's launch options, otherwise the game will not start. Changes made to your
 profile or account from the Lobby and Account pages stay: they are part of the game save.

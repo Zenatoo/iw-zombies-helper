@@ -89,9 +89,14 @@ impl Inner {
         self.game_exe.as_deref().and_then(|exe| Path::new(exe).parent()).map(Path::to_path_buf)
     }
 
+    /// What depends on iw7-mod is read again every few seconds: it can arrive in the game folder at any
+    /// time, and the Windows settings then also have to be in place for it.
     fn mod_script_state(&mut self) -> mod_script::State {
         if let Some((state, _)) = self.mod_script.filter(|(_, read)| read.elapsed() < MOD_SCRIPT_CHECK) {
             return state;
+        }
+        if let Some(exe) = &self.game_exe {
+            self.graphics = winsettings::read(exe);
         }
         let state = self.game_folder().map_or(mod_script::State::NoClient, |folder| mod_script::state(&folder));
         self.mod_script = Some((state, Instant::now()));

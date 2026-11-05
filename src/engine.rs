@@ -328,6 +328,9 @@ impl Worker {
         if self.config.wants_memory() && !memory {
             self.log.line(trs(format!("FPS limit and trainer skipped: {} is VAC-protected (memory.allow_steam_client).", game.name), format!("FPS et trainer ignorés : {} est protégé par VAC (memory.allow_steam_client).", game.name)));
         }
+        if self.config.fps.enabled && !self.config.fps_limit_applies_to(&game.name) {
+            self.log.line(tr("FPS limit left to iw7-mod (com_maxfps).", "Limite de FPS laissée à iw7-mod (com_maxfps)."));
+        }
         if self.config.cpu.enabled {
             if late {
                 self.log.line(
@@ -384,7 +387,7 @@ impl Worker {
                 next_state = now + STATE_INTERVAL;
                 self.update_state(s);
             }
-            if s.memory && self.config.fps.enabled && s.recognised == Some(true) && now >= next_fps {
+            if s.memory && self.config.fps_limit_applies_to(&s.game.name) && s.recognised == Some(true) && now >= next_fps {
                 next_fps = now + FPS_INTERVAL;
                 if let FpsOutcome::Set { previous, limit } = trainer::set_fps_limit(&s.game, self.config.fps.limit) {
                     self.log.line(trs(format!("FPS limit set ({previous} -> {limit})."), format!("Limite de FPS réglée ({previous} -> {limit}).")));

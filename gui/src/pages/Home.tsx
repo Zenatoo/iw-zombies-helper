@@ -51,7 +51,10 @@ function cpuTile({ cpu }: Settings) {
   };
 }
 
-function fpsTile({ fps }: Settings) {
+function fpsTile({ fps }: Settings, modClient: boolean) {
+  if (modClient) {
+    return { value: t("iw7-mod's limit", "Limite d'iw7-mod"), detail: t("com_maxfps, in its console", "com_maxfps, dans sa console") };
+  }
   if (!fps.enabled) {
     return { value: t("Game limit", "Limite du jeu"), detail: t("91 frames per second in Zombies", "91 images par seconde en Zombies") };
   }
@@ -132,7 +135,7 @@ export function Home({ view, go, act }: Props) {
         <h2>{t("Before the match", "Avant la partie")}</h2>
         <div className="tiles">
           <Tile icon={DeveloperBoard20Regular} label={t("Processor", "Processeur")} {...cpuTile(view.settings)} onOpen={() => go("reglages")} />
-          <Tile icon={TopSpeed20Regular} label={t("Frames per second", "Images par seconde")} {...fpsTile(view.settings)} onOpen={() => go("reglages")} />
+          <Tile icon={TopSpeed20Regular} label={t("Frames per second", "Images par seconde")} {...fpsTile(view.settings, view.modClient)} onOpen={() => go("reglages")} />
           <Tile icon={Desktop20Regular} label={t("Windows, for this game", "Windows, pour ce jeu")} {...windowsTile(view.settings)} onOpen={() => go("reglages")} />
           <Tile icon={PersonStar20Regular} label={t("Character for the next match", "Personnage de la prochaine partie")} {...characterTile(view)} onOpen={() => go("salon")} />
         </div>

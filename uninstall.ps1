@@ -52,7 +52,7 @@ $gpuValues = @()
 if (Test-Path $gpuKey) {
     $values = Get-ItemProperty $gpuKey
     foreach ($property in $values.PSObject.Properties) {
-        if ($property.Name -like '*\iw7_ship.exe' -and "$($property.Value)" -match '(GpuPreference|SwapEffectUpgradeEnable)=') {
+        if ($property.Name -match '\\(iw7_ship|iw7-mod)\.exe$' -and "$($property.Value)" -match '(GpuPreference|SwapEffectUpgradeEnable)=') {
             $gpuValues += $property
         }
     }

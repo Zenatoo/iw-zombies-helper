@@ -2,10 +2,12 @@
 //!
 //! Two of them matter for Infinite Warfare: forcing the dedicated graphics card, and turning off the
 //! "optimizations for windowed games", a known cause of the game crashing on Windows 11.
-//! Windows keeps them in the user's registry, one value per executable.
+//! Windows keeps them in the user's registry, one value per executable: iw7-mod runs as its own process,
+//! so it needs its own value next to the Steam game's.
 
+use crate::config::MOD_CLIENT;
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use windows_sys::Win32::Foundation::ERROR_SUCCESS;
 use windows_sys::Win32::System::Registry::{RegGetValueW, RegSetKeyValueW, HKEY_CURRENT_USER, REG_SZ, RRF_RT_REG_BINARY, RRF_RT_REG_SZ};
 
@@ -35,12 +37,31 @@ pub fn default_game_exe() -> Option<PathBuf> {
     path.is_file().then_some(path)
 }
 
-pub fn read(exe: &str) -> GraphicsSettings {
-    parse(&read_raw(exe).unwrap_or_default())
+/// The programs that start the game: the given executable, and iw7-mod when it is next to it.
+fn executables(game_exe: &str) -> Vec<String> {
+    let beside = Path::new(game_exe).parent().map(|folder| folder.join(MOD_CLIENT)).filter(|client| client.is_file());
+    std::iter::once(game_exe.to_string()).chain(beside.map(|client| client.to_string_lossy().into_owned())).collect()
 }
 
-/// Applies the two recommended settings while keeping the other options already present.
-pub fn apply_recommended(exe: &str) -> io::Result<()> {
+/// A setting only counts as in place when every program that starts the game has it.
+fn all_of(settings: impl Iterator<Item = GraphicsSettings>) -> GraphicsSettings {
+    settings.fold(GraphicsSettings { dedicated_gpu: true, windowed_optimizations_off: true }, |all, one| GraphicsSettings {
+        dedicated_gpu: all.dedicated_gpu && one.dedicated_gpu,
+        windowed_optimizations_off: all.windowed_optimizations_off && one.windowed_optimizations_off,
+    })
+}
+
+pub fn read(game_exe: &str) -> GraphicsSettings {
+    all_of(executables(game_exe).iter().map(|exe| parse(&read_raw(exe).unwrap_or_default())))
+}
+
+/// Applies the two recommended settings to every program that starts the game.
+pub fn apply_recommended(game_exe: &str) -> io::Result<()> {
+    executables(game_exe).iter().try_for_each(|exe| apply_to(exe))
+}
+
+/// Keeps the other options already present for this executable.
+fn apply_to(exe: &str) -> io::Result<()> {
     let merged = merge_recommended(&read_raw(exe).unwrap_or_default());
     let (key, name, data) = (wide(KEY), wide(exe), wide(&merged));
     let size = (data.len() * 2) as u32;
@@ -132,6 +153,26 @@ mod tests {
             "AppStatus=0;GpuPreference=2;SwapEffectUpgradeEnable=0;"
         );
         assert!(parse(&merge_recommended("SwapEffectUpgradeEnable=0;")).is_recommended());
+    }
+
+    #[test]
+    fn iw7_mod_gets_the_settings_only_when_it_is_next_to_the_game() {
+        let folder = std::env::temp_dir().join(format!("iw-helper-winsettings-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).unwrap();
+        let game = folder.join("iw7_ship.exe").to_string_lossy().into_owned();
+        assert_eq!(executables(&game), std::slice::from_ref(&game));
+        std::fs::write(folder.join(MOD_CLIENT), b"").unwrap();
+        assert_eq!(executables(&game), [game.clone(), folder.join(MOD_CLIENT).to_string_lossy().into_owned()]);
+        std::fs::remove_dir_all(&folder).unwrap();
+    }
+
+    #[test]
+    fn a_setting_is_in_place_only_when_every_program_has_it() {
+        let done = GraphicsSettings { dedicated_gpu: true, windowed_optimizations_off: true };
+        let only_gpu = GraphicsSettings { dedicated_gpu: true, windowed_optimizations_off: false };
+        assert_eq!(all_of([done.clone()].into_iter()), done);
+        assert_eq!(all_of([done.clone(), only_gpu.clone()].into_iter()), only_gpu);
+        assert_eq!(all_of([done, GraphicsSettings::default()].into_iter()), GraphicsSettings::default());
     }
 
     #[test]

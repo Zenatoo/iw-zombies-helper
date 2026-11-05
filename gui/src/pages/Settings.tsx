@@ -95,7 +95,14 @@ export function Settings({ view, act }: Props) {
         </Row>
       </Section>
 
-      <Section title={t("Frames per second", "Images par seconde")}>
+      <Section
+        title={t("Frames per second", "Images par seconde")}
+        note={
+          view.modScript !== "none"
+            ? t("For the Steam game only. iw7-mod has its own limit, which the tool leaves as it is: com_maxfps, in its console.", "Pour le jeu Steam seulement. iw7-mod a sa propre limite, que l'outil laisse telle quelle : com_maxfps, dans sa console.")
+            : undefined
+        }
+      >
         <ToggleRow
           label={t("Replace the game's limit", "Remplacer la limite du jeu")}
           hint={t("The engine caps Zombies at 91 frames per second.", "Le moteur plafonne à 91 images par seconde en Zombies.")}
@@ -128,7 +135,7 @@ export function Settings({ view, act }: Props) {
               <State ok={windows.windowedOptimizationsOff} done={t("Off", "Coupées")} todo={t("To turn off", "À couper")} />
             </Row>
             {!(windows.dedicatedGpu && windows.windowedOptimizationsOff) && (
-              <Row label={t("Apply what is missing", "Appliquer ce qui manque")} hint={t("Writes both settings in Windows, for this game only.", "Écrit les deux réglages dans Windows, pour ce jeu seulement.")}>
+              <Row label={t("Apply what is missing", "Appliquer ce qui manque")} hint={t("Writes both settings in Windows, for this game and iw7-mod only.", "Écrit les deux réglages dans Windows, pour ce jeu et iw7-mod seulement.")}>
                 <button type="button" className="btn" data-accent="true" onClick={() => act(api.applyWindowsSettings())}>
                   {t("Apply", "Appliquer")}
                 </button>
