@@ -947,11 +947,11 @@ const RADIOACTIVE: MapGuide = {
           ],
         },
         {
-          title: ["Find the right colour", "Trouvez la bonne couleur"],
+          title: ["Find the map's colour", "Trouvez la couleur de la carte"],
           text: [
             [
-              "Read the number M on the wall right of the window, in the Motel Office. Multiply O by M. The TV beside Elvira gives ranges of numbers with a colour. Take the one that contains your result.",
-              "Lisez le nombre M sur le mur à droite de la fenêtre, dans le bureau du motel. Multipliez O par M. La télé à côté d'Elvira donne des plages de nombres avec une couleur. Prenez celle qui contient votre résultat.",
+              "One colour for the whole match and every ingredient: it doesn't depend on the ingredient. Read the number M on the wall right of the window, in the Motel Office. Multiply O by M. The TV beside Elvira gives ranges of numbers with a colour. Take the one that contains your result.",
+              "Une seule couleur pour toute la partie et tous les ingrédients : elle ne dépend pas de l'ingrédient. Lisez le nombre M sur le mur à droite de la fenêtre, dans le bureau du motel. Multipliez O par M. La télé à côté d'Elvira donne des plages de nombres avec une couleur. Prenez celle qui contient votre résultat.",
             ],
             [
               "Example: O × M = 106 and the TV says « < 107 Green, 107 - 109 Blue, > 109 Red »: the colour is green.",
@@ -961,11 +961,15 @@ const RADIOACTIVE: MapGuide = {
           shots: [town("M on the wall", "M sur le mur", "main_ee/m_number.webp"), town("The TV beside Elvira", "La télé à côté d'Elvira", "main_ee/elvira_tv.webp")],
         },
         {
-          title: ["Read the boards in that colour", "Lisez les tableaux dans cette couleur"],
+          title: ["Read the red and blue numbers", "Lisez les chiffres rouge et bleu"],
           text: [
             [
-              "Set the panel to the right colour first: in another colour the numbers are false. Each product has a diamond on one of the six boards, with a number on the left and one on top. Note both for everything your recipes use, including the products you make.",
-              "Réglez d'abord la console sur la bonne couleur : dans une autre, les nombres sont faux. Chaque produit a un losange sur l'un des six tableaux, avec un nombre à gauche et un en haut. Notez les deux pour tout ce que vos recettes utilisent, y compris les produits que vous fabriquez.",
+              "Set the panel to the map's colour first: all the diamonds change with it, and only that colour shows the right numbers. Within the match, in that colour, they don't move: note them once.",
+              "Réglez d'abord la console sur la couleur de la carte : tous les losanges changent avec elle, et seule cette couleur montre les bons chiffres. Pendant la partie, dans cette couleur, ils ne bougent plus : notez-les une fois.",
+            ],
+            [
+              "Each ingredient, and each product you make, has its own diamond on one of the six boards, with four numbers. Their corners are coloured the same way on every diamond: red on top, blue on the left, green on the right, white at the bottom. Only the red and the blue count; the other two are there to mislead.",
+              "Chaque ingrédient, et chaque produit fabriqué, a son propre losange sur l'un des six tableaux, avec quatre chiffres. Leurs coins ont les mêmes couleurs sur tous les losanges : rouge en haut, bleu à gauche, vert à droite, blanc en bas. Seuls le rouge et le bleu comptent ; les deux autres sont là pour tromper.",
             ],
           ],
           table: {
@@ -984,7 +988,7 @@ const RADIOACTIVE: MapGuide = {
             ],
           },
           shots: [
-            town("Reading a diamond", "Lire un losange", "main_ee/chemical_diamond_with_arrow.webp"),
+            town("A diamond: the arrows point at the red and the blue", "Un losange : les flèches montrent le rouge et le bleu", "main_ee/chemical_diamond_with_arrow.webp"),
             town("Example of a board", "Exemple de tableau", "main_ee/board_example.webp"),
             town("Board: spawn", "Tableau : départ", "main_ee/board_spawn.webp"),
             town("Board: Power Station", "Tableau : Power Station", "main_ee/board_power.webp"),
@@ -1022,15 +1026,15 @@ const RADIOACTIVE: MapGuide = {
           title: ["Run a reaction", "Lancez une réaction"],
           points: [
             ["Put each product on a square before the tubes, on the garage's table.", "Posez chaque produit sur une case devant les tubes, sur la table du garage."],
-            ["Work out the number: the left and top numbers of each product put in, all added together, minus O.", "Calculez le nombre : les nombres de gauche et du haut de chaque produit posé, tous additionnés, moins O."],
-            ["Enter it: look at a digit of the keypad and use it. Then press the big button.", "Entrez-le : regardez un chiffre du clavier et utilisez-le. Appuyez ensuite sur le gros bouton."],
+            ["Work out the reaction's code: for each product put in, its red number plus its blue number; add all of them, then take away O. The Chemistry page does this sum.", "Calculez le code de la réaction : pour chaque produit posé, son chiffre rouge plus son chiffre bleu ; additionnez le tout, puis retirez O. La page Chimie fait ce calcul."],
+            ["Type this code once on the table's keypad, one or two digits: look at a digit and use it. Then press the big button. One code per reaction, never one per ingredient.", "Tapez ce code une seule fois sur le clavier de la table, un ou deux chiffres : regardez un chiffre et utilisez-le. Appuyez ensuite sur le gros bouton. Un code par réaction, jamais un par ingrédient."],
             ["Success: gas shows at the edges of the screen and the product appears on the right of the garage.", "Réussite : du gaz apparaît sur les bords de l'écran et le produit arrive à droite du garage."],
             ["Failure: you lose almost all your health and the table is emptied. The number or a product was wrong, so check them before trying again.", "Échec : vous perdez presque toute votre vie et la table se vide. Le nombre ou un produit était faux : vérifiez-les avant de réessayer."],
           ],
           text: [
             [
-              "Worked example, with made-up numbers: O = 8. Phenol takes Insect Repellent (1 and 5), Motor Oil (7 and 2) and Wheel Cleaner (4 and 9). So 1 + 5 + 7 + 2 + 4 + 9 = 28, and 28 − 8 = 20: enter 20.",
-              "Exemple, avec des nombres inventés : O = 8. Le phénol demande l'anti-insectes (1 et 5), l'huile moteur (7 et 2) et le nettoyant jantes (4 et 9). Donc 1 + 5 + 7 + 2 + 4 + 9 = 28, et 28 − 8 = 20 : entrez 20.",
+              "Worked example, with made-up numbers: O = 8. Phenol takes Insect Repellent (red 1, blue 5), Motor Oil (red 7, blue 2) and Wheel Cleaner (red 4, blue 9). So 6 + 9 + 13 = 28, and 28 − 8 = 20: put the three on the table, type 20 once, press the button.",
+              "Exemple, avec des nombres inventés : O = 8. Le phénol demande l'anti-insectes (rouge 1, bleu 5), l'huile moteur (rouge 7, bleu 2) et le nettoyant jantes (rouge 4, bleu 9). Donc 6 + 9 + 13 = 28, et 28 − 8 = 20 : posez les trois sur la table, tapez 20 une seule fois, appuyez sur le bouton.",
             ],
             [
               "Carry the final chemical to the bomb and use it. If the bomb refuses it, try the next one.",

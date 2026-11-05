@@ -146,7 +146,7 @@ export function Frame({ view, tab, go, act, journal }: FrameProps) {
           {tab === "compte" && <Account view={view} act={act} journal={journal} />}
           {tab === "reglages" && <Settings view={view} act={act} />}
           {tab === "guide" && <Guide view={view} act={act} />}
-          {tab === "chimie" && <Chemistry />}
+          {tab === "chimie" && <Chemistry act={act} />}
           {tab === "journal" && <Journal view={view} act={act} journal={journal} />}
         </div>
       </main>

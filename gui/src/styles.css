@@ -1399,9 +1399,38 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+.chem-how {
+  margin-bottom: 16px;
+  max-width: 84ch;
+  color: var(--text-2);
+}
+
+.chem-how p {
+  margin: 0 0 4px;
+}
+
 .chem-digits {
   display: inline-flex;
+  align-items: center;
   gap: 6px;
+  color: var(--text-3);
+}
+
+/* The corner each box copies, coloured like on the game's boards. */
+.numberbox.chem-digit[data-corner="red"] {
+  border-bottom-color: #ff6b6b;
+  box-shadow: inset 0 -1px 0 #ff6b6b;
+}
+
+.numberbox.chem-digit[data-corner="blue"] {
+  border-bottom-color: #5b9cff;
+  box-shadow: inset 0 -1px 0 #5b9cff;
+}
+
+.chem-subtotal {
+  min-width: 36px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .numberbox.chem-digit {
