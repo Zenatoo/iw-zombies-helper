@@ -3,7 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Lang } from "./i18n";
 
-export type TabId = "accueil" | "salon" | "partie" | "compte" | "guide" | "reglages" | "journal";
+export type TabId = "accueil" | "salon" | "partie" | "compte" | "guide" | "chimie" | "reglages" | "journal";
 export type GameState = "absent" | "menu" | "match";
 export type Tone = "guide" | "done" | "refused" | "error";
 

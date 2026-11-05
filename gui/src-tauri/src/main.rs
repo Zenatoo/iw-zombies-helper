@@ -25,7 +25,7 @@ const FEEDBACK_SHOWN: Duration = Duration::from_secs(7);
 const FINISHED_CHECK: Duration = Duration::from_millis(500);
 /// How long the state of the iw7-mod script is kept before its file is read again.
 const MOD_SCRIPT_CHECK: Duration = Duration::from_secs(3);
-const TABS: [&str; 7] = ["accueil", "salon", "partie", "compte", "guide", "reglages", "journal"];
+const TABS: [&str; 8] = ["accueil", "salon", "partie", "compte", "guide", "chimie", "reglages", "journal"];
 
 struct App {
     engine: Option<Engine>,

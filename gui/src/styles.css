@@ -1399,6 +1399,36 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+.chem-digits {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.numberbox.chem-digit {
+  width: 64px;
+}
+
+.numberbox.chem-digit input {
+  padding: 0 8px;
+  text-align: center;
+}
+
+.numberbox.chem-digit input::placeholder {
+  color: var(--text-3);
+}
+
+.chem-result {
+  min-width: 48px;
+  color: var(--accent);
+  font: 600 20px/28px var(--font-display);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.chem-result[data-empty="true"] {
+  color: var(--text-3);
+}
+
 .guide-maps {
   display: flex;
   flex-wrap: wrap;

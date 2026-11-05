@@ -162,6 +162,7 @@ The window follows the look of Windows 11 Settings in dark mode, with your Windo
 | In match | The Zombies options in three groups (Player, Weapons, Match), each with its key and switch; then values (game speed, movement speed, jump height, money multiplier) and actions (ammo, money, zombies, round, cards, tickets, position). |
 | Account | Read and change the account progress. |
 | Guide | Each map's main easter egg written out step by step, with links to pictures of the places. Only explanations: nothing in it acts on the game, so it is the same on Steam and iw7-mod. |
+| Chemistry | For Attack of the Radioactive Thing: type O and the boards' numbers, it gives the number for each reaction. It only adds up what you type. |
 | Settings | Language, processor, FPS limit, Windows graphics settings, always on top, list of shortcuts. |
 | Log | Everything the tool did, the address check, the full survey, player watching. |
 

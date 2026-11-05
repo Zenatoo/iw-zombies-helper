@@ -2,6 +2,8 @@
 // follow the guides credited in `source`, checked against the game's own tables where they disagree:
 // recipes, Morse numbers, the word lists and how the chemistry number is computed.
 
+import { chainOf, FINALS, PRODUCTS, REACTIONS } from "./chemistry";
+
 export type Text = readonly [english: string, french: string];
 /** A table cell: the same in both languages, or translated. */
 export type Cell = string | Text;
@@ -682,6 +684,25 @@ const SHAOLIN: MapGuide = {
   ],
 };
 
+/** "a, b and c" in each language. */
+function listed(items: string[], and: string): string {
+  return items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} ${and} ${items[items.length - 1]}`;
+}
+
+/** Every reaction of one final chemical, in order, with what to put on the table. */
+const WALKTHROUGHS: Step[] = FINALS.map((final) => ({
+  title: [`Step by step: ${PRODUCTS[final].name[0]}`, `Pas à pas : ${PRODUCTS[final].name[1]}`],
+  points: chainOf(final).map((made): Text => {
+    const inputs = REACTIONS[made] ?? [];
+    const last = made === final;
+    const [product, used] = [PRODUCTS[made], inputs.map((key) => PRODUCTS[key])] as const;
+    return [
+      `Make ${product.name[0]}: put ${listed(used.map((item) => item.name[0]), "and")} on the table, enter the reaction's number, press the big button. ${last ? "Take the result to the bomb." : "The result waits in the garage for the next one."}`,
+      `Fabriquez ${product.the} : posez ${listed(used.map((item) => item.the), "et")} sur la table, entrez le nombre de la réaction, appuyez sur le gros bouton. ${last ? "Portez le résultat à la bombe." : "Le résultat attend dans le garage pour la suite."}`,
+    ];
+  }),
+}));
+
 const RADIOACTIVE: MapGuide = {
   map: "Radioactive Thing",
   quest: ["Attack of the Radioactive Thing", "Attack of the Radioactive Thing"],
@@ -1022,6 +1043,7 @@ const RADIOACTIVE: MapGuide = {
             town("The big button", "Le gros bouton", "main_ee/big_button.webp"),
           ],
         },
+        ...WALKTHROUGHS,
       ],
     },
     {
