@@ -96,7 +96,7 @@ export function Chemistry({ act }: { act: (command: Promise<void>) => void }) {
           "Cette page ne fait qu'additionner ce que vous tapez : elle ne lit rien du jeu. Pour trouver O et les nombres des tableaux : page Guide, Radioactive Thing.",
         )}
       >
-        <Row label={t("Number O", "Nombre O")} hint={t("The one that keeps « = » in all three colours.", "Celui qui garde « = » dans les trois couleurs.")}>
+        <Row label={t("Number O", "Nombre O")} hint={t("The one that keeps « = » with the map in red, green and blue.", "Celui qui garde « = » avec la carte en rouge, en vert et en bleu.")}>
           <Segmented
             label={t("Number O", "Nombre O")}
             value={sheet.o === null ? "" : String(sheet.o)}

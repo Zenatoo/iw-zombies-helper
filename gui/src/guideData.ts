@@ -185,7 +185,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Kill 50 clowns", "Tuez 50 clowns"],
-          text: [["They start spawning after the third sequence. Then one alien per player leaves the portal.", "Ils apparaissent après la troisième séquence. Un alien par joueur sort ensuite du portail."]],
+          text: [["They come after the third sequence and run at you to explode: keep your distance and shoot them from afar. Then one alien per player leaves the portal.", "Ils arrivent après la troisième séquence et foncent sur vous pour exploser : gardez vos distances et tirez de loin. Un alien par joueur sort ensuite du portail."]],
         },
         {
           title: ["Beat the aliens: shoot the collar, hit the back", "Battez les aliens : tirez sur le collier, frappez le dos"],
@@ -299,9 +299,9 @@ const RAVE: MapGuide = {
           title: ["First photo: 10 arms", "Première photo : 10 bras"],
           points: [
             ["Take the photo piece behind the Burning Man, in the Rave Area.", "Prenez le morceau de photo derrière le Burning Man, dans la zone de la rave."],
-            ["Place it on the ground before the big bonfire of the Thunderbird Amphitheatre. Rave Mode starts.", "Posez-le au sol devant le grand feu de l'amphithéâtre Thunderbird. Le mode rave démarre."],
+            ["Place it on the ground before the big bonfire of the Thunderbird Amphitheatre. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le au sol devant le grand feu de l'amphithéâtre Thunderbird. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
             ["Shoot the arms off 10 zombies within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Arrachez les bras de 10 zombies en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
-            ["The photo glows: use it within 30 seconds. A Slasher appears.", "La photo brille : utilisez-la dans les 30 secondes. Un Slasher apparaît."],
+            ["The photo glows: use it within 30 seconds, or you lose a random perk and start over. Using it brings a Slasher.", "La photo brille : utilisez-la dans les 30 secondes, sinon vous perdez un atout au hasard et recommencez. L'utiliser fait venir un Slasher."],
             ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
             ["Take the photo and go back to Kevin in the attic.", "Reprenez la photo et retournez voir Kevin au grenier."],
           ],
@@ -315,9 +315,9 @@ const RAVE: MapGuide = {
           title: ["Second photo: 10 legs", "Seconde photo : 10 jambes"],
           points: [
             ["Take the photo piece by the doorway of the Tuff 'Nuff room, upstairs in the Bear Lodge.", "Prenez le morceau de photo près de la porte de la salle de Tuff 'Nuff, à l'étage du Bear Lodge."],
-            ["Place it on the ground before the Quickies machine, in the Rave Area. Rave Mode starts.", "Posez-le au sol devant la machine Quickies, dans la zone de la rave. Le mode rave démarre."],
+            ["Place it on the ground before the Quickies machine, in the Rave Area. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le au sol devant la machine Quickies, dans la zone de la rave. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
             ["Shoot the legs off 10 zombies within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Arrachez les jambes de 10 zombies en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
-            ["The photo glows: use it within 30 seconds. A Slasher appears.", "La photo brille : utilisez-la dans les 30 secondes. Un Slasher apparaît."],
+            ["The photo glows: use it within 30 seconds, or you lose a random perk and start over. Using it brings a Slasher.", "La photo brille : utilisez-la dans les 30 secondes, sinon vous perdez un atout au hasard et recommencez. L'utiliser fait venir un Slasher."],
             ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
             ["Take the photo and go back to Kevin in the attic.", "Reprenez la photo et retournez voir Kevin au grenier."],
           ],
@@ -331,9 +331,9 @@ const RAVE: MapGuide = {
           title: ["Skull: 10 headshots", "Crâne : 10 tirs à la tête"],
           points: [
             ["Take the skull on the floor, left of the Magic Wheel in the Bear Lodge basement.", "Prenez le crâne au sol, à gauche de la roue magique, au sous-sol du Bear Lodge."],
-            ["Place it on the beach, before Slappy Taffy. Rave Mode starts.", "Posez-le sur la plage, devant Slappy Taffy. Le mode rave démarre."],
+            ["Place it on the beach, before Slappy Taffy. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le sur la plage, devant Slappy Taffy. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
             ["Get 10 headshots within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Réussissez 10 tirs à la tête en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
-            ["The skull glows: use it within 30 seconds. A Slasher appears.", "Le crâne brille : utilisez-le dans les 30 secondes. Un Slasher apparaît."],
+            ["The skull glows: use it within 30 seconds, or you lose a random perk and start over. Using it brings a Slasher.", "Le crâne brille : utilisez-le dans les 30 secondes, sinon vous perdez un atout au hasard et recommencez. L'utiliser fait venir un Slasher."],
             ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
             ["Take the skull: the buttons below can now be pressed.", "Reprenez le crâne : les boutons ci-dessous peuvent maintenant être utilisés."],
           ],
@@ -445,8 +445,8 @@ const SHAOLIN: MapGuide = {
           title: ["Follow the rat", "Suivez le rat"],
           text: [
             [
-              "Talk to Pam until she says « The one who terrorizes these streets… »: cages appear. Throw a shuriken at a cage, then follow the rat to the next one and break it the same way. Open most doors first, so you don't lose it. The sixth cage is empty and a big yellow circle appears nearby.",
-              "Parlez à Pam jusqu'à ce qu'elle dise « Celui qui terrorise ces rues… » : des cages apparaissent. Lancez un shuriken sur une cage, puis suivez le rat jusqu'à la suivante et cassez-la pareil. Ouvrez d'abord la plupart des portes pour ne pas le perdre. La sixième cage est vide et un grand cercle jaune apparaît à côté.",
+              "Talk to Pam until she says « The one who terrorizes these streets… »: cages appear. Throw a shuriken at a cage, then follow the rat to the next one and break it the same way. Open most doors first, so you don't lose it. Only shoot the cage the rat went into: hitting another one starts the chase over. The sixth cage is empty and a big yellow circle appears nearby.",
+              "Parlez à Pam jusqu'à ce qu'elle dise « Celui qui terrorise ces rues… » : des cages apparaissent. Lancez un shuriken sur une cage, puis suivez le rat jusqu'à la suivante et cassez-la pareil. Ouvrez d'abord la plupart des portes pour ne pas le perdre. Ne tirez que sur la cage où le rat est entré : en toucher une autre fait recommencer la poursuite. La sixième cage est vide et un grand cercle jaune apparaît à côté.",
             ],
           ],
           shots: [disco("Cage up the ramp from the Dojo", "Cage en haut de la rampe du Dojo", "main_ee/eye/rat_cage_ramp.webp"), disco("Cage in the Heebie Geebies", "Cage au Heebie Geebies", "main_ee/eye/rat_cage_heebie.webp")],
@@ -455,8 +455,8 @@ const SHAOLIN: MapGuide = {
           title: ["Earn the key", "Gagnez la clé"],
           text: [
             [
-              "Kill 15 zombies while they are inside the circle; you don't have to stand in it. Ninjas then come. Once they are dead, a key lies where the circle was. No key? Talk to Pam again and come back.",
-              "Tuez 15 zombies pendant qu'ils sont dans le cercle ; vous n'avez pas besoin d'y être. Des ninjas arrivent ensuite. Une fois morts, une clé se trouve à la place du cercle. Pas de clé ? Reparlez à Pam et revenez.",
+              "Kill 15 zombies while they are inside the circle; you don't have to stand in it. Eight ninjas then come. Once they are dead, a key appears where the circle was.",
+              "Tuez 15 zombies pendant qu'ils sont dans le cercle ; vous n'avez pas besoin d'y être. Huit ninjas arrivent ensuite. Une fois morts, une clé apparaît à la place du cercle.",
             ],
           ],
           shots: [disco("The circle", "Le cercle", "main_ee/eye/glowing_circle_key.webp"), disco("The key", "La clé", "main_ee/eye/key.webp")],
@@ -632,8 +632,8 @@ const SHAOLIN: MapGuide = {
           title: ["The window and the circles", "La fenêtre et les cercles"],
           text: [
             [
-              "Repair the broken turnstile in the spawn subway. Climb the wooden ladder in the alley near Mule Munchies and shoot the symbol in the window. A glowing circle appears somewhere: kill 6 to 9 zombies inside it, then find the next one, until a gong sounds.",
-              "Réparez le tourniquet cassé dans le métro du départ. Montez à l'échelle en bois de la ruelle près de Mule Munchies et tirez sur le symbole de la fenêtre. Un cercle lumineux apparaît quelque part : tuez-y 6 à 9 zombies, puis trouvez le suivant, jusqu'au gong.",
+              "Repair the broken turnstile in the spawn subway. Climb the wooden ladder in the alley near Mule Munchies and shoot the symbol in the window. A glowing circle appears somewhere: kill 6 to 9 zombies inside it, then find the next one. There are six circles; a gong marks the end.",
+              "Réparez le tourniquet cassé dans le métro du départ. Montez à l'échelle en bois de la ruelle près de Mule Munchies et tirez sur le symbole de la fenêtre. Un cercle lumineux apparaît quelque part : tuez-y 6 à 9 zombies, puis trouvez le suivant. Il y a six cercles ; un gong marque la fin.",
             ],
           ],
           shots: [
@@ -931,8 +931,8 @@ const RADIOACTIVE: MapGuide = {
               "La console de la TV Station change la couleur de la carte : pleine couleur (normal), rouge, vert, bleu. Quatre endroits affichent « O = un nombre », et O vaut 2, 4, 8, 9, 11 ou 15.",
             ],
             [
-              "In full colour, all four say « = ». In each of the three colours, one of them changes to « ≠ »: that one is false. Check all four in red, green and blue: the number that always keeps « = » is O. Write it down.",
-              "En pleine couleur, les quatre disent « = ». Dans chacune des trois couleurs, l'un d'eux passe à « ≠ » : celui-là est faux. Vérifiez les quatre en rouge, vert et bleu : le nombre qui garde toujours « = » est O. Notez-le.",
+              "In full colour, all four say « = ». With the map in red, in green, then in blue, one of them changes each time to « ≠ »: that one is false. Check all four in red, green and blue: the number that always keeps « = » is O. Write it down.",
+              "En pleine couleur, les quatre disent « = ». Avec la carte en rouge, en vert, puis en bleu, l'un d'eux passe à chaque fois à « ≠ » : celui-là est faux. Vérifiez les quatre en rouge, vert et bleu : le nombre qui garde toujours « = » est O. Notez-le.",
             ],
           ],
           shots: [
