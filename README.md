@@ -161,6 +161,7 @@ The window follows the look of Windows 11 Settings in dark mode, with your Windo
 | Lobby | What is set before starting the match: character, contracts. |
 | In match | The Zombies options in three groups (Player, Weapons, Match), each with its key and switch; then values (game speed, movement speed, jump height, money multiplier) and actions (ammo, money, zombies, round, cards, tickets, position). |
 | Account | Read and change the account progress. |
+| Guide | Each map's main easter egg written out step by step, with links to pictures of the places. Only explanations: nothing in it acts on the game, so it is the same on Steam and iw7-mod. |
 | Settings | Language, processor, FPS limit, Windows graphics settings, always on top, list of shortcuts. |
 | Log | Everything the tool did, the address check, the full survey, player watching. |
 
@@ -453,6 +454,7 @@ the pages, English being the default. Full survey files are written in French.
 
 - Engine structures and addresses: [iw7-mod](https://github.com/auroramod/iw7-mod) (auroramod, GPL-3.0).
   The integer dvar hash (`hash_integer`) is a port of its code.
+- Guide: built on [mmmrkennedy's zombies guides](https://mmmrkennedyzombiesguides.pages.dev/), where its pictures stay hosted, with charts by RayPoopertonIII (RP3 Gaming Guides).
 - FPS limit location: [IW FPS Unlocker](https://gitlab.com/TacoCake/iw-fps-unlocker) (TacoCake,
   AGPL-3.0). Only the location and layout of the setting were used, no code.
 - Script field names: the public name list of [gsc-tool](https://github.com/xensik/gsc-tool) (xensik,

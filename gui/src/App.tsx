@@ -1,7 +1,8 @@
-import { DocumentText20Regular, Games20Regular, Home20Regular, People20Regular, Person20Regular, Settings20Regular } from "@fluentui/react-icons";
+import { BookOpen20Regular, DocumentText20Regular, Games20Regular, Home20Regular, People20Regular, Person20Regular, Settings20Regular } from "@fluentui/react-icons";
 import { type ComponentType, useCallback, useEffect, useRef, useState } from "react";
 import { api, type TabId, type View } from "./api";
 import { Account } from "./pages/Account";
+import { Guide } from "./pages/Guide";
 import { Home } from "./pages/Home";
 import { Journal } from "./pages/Journal";
 import { Lobby } from "./pages/Lobby";
@@ -24,6 +25,7 @@ const PAGES: Tab[] = [
   { id: "salon", label: () => t("Lobby", "Salon"), icon: People20Regular },
   { id: "partie", label: () => t("In match", "En partie"), icon: Games20Regular },
   { id: "compte", label: () => t("Account", "Compte"), icon: Person20Regular },
+  { id: "guide", label: () => t("Guide", "Guide"), icon: BookOpen20Regular },
 ];
 const FOOTER: Tab[] = [
   { id: "reglages", label: () => t("Settings", "Réglages"), icon: Settings20Regular },
@@ -141,6 +143,7 @@ export function Frame({ view, tab, go, act, journal }: FrameProps) {
           {tab === "partie" && <Match view={view} act={act} />}
           {tab === "compte" && <Account view={view} act={act} journal={journal} />}
           {tab === "reglages" && <Settings view={view} act={act} />}
+          {tab === "guide" && <Guide view={view} act={act} />}
           {tab === "journal" && <Journal view={view} act={act} journal={journal} />}
         </div>
       </main>

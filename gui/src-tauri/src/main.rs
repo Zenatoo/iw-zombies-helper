@@ -25,7 +25,7 @@ const FEEDBACK_SHOWN: Duration = Duration::from_secs(7);
 const FINISHED_CHECK: Duration = Duration::from_millis(500);
 /// How long the state of the iw7-mod script is kept before its file is read again.
 const MOD_SCRIPT_CHECK: Duration = Duration::from_secs(3);
-const TABS: [&str; 6] = ["accueil", "salon", "partie", "compte", "reglages", "journal"];
+const TABS: [&str; 7] = ["accueil", "salon", "partie", "compte", "guide", "reglages", "journal"];
 
 struct App {
     engine: Option<Engine>,
@@ -378,6 +378,21 @@ fn set_watch(app: State<App>, on: bool) {
     app.send(Command::SetWatch(on));
 }
 
+/// The sites the Guide page links to.
+const GUIDE_SITES: [&str; 2] = ["https://mmmrkennedyzombiesguides.pages.dev/", "https://youtu.be/"];
+
+/// Whether the page may send the browser there: the guide's sites only, as plain addresses.
+fn is_guide_link(url: &str) -> bool {
+    GUIDE_SITES.iter().any(|site| url.starts_with(site)) && url.bytes().all(|byte| byte.is_ascii_alphanumeric() || b":/._-".contains(&byte))
+}
+
+#[tauri::command]
+fn open_link(url: String) {
+    if is_guide_link(&url) {
+        let _ = std::process::Command::new("explorer").arg(&url).spawn();
+    }
+}
+
 #[tauri::command]
 fn open_logs(app: State<App>) {
     let _ = std::process::Command::new("explorer").arg(&app.logs).spawn();
@@ -515,7 +530,24 @@ fn main() {
             verify,
             set_watch,
             open_logs,
+            open_link,
         ])
         .run(tauri::generate_context!())
         .expect("tool window");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_guide_link;
+
+    #[test]
+    fn the_browser_only_opens_the_guides_sites() {
+        assert!(is_guide_link("https://mmmrkennedyzombiesguides.pages.dev/games/IW/iw_symbols.webp"));
+        assert!(is_guide_link("https://youtu.be/WyuYjiJlzaI"));
+        assert!(!is_guide_link("https://example.com/"));
+        assert!(!is_guide_link("https://youtu.be.example.com/"));
+        assert!(!is_guide_link("file:///C:/Windows/notepad.exe"));
+        assert!(!is_guide_link("https://youtu.be/a b"));
+        assert!(!is_guide_link("https://youtu.be/a\"b"));
+    }
 }

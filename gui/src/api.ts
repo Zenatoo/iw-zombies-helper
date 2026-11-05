@@ -3,7 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Lang } from "./i18n";
 
-export type TabId = "accueil" | "salon" | "partie" | "compte" | "reglages" | "journal";
+export type TabId = "accueil" | "salon" | "partie" | "compte" | "guide" | "reglages" | "journal";
 export type GameState = "absent" | "menu" | "match";
 export type Tone = "guide" | "done" | "refused" | "error";
 
@@ -182,4 +182,5 @@ export const api = {
   installModScript: () => call<void>("install_mod_script"),
   setLanguage: (language: Lang) => call<void>("set_language", { language }),
   openLogs: () => call<void>("open_logs"),
+  openLink: (url: string) => call<void>("open_link", { url }),
 };

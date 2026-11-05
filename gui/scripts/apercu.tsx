@@ -20,7 +20,7 @@ const { Frame } = await import("../src/App");
 const view = { ...(respond("view", {}) as View), ...(accent ? { accent } : {}) };
 
 const css = readFileSync(join(import.meta.dirname, "../src/styles.css"), "utf8");
-const tabs: TabId[] = ["accueil", "salon", "partie", "compte", "reglages", "journal"];
+const tabs: TabId[] = ["accueil", "salon", "partie", "compte", "guide", "reglages", "journal"];
 mkdirSync(out, { recursive: true });
 for (const tab of tabs) {
   const page = renderToStaticMarkup(<Frame view={view} tab={tab} go={() => undefined} act={() => undefined} journal={respond("journal", {}) as string[]} />);
