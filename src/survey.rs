@@ -10,7 +10,7 @@
 
 use crate::process::Process;
 use crate::trainer::{
-    self, AGENT_SLOTS, ASSET_POOLS, ASSET_POOL_SIZES, ASSET_TYPE_SUIT, BASE, CHILD_PARTITION, CHILD_SIZE, CHILD_VARIABLES, CLIENT_FLAGS, ENTITY_CLIENT, ENTITY_FLAGS,
+    self, AGENT_SLOTS, ASSET_POOLS, ASSET_POOL_SIZES, CONNECTION_STATE, STRING_TABLE_PTR, ASSET_TYPE_SUIT, BASE, CHILD_PARTITION, CHILD_SIZE, CHILD_VARIABLES, CLIENT_FLAGS, ENTITY_CLIENT, ENTITY_FLAGS,
     DVAR_COUNT, DVAR_POOL, ENTITY_HEALTH, ENTITY_SIZE, FIRST_AGENT, FPS_DVAR_PTR, G_ENTITIES, HOST_CLIENT, IMAGE_END, OBJECT_COUNT, SCR_VAR_GLOB, SERVER_CLIENT_MONEY, SUIT_SIZE, SVS_CLIENTS, TIMESCALE,
 };
 use crate::{logbook, profile};
@@ -104,6 +104,7 @@ pub fn take(p: &Process) -> Survey {
     if in_match {
         sections.extend([level_section(p), player_objects_section(p), player_section(p), zombies_section(p)]);
     }
+    sections.push(quest_section(p));
     sections.push(control_section(p));
     sections.push(field_names_section(p));
     Survey { in_match, sections }
@@ -837,13 +838,46 @@ const TABLE_BYTES: usize = 0x180;
 const MAX_REGISTER_SITES: usize = 48;
 /// Name numbers of these fields in the public list of script names.
 const FIELD_CANONICAL: [(&str, u32); 2] = [("ignoreme", 0x184), ("notarget", 0x204)];
-/// Pointer to the script string table, read in the code of `SL_ConvertToString`.
-const STRING_TABLE_PTR: usize = BASE + 0x60B_9588;
 /// Write an object field, read it, and register a field (iw7-mod addresses).
 const FIELD_FUNCTIONS: [(&str, usize); 4] = [("Scr_SetObjectField", BASE + 0x40_B6E0), ("GetEntityFieldValue", BASE + 0xC0_9CC0), ("Scr_AddClassField", BASE + 0xC0_61F0), ("Scr_SetEntityField", BASE + 0x40_B1C0)];
 /// Pointer to the entity field table, read in the code that registers them (survey of 2026-10-14):
 /// 0x30-byte rows, the pointer to the name first, then the name number.
 const ENTITY_FIELDS_PTR: usize = BASE + 0x3F2_5A70;
+
+/// Most flags listed: a map has a few hundred.
+const MAX_FLAGS: usize = 600;
+
+/// Whether the player hosts the match, and the quests' flags as read from `level.flag`. It is there
+/// to check that their names read right before the Guide relies on them.
+fn quest_section(p: &Process) -> Section {
+    let mut section = Section::new("Secret : drapeaux des quêtes et place dans la partie");
+    let connection = p.read_i32(CONNECTION_STATE).ok();
+    section.entry("État de connexion (clientUIActives.connectionState)", connection.map_or("illisible".to_string(), |state| format!("{state} (9 = en partie)")));
+    section.entry(
+        "Place",
+        match trainer::seat(p) {
+            trainer::Seat::Host => "hôte",
+            trainer::Seat::Guest => "invité",
+            trainer::Seat::Away => "hors partie",
+        },
+    );
+    section.entry("Base de la table des chaînes", p.read_usize(STRING_TABLE_PTR).map_or("illisible".to_string(), |base| format!("{base:#x}")));
+    let Some((array, entries)) = trainer::flag_entries(p) else {
+        section.note("Tableau level.flag introuvable (normal hors partie et chez un invité).");
+        return section;
+    };
+    let named = entries.iter().filter(|entry| entry.name.is_some()).count();
+    section.entry("Objet level.flag", format!("{array}, {} entrées dont {named} lues par leur nom", entries.len()));
+    let mut lines: Vec<(String, String)> = entries
+        .iter()
+        .map(|entry| (entry.name.clone().unwrap_or_else(|| format!("(chaîne {:#x} illisible)", entry.key)), format!("{} (type {})", entry.value, entry.kind)))
+        .collect();
+    lines.sort();
+    for (name, value) in lines.into_iter().take(MAX_FLAGS) {
+        section.entry(name, value);
+    }
+    section
+}
 
 /// Positions of `needle` in `haystack`.
 fn find_all(haystack: &[u8], needle: &[u8]) -> Vec<usize> {

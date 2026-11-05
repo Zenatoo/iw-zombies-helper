@@ -144,6 +144,19 @@ const SCRIPT_MAILBOX_NAME: u32 = 0x441A;
 const SCRIPT_IDLE: i32 = 7_600;
 const SCRIPT_COMMAND: i32 = 7_700;
 const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_IDLE..=SCRIPT_COMMAND + 999;
+/// `level.flag`: the quests' flags, an array keyed by each flag's name, worth 1 once set. The number
+/// is that of the public list of script names, like `cash_scalar`'s.
+const FLAG_NAME: u32 = 0x6E25;
+/// Value type of a field that holds another script object (`VAR_POINTER`, iw7-mod).
+const VAR_POINTER: u8 = 1;
+/// Pointer to the script string table, read in the code of `SL_ConvertToString`: the text of string
+/// `n` starts at `table + 8 + 20 × n`. Not yet checked against a known string in a match.
+pub(crate) const STRING_TABLE_PTR: usize = BASE + 0x60B_9588;
+/// Array keys below this number are strings; the others are indexes (iw7-mod, `array::get_keys`).
+const STRING_KEY_LIMIT: u32 = 0x4_0000;
+/// `clientUIActives[0].connectionState` (iw7-mod): `CA_ACTIVE` once in a match, as host or guest.
+pub(crate) const CONNECTION_STATE: usize = BASE + 0x224_6C38;
+const CA_ACTIVE: i32 = 9;
 /// How often the map is read from the mailbox, which takes a walk through `level` when its slot moved.
 const SCRIPT_MAP_PERIOD: Duration = Duration::from_secs(1);
 
@@ -1789,6 +1802,67 @@ fn level_int(p: &Process, name: u32, sane: &std::ops::RangeInclusive<i32>, cache
     (var.kind == VAR_INTEGER && sane.contains(&var.value)).then_some((index, var.value))
 }
 
+/// Where the player sits in the match: only the host's game runs the quests' scripts, so only the
+/// host can read their flags.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Seat {
+    Away,
+    Host,
+    Guest,
+}
+
+fn seat_of(connection: Option<i32>, hosting: bool) -> Seat {
+    if hosting {
+        Seat::Host
+    } else if connection == Some(CA_ACTIVE) {
+        Seat::Guest
+    } else {
+        Seat::Away
+    }
+}
+
+pub fn seat(p: &Process) -> Seat {
+    seat_of(p.read_i32(CONNECTION_STATE).ok(), in_match(p))
+}
+
+/// A script string read from the table, if it is a plain name.
+fn text_of(raw: &[u8]) -> Option<String> {
+    let text = &raw[..raw.iter().position(|&byte| byte == 0)?];
+    (!text.is_empty() && text.iter().all(u8::is_ascii_graphic)).then(|| String::from_utf8_lossy(text).into_owned())
+}
+
+/// Text of script string `id`, or `None` if it does not read as a name.
+pub(crate) fn script_string(p: &Process, id: u32) -> Option<String> {
+    let table = p.read_usize(STRING_TABLE_PTR).ok().filter(|&table| table > 0x1_0000 && table < 0x7FFF_0000_0000)?;
+    text_of(&p.read_lossy(table + 8 + 20 * id as usize, 96))
+}
+
+/// One entry of `level.flag`, as read: the key's number, its value and type, and its name if readable.
+pub(crate) struct FlagEntry {
+    pub key: u32,
+    pub value: i32,
+    pub kind: u8,
+    pub name: Option<String>,
+}
+
+/// The `level.flag` array of the match and its entries, or `None` if `level` has no such array.
+pub(crate) fn flag_entries(p: &Process) -> Option<(u32, Vec<FlagEntry>)> {
+    let level = level_object(p)?;
+    let (_, field) = object_fields(p, level).into_iter().find(|(_, var)| var.name == FLAG_NAME && var.kind == VAR_POINTER)?;
+    let array = u32::try_from(field.value).ok().filter(|id| (1..OBJECT_COUNT).contains(id))?;
+    let entries = object_fields(p, array)
+        .into_iter()
+        .map(|(_, var)| FlagEntry { key: var.name, value: var.value, kind: var.kind, name: (var.name < STRING_KEY_LIMIT).then(|| script_string(p, var.name)).flatten() })
+        .collect();
+    Some((array, entries))
+}
+
+/// The quests' flags of the match that read by name: each name, and whether it is set.
+pub fn quest_flags(p: &Process) -> Option<Vec<(String, bool)>> {
+    let (_, entries) = flag_entries(p)?;
+    Some(entries.into_iter().filter(|entry| entry.kind == VAR_INTEGER).filter_map(|entry| entry.name.map(|name| (name, entry.value != 0))).collect())
+}
+
 /// Map named by the script's waiting value: `SCRIPT_IDLE` plus the map's number, 0 for none it knows.
 fn map_of_idle(value: i32) -> Option<&'static str> {
     let number = usize::try_from(value - SCRIPT_IDLE).ok()?;
@@ -2444,6 +2518,22 @@ mod tests {
         let everything = Pending { god_mode: true, noclip: true, jump_pack: true, no_target: true, timescale: true, move_speed: true, jump_height: Some(39.0), cash_scalar: true, paused_zombies: Some(24) };
         assert!(trainer.reset_leftovers(&p, &everything).is_empty());
         assert!(trainer.pending().is_empty());
+    }
+
+    #[test]
+    fn only_the_host_reads_the_quests_and_a_guest_is_told_apart() {
+        assert_eq!(seat_of(Some(CA_ACTIVE), true), Seat::Host);
+        assert_eq!(seat_of(Some(CA_ACTIVE), false), Seat::Guest);
+        assert_eq!(seat_of(Some(0), false), Seat::Away);
+        assert_eq!(seat_of(None, false), Seat::Away);
+    }
+
+    #[test]
+    fn a_script_string_reads_up_to_its_end_and_only_as_a_name() {
+        assert_eq!(text_of(b"tones_played_successfully\0junk").as_deref(), Some("tones_played_successfully"));
+        assert_eq!(text_of(b"\0"), None);
+        assert_eq!(text_of(b"no end"), None);
+        assert_eq!(text_of(b"two words\0"), None);
     }
 
     #[test]
