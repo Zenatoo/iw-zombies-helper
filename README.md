@@ -306,6 +306,10 @@ remove it, delete that file, or use the uninstaller.
 - **From the iw7-mod console**: `set iwh <command>`, or bind a key once, for example `bind F5 "set iwh pap"`.
   This works without the tool.
 
+The section is split into groups that fold away (easter egg, weapons and traps, bonuses and cards, zombies, player and
+map), under one search field that also looks inside the lists: typing `dischord` leaves the Weapon row with that
+choice, ready to send.
+
 | Window (`[hotkeys]` name) | Console | Effect |
 | --- | --- | --- |
 | Whole easter egg (`whole_quest`), trial | `quest` | Every step of the map's main easter egg, one after the other, from wherever the match is; messages in game follow it. Spaceland, Rave and Radioactive Thing go up to the soul key (on Rave, the players are brought to each circle; on Radioactive Thing, the bomb cart goes to its end and the bomb's code is entered on every player's panel); left to the players: the Rat King's last fight on Shaolin and the boss fight N31L's quest leads to on Beast from Beyond. |
@@ -339,8 +343,7 @@ remove it, delete that file, or use the uninstaller.
 | Max ammo, nuke, instakill, double money, fire sale, infinite ammo bonuses (`drop_max_ammo`, `drop_nuke`, `drop_instakill`, `drop_double_money`, `drop_fire_sale`, `drop_infinite_ammo`) | `drop ammo`, `drop kill`, `drop instakill`, `drop cash`, `drop fire`, `drop infinite` | The bonus appears in front of you: walk into it. Not every map has every bonus. |
 | | `bonuses` | Lists the bonuses of the current map. |
 
-Seven lists, from the window only, each with a choice and a button (trial). The long ones have a search field,
-and `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat_place`, `repeat_pace` and `repeat_quest` in
+Seven lists, from the window only, each with a choice and a button (trial). `repeat_card`, `repeat_weapon`, `repeat_craftable`, `repeat_zombie`, `repeat_place`, `repeat_pace` and `repeat_quest` in
 `[hotkeys]` give a key to the last choice made in each.
 
 - **Fate & Fortune card**: any of the game's 61 cards, by its name in the game. Its effect starts right away,

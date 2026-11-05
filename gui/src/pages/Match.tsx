@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { api, type Pick, type Tweak, type View } from "../api";
+import { api, type Tweak, type View } from "../api";
+import { Extras } from "../extras";
 import { t } from "../i18n";
-import { ModScriptRow } from "../modscript";
 import { usePending, useToggles } from "../toggles";
-import { Choice, formatNumber, Key, Legend, NumberBox, OptionRow, Row, Section, Slider } from "../ui";
+import { formatNumber, Key, Legend, NumberBox, OptionRow, Row, Section, Slider } from "../ui";
 
 interface Props {
   view: View;
@@ -14,50 +14,6 @@ interface TweakRowProps {
   tweak: Tweak;
   disabled: boolean;
   act: (command: Promise<void>) => void;
-}
-
-interface PickRowProps {
-  pick: Pick;
-  disabled: boolean;
-  act: (command: Promise<void>) => void;
-}
-
-/** Lists longer than this get a search field. */
-const SEARCHABLE = 12;
-
-/** A choice from one of the script's lists, sent with its button; the choice stays for the next time. */
-function PickRow({ pick, disabled, act }: PickRowProps) {
-  const [index, setIndex] = useState(0);
-  const [search, setSearch] = useState("");
-  const wanted = search.trim().toLowerCase();
-  // The options that match the search, each with its index in the script's list.
-  const shown = pick.options.filter(({ label }) => label.toLowerCase().includes(wanted));
-  const chosen = shown.find((option) => option.index === index) ?? shown[0];
-  return (
-    <Row label={pick.label} hint={pick.hint} trial={pick.trial} off={disabled}>
-      {pick.options.length > SEARCHABLE && (
-        <input
-          type="search"
-          className="search"
-          aria-label={t(`Search: ${pick.label}`, `Rechercher : ${pick.label}`)}
-          placeholder={t("Search", "Rechercher")}
-          value={search}
-          disabled={disabled}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-      )}
-      <Choice
-        label={pick.label}
-        value={chosen ? shown.indexOf(chosen) : 0}
-        options={chosen ? shown.map(({ label }) => label) : [t("Nothing found", "Aucun résultat")]}
-        disabled={disabled || !chosen}
-        onChange={(position) => setIndex(shown[position]?.index ?? index)}
-      />
-      <button type="button" className="btn" disabled={disabled || !chosen} onClick={() => chosen && act(api.runPick(pick.key, chosen.index))}>
-        {pick.button}
-      </button>
-    </Row>
-  );
 }
 
 /** Options turned on together by the "Quiet mode" preset. */
@@ -187,31 +143,7 @@ export function Match({ view, act }: Props) {
         </Row>
       </Section>
 
-      {extras.length > 0 && (
-        <Section
-          title={t("iw7-mod extras", "Extras iw7-mod")}
-          note={
-            view.map
-              ? t(`Map: ${view.map}. Only what has a use on it is listed.`, `Carte : ${view.map}. Seul ce qui sert sur cette carte est proposé.`)
-              : t(
-                  "Carried out by the iw_helper.gsc script, which iw7-mod loads from its custom_scripts folder: see the README, iw7-mod extras.",
-                  "Réalisés par le script iw_helper.gsc, qu'iw7-mod charge depuis son dossier custom_scripts : voir le README, iw7-mod extras.",
-                )
-          }
-        >
-          {view.modScript !== "current" && <ModScriptRow state={view.modScript} act={act} />}
-          {extras.map((action) => (
-            <Row key={action.key} label={action.label} hint={action.hint} trial={action.trial} off={!playing}>
-              <button type="button" className="btn" disabled={!playing} onClick={() => act(api.runAction(action.key))}>
-                {action.button}
-              </button>
-            </Row>
-          ))}
-          {picks.map((pick) => (
-            <PickRow key={pick.key} pick={pick} disabled={!playing} act={act} />
-          ))}
-        </Section>
-      )}
+      {view.modClient && <Extras view={view} playing={playing} act={act} />}
     </>
   );
 }

@@ -1354,6 +1354,51 @@ h2 {
 }
 
 /* --- Narrow window: the pane shrinks to its icons ---------------------------------------------- */
+.extras-search {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.fold {
+  margin-bottom: 4px;
+}
+
+.fold-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 600 14px/20px var(--font);
+  text-align: left;
+}
+
+.fold-head svg {
+  flex: none;
+  transition: transform 100ms ease;
+}
+
+.fold-head[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+/* While searching, every group that has a match stays open: its head is only a title. */
+.fold-head:disabled svg {
+  color: var(--text-3);
+}
+
+.fold-count {
+  margin-left: auto;
+  color: var(--text-3);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 860px) {
   .app {
     grid-template-columns: 48px minmax(0, 1fr);

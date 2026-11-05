@@ -493,6 +493,13 @@ function makeView(language: Lang): View {
     actions,
     extras,
     picks,
+    extraGroups: [
+      { key: "easter_egg", title: t("Easter egg", "Secret"), items: ["whole_quest", "quest"] },
+      { key: "weapons", title: t("Weapons and traps", "Armes et pièges"), items: ["upgrade_weapons", "max_pap", "box_weapon", "weapon", "craftable", "explosive_bullets", "gun_game", "keep_weapons"] },
+      { key: "bonuses", title: t("Bonuses and cards", "Bonus et cartes"), items: ["card", "refill_deck", "drop_max_ammo", "drop_nuke", "drop_instakill", "drop_double_money", "drop_fire_sale", "drop_infinite_ammo", "bonus_rain", "bonus_on_kill", "money_for_all"] },
+      { key: "zombies", title: "Zombies", items: ["kill_all", "launch_zombies", "burn_zombies", "shock_zombies", "zombie", "horde", "pace", "xray", "zombie_counter"] },
+      { key: "player", title: t("Player and map", "Joueur et carte"), items: ["revive", "unlimited_revives", "all_perks", "open_doors", "place", "go_to_player", "bring_players", "super_sprint", "next_character", "third_person", "match_stats"] },
+    ],
     // `?client=mod`: the game is iw7-mod.
     modClient: game !== "absent" && params.get("client") === "mod",
     // In a match on iw7-mod, the script reports its map.

@@ -54,6 +54,13 @@ export interface Pick extends Action {
   options: { index: number; label: string }[];
 }
 
+/** A group of the iw7-mod extras: the keys of its actions and lists, in the order of the page. */
+export interface ExtraGroup {
+  key: string;
+  title: string;
+  items: string[];
+}
+
 export interface Group {
   title: string;
   options: Option[];
@@ -112,6 +119,7 @@ export interface View {
   extras: Action[];
   /** Choices from the script's lists (cards, weapons, traps, zombies), also only when `modClient`. */
   picks: Pick[];
+  extraGroups: ExtraGroup[];
   /** The game is iw7-mod: script extras are offered, account actions are not. */
   modClient: boolean;
   /** Name of the match's map once the iw7-mod script has reported it; extras and lists then keep

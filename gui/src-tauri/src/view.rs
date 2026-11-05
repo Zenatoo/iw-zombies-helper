@@ -25,6 +25,32 @@ const GROUPS: [([&str; 2], &[Feature]); 3] = [
     (["Match", "Partie"], &[Feature::InfiniteMoney, Feature::SlowMotion, Feature::LowGravity, Feature::PauseZombies]),
 ];
 
+/// The iw7-mod extras by what they act on: key, title in English then in French, then the keys of the
+/// actions and lists in page order.
+const EXTRA_GROUPS: [(&str, [&str; 2], &[&str]); 5] = [
+    ("easter_egg", ["Easter egg", "Secret"], &["whole_quest", "quest"]),
+    (
+        "weapons",
+        ["Weapons and traps", "Armes et pièges"],
+        &["upgrade_weapons", "max_pap", "box_weapon", "weapon", "craftable", "explosive_bullets", "gun_game", "keep_weapons"],
+    ),
+    (
+        "bonuses",
+        ["Bonuses and cards", "Bonus et cartes"],
+        &["card", "refill_deck", "drop_max_ammo", "drop_nuke", "drop_instakill", "drop_double_money", "drop_fire_sale", "drop_infinite_ammo", "bonus_rain", "bonus_on_kill", "money_for_all"],
+    ),
+    (
+        "zombies",
+        ["Zombies", "Zombies"],
+        &["kill_all", "launch_zombies", "burn_zombies", "shock_zombies", "zombie", "horde", "pace", "xray", "zombie_counter"],
+    ),
+    (
+        "player",
+        ["Player and map", "Joueur et carte"],
+        &["revive", "unlimited_revives", "all_perks", "open_doors", "place", "go_to_player", "bring_players", "super_sprint", "next_character", "third_person", "match_stats"],
+    ),
+];
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct View {
@@ -46,6 +72,7 @@ pub struct View {
     pub extras: Vec<ActionRow>,
     /// Choices from the script's lists (cards, weapons, traps, zombies), on iw7-mod too.
     pub picks: Vec<PickRow>,
+    pub extra_groups: Vec<ExtraGroup>,
     /// The game is iw7-mod: script extras are offered, account actions are not.
     pub mod_client: bool,
     /// Name of the match's map, once the iw7-mod script has reported it: the extras and their lists
@@ -128,6 +155,14 @@ pub struct PickRow {
     /// The choices that have a use on the map, each with its index in the script's list: the page
     /// sends that index.
     pub options: Vec<PickOption>,
+}
+
+#[derive(Serialize)]
+pub struct ExtraGroup {
+    pub key: &'static str,
+    pub title: &'static str,
+    /// Keys of its actions and lists: those absent on the current map have no row.
+    pub items: &'static [&'static str],
 }
 
 #[derive(Serialize)]
@@ -302,6 +337,7 @@ pub fn build(input: &Input) -> View {
                     .collect(),
             })
             .collect(),
+        extra_groups: EXTRA_GROUPS.iter().map(|&(key, [en, fr], items)| ExtraGroup { key, title: tr(en, fr), items }).collect(),
         mod_client,
         map: map.and_then(picks::map_label),
         mod_script: input.mod_script.key(),
@@ -648,8 +684,8 @@ mod tests {
         let (config, cores, graphics, snapshot) = (Config::default(), [0b11], GraphicsSettings::default(), demo_snapshot());
         let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None, mod_script: mod_script::State::NoClient });
         let json = serde_json::to_value(&view).unwrap();
-        let expected: [(&serde_json::Value, &[&str]); 17] = [
-            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "modClient", "map", "modScript", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
+        let expected: [(&serde_json::Value, &[&str]); 18] = [
+            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "extraGroups", "modClient", "map", "modScript", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
             (&json["message"], &["text", "tone"]),
             (&json["groups"][0], &["title", "options"]),
             (&json["groups"][0]["options"][0], &["key", "label", "hint", "hotkey", "on", "code", "trial"]),
@@ -658,6 +694,7 @@ mod tests {
             (&json["extras"][0], &["key", "label", "hint", "button", "trial"]),
             (&json["picks"][0], &["key", "label", "hint", "button", "trial", "options"]),
             (&json["picks"][0]["options"][0], &["index", "label"]),
+            (&json["extraGroups"][0], &["key", "title", "items"]),
             (&json["keys"], &["allOff", "savePosition", "teleport"]),
             (&json["characters"][0], &["code", "name", "map"]),
             (&json["hotkeys"][0], &["label", "key"]),
@@ -697,6 +734,16 @@ mod tests {
         assert_eq!(quest(&rave), (12..23).collect::<Vec<_>>());
         // The whole easter egg is for every map.
         assert!(rave.extras.iter().any(|row| row.key == "whole_quest") && menu.extras.iter().any(|row| row.key == "whole_quest"));
+    }
+
+    /// An extra forgotten in the groups would have no row at all on the page.
+    #[test]
+    fn every_extra_is_in_exactly_one_group() {
+        let mut grouped: Vec<&str> = EXTRA_GROUPS.iter().flat_map(|(_, _, items)| items.iter().copied()).collect();
+        grouped.sort_unstable();
+        let mut known: Vec<&str> = OneShot::ALL.iter().filter(|action| action.script_code().is_some()).map(|action| action.key()).chain(Pick::ALL.iter().map(|pick| pick.key())).collect();
+        known.sort_unstable();
+        assert_eq!(grouped, known);
     }
 
     #[test]
