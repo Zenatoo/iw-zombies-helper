@@ -290,23 +290,19 @@ const RAVE: MapGuide = {
       steps: [
         {
           title: ["Talk to Kevin Smith", "Parlez à Kevin Smith"],
-          text: [["He is in the attic of the cabin on Turtle Island. Go back to him between each of the next three challenges.", "Il est dans le grenier de la cabane de Turtle Island. Retournez le voir entre chacun des trois défis suivants."]],
+          text: [["He is in the attic of the cabin on Turtle Island: this unlocks the first challenge.", "Il est dans le grenier de la cabane de Turtle Island : cela débloque le premier défi."]],
           shots: [rave("Kevin in the attic", "Kevin au grenier", "main_ee/kevin_in_attic.webp")],
         },
         {
-          title: ["How the three challenges work", "Comment se passent les trois défis"],
-          text: [["Each one follows the same order, only the object, the place and the shots change:", "Chacun suit le même ordre, seuls l'objet, le lieu et les tirs changent :"]],
-          points: [
-            ["Put the object on the ground: Rave Mode starts, with a 60-second limit.", "Posez l'objet au sol : le mode rave démarre, avec une limite de 60 secondes."],
-            ["Reach 10 of the requested shots. Too slow: you lose a random perk, but you can retry at once.", "Réussissez 10 des tirs demandés. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
-            ["The object glows: you have 30 seconds to use it. A Slasher appears.", "L'objet brille : vous avez 30 secondes pour l'utiliser. Un Slasher apparaît."],
-            ["Kill the Slasher within 60 seconds, otherwise restart the challenge from the beginning.", "Tuez le Slasher en 60 secondes, sinon recommencez le défi depuis le début."],
-            ["You get a Max Ammo and a nuke. Pick the object up.", "Vous obtenez des munitions max et une bombe. Reprenez l'objet."],
-          ],
-        },
-        {
           title: ["First photo: 10 arms", "Première photo : 10 bras"],
-          text: [["Take the piece behind the Burning Man in the Rave Area and place it before the big bonfire of the Thunderbird Amphitheatre.", "Prenez le morceau derrière le Burning Man, dans la zone de la rave, et posez-le devant le grand feu de l'amphithéâtre Thunderbird."]],
+          points: [
+            ["Take the photo piece behind the Burning Man, in the Rave Area.", "Prenez le morceau de photo derrière le Burning Man, dans la zone de la rave."],
+            ["Place it on the ground before the big bonfire of the Thunderbird Amphitheatre. Rave Mode starts.", "Posez-le au sol devant le grand feu de l'amphithéâtre Thunderbird. Le mode rave démarre."],
+            ["Shoot the arms off 10 zombies within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Arrachez les bras de 10 zombies en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
+            ["The photo glows: use it within 30 seconds. A Slasher appears.", "La photo brille : utilisez-la dans les 30 secondes. Un Slasher apparaît."],
+            ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
+            ["Take the photo and go back to Kevin in the attic.", "Reprenez la photo et retournez voir Kevin au grenier."],
+          ],
           shots: [
             rave("Where to take it", "Où le prendre", "main_ee/photo_1.webp"),
             rave("Where to place it", "Où le poser", "main_ee/photo_1_amphitheater.webp"),
@@ -315,7 +311,14 @@ const RAVE: MapGuide = {
         },
         {
           title: ["Second photo: 10 legs", "Seconde photo : 10 jambes"],
-          text: [["Take the piece by the doorway of the Tuff 'Nuff room, upstairs in the Bear Lodge, and place it before the Quickies machine in the Rave Area.", "Prenez le morceau près de la porte de la salle de Tuff 'Nuff, à l'étage du Bear Lodge, et posez-le devant la machine Quickies, dans la zone de la rave."]],
+          points: [
+            ["Take the photo piece by the doorway of the Tuff 'Nuff room, upstairs in the Bear Lodge.", "Prenez le morceau de photo près de la porte de la salle de Tuff 'Nuff, à l'étage du Bear Lodge."],
+            ["Place it on the ground before the Quickies machine, in the Rave Area. Rave Mode starts.", "Posez-le au sol devant la machine Quickies, dans la zone de la rave. Le mode rave démarre."],
+            ["Shoot the legs off 10 zombies within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Arrachez les jambes de 10 zombies en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
+            ["The photo glows: use it within 30 seconds. A Slasher appears.", "La photo brille : utilisez-la dans les 30 secondes. Un Slasher apparaît."],
+            ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
+            ["Take the photo and go back to Kevin in the attic.", "Reprenez la photo et retournez voir Kevin au grenier."],
+          ],
           shots: [
             rave("Where to take it", "Où le prendre", "main_ee/photo_2.webp"),
             rave("Where to place it", "Où le poser", "main_ee/photo_2_ground_quickies.webp"),
@@ -324,7 +327,14 @@ const RAVE: MapGuide = {
         },
         {
           title: ["Skull: 10 headshots", "Crâne : 10 tirs à la tête"],
-          text: [["Take the skull on the floor, left of the Magic Wheel in the basement, and place it on the beach before Slappy Taffy.", "Prenez le crâne au sol, à gauche de la roue magique du sous-sol, et posez-le sur la plage devant Slappy Taffy."]],
+          points: [
+            ["Take the skull on the floor, left of the Magic Wheel in the Bear Lodge basement.", "Prenez le crâne au sol, à gauche de la roue magique, au sous-sol du Bear Lodge."],
+            ["Place it on the beach, before Slappy Taffy. Rave Mode starts.", "Posez-le sur la plage, devant Slappy Taffy. Le mode rave démarre."],
+            ["Get 10 headshots within 60 seconds. Too slow: you lose a random perk, but you can retry at once.", "Réussissez 10 tirs à la tête en 60 secondes. Trop lent : vous perdez un atout au hasard, mais vous pouvez recommencer aussitôt."],
+            ["The skull glows: use it within 30 seconds. A Slasher appears.", "Le crâne brille : utilisez-le dans les 30 secondes. Un Slasher apparaît."],
+            ["Kill him within 60 seconds, otherwise start this challenge over. You get a Max Ammo and a nuke.", "Tuez-le en 60 secondes, sinon recommencez ce défi. Vous obtenez des munitions max et une bombe."],
+            ["Take the skull: the buttons below can now be pressed.", "Reprenez le crâne : les boutons ci-dessous peuvent maintenant être utilisés."],
+          ],
           shots: [
             rave("Where to take it", "Où le prendre", "main_ee/skull_pickup.webp"),
             rave("Where to place it", "Où le poser", "main_ee/skull_place_down.webp"),
@@ -434,7 +444,7 @@ const SHAOLIN: MapGuide = {
           text: [
             [
               "Talk to Pam until she says « The one who terrorizes these streets… »: cages appear. Throw a shuriken at a cage, then follow the rat to the next one and break it the same way. Open most doors first, so you don't lose it. The sixth cage is empty and a big yellow circle appears nearby.",
-              "Parlez à Pam jusqu'à ce qu'elle dise « The one who terrorizes these streets… » : des cages apparaissent. Lancez un shuriken sur une cage, puis suivez le rat jusqu'à la suivante et cassez-la pareil. Ouvrez d'abord la plupart des portes pour ne pas le perdre. La sixième cage est vide et un grand cercle jaune apparaît à côté.",
+              "Parlez à Pam jusqu'à ce qu'elle dise « Celui qui terrorise ces rues… » : des cages apparaissent. Lancez un shuriken sur une cage, puis suivez le rat jusqu'à la suivante et cassez-la pareil. Ouvrez d'abord la plupart des portes pour ne pas le perdre. La sixième cage est vide et un grand cercle jaune apparaît à côté.",
             ],
           ],
           shots: [disco("Cage up the ramp from the Dojo", "Cage en haut de la rampe du Dojo", "main_ee/eye/rat_cage_ramp.webp"), disco("Cage in the Heebie Geebies", "Cage au Heebie Geebies", "main_ee/eye/rat_cage_heebie.webp")],
@@ -474,7 +484,7 @@ const SHAOLIN: MapGuide = {
           text: [
             [
               "Talk to Pam until she says « You must once again face your enemy… ». The Eye goes in your tactical slot. Use it to reveal the Rat King's orange symbols and shoot them. One shows at a time, six in total, among these places:",
-              "Parlez à Pam jusqu'à ce qu'elle dise « You must once again face your enemy… ». L'Œil se place dans l'emplacement tactique. Utilisez-le pour révéler les symboles orange du Rat King et tirez dessus. Un seul à la fois, six en tout, parmi ces endroits :",
+              "Parlez à Pam jusqu'à ce qu'elle dise « Tu dois encore affronter ton ennemi… ». L'Œil se place dans l'emplacement tactique. Utilisez-le pour révéler les symboles orange du Rat King et tirez dessus. Un seul à la fois, six en tout, parmi ces endroits :",
             ],
           ],
           shots: [
@@ -611,7 +621,7 @@ const SHAOLIN: MapGuide = {
           text: [
             [
               "Talk to Pam until she says « The enemy you face possess the final ingredient… ». A cigarette burn shows top right for three rounds. The game then jumps three rounds ahead and locks you outside the Dojo: kill everything and take the turnstile piece.",
-              "Parlez à Pam jusqu'à ce qu'elle dise « The enemy you face possess the final ingredient… ». Une brûlure de cigarette apparaît en haut à droite pendant trois manches. Le jeu saute ensuite trois manches et vous enferme devant le Dojo : tuez tout et prenez la pièce de tourniquet.",
+              "Parlez à Pam jusqu'à ce qu'elle dise « L'ennemi que tu affrontes possède le dernier ingrédient… ». Une brûlure de cigarette apparaît en haut à droite pendant trois manches. Le jeu saute ensuite trois manches et vous enferme devant le Dojo : tuez tout et prenez la pièce de tourniquet.",
             ],
           ],
           shots: [disco("The cigarette burn", "La brûlure de cigarette", "main_ee/heart/cigarette_burn.webp"), disco("The piece", "La pièce", "main_ee/heart/turnstile.webp")],
@@ -832,38 +842,58 @@ const RADIOACTIVE: MapGuide = {
           title: ["What you are looking for", "Ce que vous cherchez"],
           text: [
             [
-              "You must make one final chemical and put it on the bomb. To get there you need four things: which chemical the radio names, the number O, the right colour, and the numbers of the boards. Everything is explained below, in this order.",
-              "Vous devez fabriquer un produit final et le mettre sur la bombe. Pour cela, il faut quatre choses : le produit que nomme la radio, le nombre O, la bonne couleur et les nombres des tableaux. Tout est expliqué ci-dessous, dans cet ordre.",
-            ],
-            [
-              "Each reaction asks for a number on the keypad. It is always worked out the same way: for each thing put in, add the two numbers of its diamond on the boards, then add everything together and subtract O.",
-              "Chaque réaction demande un nombre au clavier. Il se calcule toujours de la même façon : pour chaque produit posé, additionnez les deux nombres de son losange sur les tableaux, puis additionnez le tout et retirez O.",
+              "You must make one final chemical and put it on the bomb. There are only four possible ones, and you can make them without waiting for the radio. Every reaction also asks for a number on the keypad, which depends on this match: the number O, the right colour and the numbers on the boards. All of this is explained below.",
+              "Vous devez fabriquer un produit final et le mettre sur la bombe. Il n'y en a que quatre possibles, et vous pouvez les fabriquer sans attendre la radio. Chaque réaction demande aussi un nombre au clavier, qui dépend de la partie : le nombre O, la bonne couleur et les nombres des tableaux. Tout est expliqué ci-dessous.",
             ],
           ],
           shots: [town("All the recipes as one picture, by RayPoopertonIII", "Toutes les recettes en une image, par RayPoopertonIII", "main_ee/chemicals.webp")],
         },
         {
-          title: ["Listen to the radio: which chemical?", "Écoutez la radio : quel produit ?"],
+          title: ["The four possible chemicals", "Les quatre produits possibles"],
           text: [
             [
-              "From round 10, zombies drop batteries. Bring one to a radio: on the ground near the portable toilet at the Power Station, or on the couch of the Motel Office. Use it to repair it, then again to play recordings.",
-              "À partir de la manche 10, les zombies lâchent des piles. Apportez-en une à une radio : au sol près des toilettes portables de la Power Station, ou sur le canapé du bureau du motel. Utilisez-la pour la réparer, puis encore pour lancer les enregistrements.",
-            ],
-            [
-              "Ignore the man explaining how to make chemicals. Among Dr. Bright's recordings, only one is the answer: « I've devised the perfect solution to our mutated crab problem », followed by the name. The others are refusals, and this one is a trap: « may be a rather crude solution for what faces us ». When all have been played, end the round to play them again.",
-              "Ignorez l'homme qui explique comment fabriquer les produits. Parmi les enregistrements du Dr Bright, un seul est la réponse : « I've devised the perfect solution to our mutated crab problem », suivi du nom. Les autres sont des refus, et celui-ci est un piège : « may be a rather crude solution for what faces us ». Une fois tout écouté, finissez la manche pour pouvoir réécouter.",
+              "The game picks one of these four each match. Make one, take it from the garage and bring it to the bomb. With the right one, your character reacts as you take it and the bomb accepts it. With a wrong one, the bomb simply refuses it, at no cost: move on to the next.",
+              "Le jeu choisit l'un de ces quatre à chaque partie. Fabriquez-en un, prenez-le dans le garage et portez-le à la bombe. Avec le bon, votre personnage réagit quand vous le prenez et la bombe l'accepte. Avec un mauvais, la bombe le refuse simplement, sans pénalité : passez au suivant.",
             ],
           ],
           table: {
             head: [
-              ["The radio says", "La radio dit"],
+              ["Final chemical", "Produit final"],
               ["Make, in this order", "À fabriquer, dans cet ordre"],
             ],
             rows: [
-              ["3,4-di-nitroxy-methyl-propane", [`Formaldehyde, Acetaldehyde, Aldehyde Sludge, then the final one`, `Formaldéhyde, acétaldéhyde, boue d'aldéhyde, puis le produit final`]],
               ["1,3,5 tera-nitro-phenol", ["Phenol, Phenolsulfonic Acid, then the final one", "Phénol, acide phénolsulfonique, puis le produit final"]],
-              ["Octa-hydro-2,5-nitro-3,4,7-para-zokine", ["Formaldehyde, Hexamine, then the final one", "Formaldéhyde, hexamine, puis le produit final"]],
               ["3-methyl-2,4-di-nitrobenzene", ["Methylbenzene, Dinitro, then the final one", "Méthylbenzène, dinitro, puis le produit final"]],
+              ["Octa-hydro-2,5-nitro-3,4,7-para-zokine", ["Formaldehyde, Hexamine, then the final one", "Formaldéhyde, hexamine, puis le produit final"]],
+              ["3,4-di-nitroxy-methyl-propane", ["Formaldehyde, Acetaldehyde, Aldehyde Sludge, then the final one", "Formaldéhyde, acétaldéhyde, boue d'aldéhyde, puis le produit final"]],
+            ],
+          },
+          points: [
+            ["The garage holds four finished products. A fifth pushes the oldest out, so keep the Formaldehyde close if you need it twice.", "Le garage garde quatre produits finis. Un cinquième fait sortir le plus ancien : gardez donc le formaldéhyde à portée si vous en avez besoin deux fois."],
+            ["You carry one thing at a time. Ingredients stay in their place, so you can take them again.", "Vous portez une seule chose à la fois. Les ingrédients restent à leur place : vous pouvez les reprendre."],
+          ],
+        },
+        {
+          title: ["Optional: the radio gives the right one at once", "Facultatif : la radio donne le bon d'un coup"],
+          text: [
+            [
+              "The radio isn't needed: it only saves you from trying. From a round between 7 and 10, drawn each match, zombies drop batteries. Bring one to a radio: on the ground near the portable toilet at the Power Station, or on the couch of the Motel Office. Use it to repair it, then again to play the recordings. When all have been played, end the round to play them again.",
+              "La radio n'est pas obligatoire : elle évite seulement les essais. À partir d'une manche entre 7 et 10, tirée à chaque partie, les zombies lâchent des piles. Apportez-en une à une radio : au sol près des toilettes portables de la Power Station, ou sur le canapé du bureau du motel. Utilisez-la pour la réparer, puis encore pour lancer les enregistrements. Une fois tout écouté, finissez la manche pour réécouter.",
+            ],
+            [
+              "Ignore the man explaining how to make chemicals. Listen to Dr. Bright: only one recording gives the answer, and the others reject a chemical.",
+              "Ignorez l'homme qui explique comment fabriquer les produits. Écoutez le Dr Bright : un seul enregistrement donne la réponse, les autres écartent un produit.",
+            ],
+          ],
+          table: {
+            head: [
+              ["What he says", "Ce qu'il dit"],
+              ["What it means", "Ce que ça veut dire"],
+            ],
+            rows: [
+              [["« I've devised the perfect solution to our mutated crab problem: » and the name", "« J'ai mis au point la solution parfaite à notre problème de crabe mutant : » puis le nom"], ["This is the one to make", "C'est celui à fabriquer"]],
+              [["« I don't think (name) will be useful in the current circumstance »", "« Je ne pense pas que (nom) sera utile dans les circonstances actuelles »"], ["Not this one", "Pas celui-là"]],
+              [["« (name) may be a rather crude solution for what faces us »", "« (nom) serait une solution plutôt grossière face à ce qui nous attend »"], ["Not this one, despite how it sounds", "Pas celui-là, malgré les apparences"]],
             ],
           },
           shots: [
@@ -904,7 +934,7 @@ const RADIOACTIVE: MapGuide = {
             ],
             [
               "Example: O × M = 106 and the TV says « < 107 Green, 107 - 109 Blue, > 109 Red »: the colour is green.",
-              "Exemple : O × M = 106 et la télé dit « < 107 Green, 107 - 109 Blue, > 109 Red » : la couleur est le vert.",
+              "Exemple : O × M = 106 et la télé dit « moins de 107 vert, 107 à 109 bleu, plus de 109 rouge » : la couleur est le vert.",
             ],
           ],
           shots: [town("M on the wall", "M sur le mur", "main_ee/m_number.webp"), town("The TV beside Elvira", "La télé à côté d'Elvira", "main_ee/elvira_tv.webp")],
@@ -945,7 +975,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["The recipes", "Les recettes"],
-          text: [["These come from the game's own tables. Only make what your radio chemical needs, in the order given above.", "Elles viennent des tables du jeu. Ne fabriquez que ce qu'il faut pour le produit de la radio, dans l'ordre donné plus haut."]],
+          text: [["These come from the game's own tables. Each reaction only needs what its line lists.", "Elles viennent des tables du jeu. Chaque réaction ne demande que ce qui figure sur sa ligne."]],
           table: {
             head: [
               ["To make", "À fabriquer"],
@@ -968,7 +998,37 @@ const RADIOACTIVE: MapGuide = {
           },
         },
         {
-          title: ["Where to find the ingredients", "Où trouver les ingrédients"],
+          title: ["Run a reaction", "Lancez une réaction"],
+          points: [
+            ["Put each product on a square before the tubes, on the garage's table.", "Posez chaque produit sur une case devant les tubes, sur la table du garage."],
+            ["Work out the number: the left and top numbers of each product put in, all added together, minus O.", "Calculez le nombre : les nombres de gauche et du haut de chaque produit posé, tous additionnés, moins O."],
+            ["Enter it: look at a digit of the keypad and use it. Then press the big button.", "Entrez-le : regardez un chiffre du clavier et utilisez-le. Appuyez ensuite sur le gros bouton."],
+            ["Success: gas shows at the edges of the screen and the product appears on the right of the garage.", "Réussite : du gaz apparaît sur les bords de l'écran et le produit arrive à droite du garage."],
+            ["Failure: you lose almost all your health and the table is emptied. The number or a product was wrong, so check them before trying again.", "Échec : vous perdez presque toute votre vie et la table se vide. Le nombre ou un produit était faux : vérifiez-les avant de réessayer."],
+          ],
+          text: [
+            [
+              "Worked example, with made-up numbers: O = 8. Phenol takes Insect Repellent (1 and 5), Motor Oil (7 and 2) and Wheel Cleaner (4 and 9). So 1 + 5 + 7 + 2 + 4 + 9 = 28, and 28 − 8 = 20: enter 20.",
+              "Exemple, avec des nombres inventés : O = 8. Le phénol demande l'anti-insectes (1 et 5), l'huile moteur (7 et 2) et le nettoyant jantes (4 et 9). Donc 1 + 5 + 7 + 2 + 4 + 9 = 28, et 28 − 8 = 20 : entrez 20.",
+            ],
+            [
+              "Carry the final chemical to the bomb and use it. If the bomb refuses it, try the next one.",
+              "Portez le produit final jusqu'à la bombe et utilisez-le. Si la bombe le refuse, essayez le suivant.",
+            ],
+          ],
+          shots: [
+            town("The squares", "Les cases", "main_ee/squares_chem.webp"),
+            town("The keypad", "Le clavier", "main_ee/keypard_number.webp"),
+            town("The big button", "Le gros bouton", "main_ee/big_button.webp"),
+          ],
+        },
+      ],
+    },
+    {
+      title: ["Where to find the ingredients", "Où trouver les ingrédients"],
+      steps: [
+        {
+          title: ["The 17 ingredients", "Les 17 ingrédients"],
           text: [["« Crowbar » means hitting the object with it. Other objects lie around the map, but they aren't used.", "« Pied-de-biche » veut dire frapper l'objet avec. D'autres objets traînent sur la carte, mais ils ne servent à rien."]],
           table: {
             head: [
@@ -1013,31 +1073,6 @@ const RADIOACTIVE: MapGuide = {
             town("Paint", "Peinture", "ingredients/paint.webp"),
             town("Nail Polish Remover", "Dissolvant", "ingredients/nail_polish.webp"),
             town("Drain Opener", "Déboucheur", "ingredients/drain_opener.webp"),
-          ],
-        },
-        {
-          title: ["Run a reaction", "Lancez une réaction"],
-          points: [
-            ["Put each product on a square before the tubes, on the garage's table.", "Posez chaque produit sur une case devant les tubes, sur la table du garage."],
-            ["Work out the number: the left and top numbers of each product put in, all added together, minus O.", "Calculez le nombre : les nombres de gauche et du haut de chaque produit posé, tous additionnés, moins O."],
-            ["Enter it: look at a digit of the keypad and use it. Then press the big button.", "Entrez-le : regardez un chiffre du clavier et utilisez-le. Appuyez ensuite sur le gros bouton."],
-            ["Success: gas shows at the edges of the screen and the product appears on the right of the garage.", "Réussite : du gaz apparaît sur les bords de l'écran et le produit arrive à droite du garage."],
-            ["Failure: after a few seconds you take damage. The number or a product was wrong.", "Échec : au bout de quelques secondes, vous subissez des dégâts. Le nombre ou un produit était faux."],
-          ],
-          text: [
-            [
-              "Worked example, with made-up numbers: O = 8. Phenol takes Insect Repellent (1 and 5), Motor Oil (7 and 2) and Wheel Cleaner (4 and 9). So 1 + 5 + 7 + 2 + 4 + 9 = 28, and 28 − 8 = 20: enter 20.",
-              "Exemple, avec des nombres inventés : O = 8. Le phénol demande l'anti-insectes (1 et 5), l'huile moteur (7 et 2) et le nettoyant jantes (4 et 9). Donc 1 + 5 + 7 + 2 + 4 + 9 = 28, et 28 − 8 = 20 : entrez 20.",
-            ],
-            [
-              "Carry the final chemical to the bomb and use it. If the bomb refuses it, it isn't the one the radio named.",
-              "Portez le produit final jusqu'à la bombe et utilisez-le. Si la bombe le refuse, ce n'est pas celui que nomme la radio.",
-            ],
-          ],
-          shots: [
-            town("The squares", "Les cases", "main_ee/squares_chem.webp"),
-            town("The keypad", "Le clavier", "main_ee/keypard_number.webp"),
-            town("The big button", "Le gros bouton", "main_ee/big_button.webp"),
           ],
         },
       ],

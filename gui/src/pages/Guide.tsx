@@ -1,4 +1,4 @@
-import { ChevronRight16Regular, Image16Regular, Open16Regular } from "@fluentui/react-icons";
+import { ChevronRight16Regular, Open16Regular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import { api, type View } from "../api";
 import { type Cell, GUIDES, type MapGuide, type Part, type Shot, type Step, type Text } from "../guideData";
@@ -13,8 +13,7 @@ const say = ([english, french]: Text) => t(english, french);
 const sayCell = (cell: Cell) => (typeof cell === "string" ? cell : say(cell));
 
 /** A picture on the web: it opens in the browser, next to the game. */
-function ShotLink({ shot, act, icon }: { shot: Shot; act: Props["act"]; icon?: boolean }) {
-  const Icon = icon ? Open16Regular : Image16Regular;
+function ShotLink({ shot, text, act, icon }: { shot: Shot; text?: string; act: Props["act"]; icon?: boolean }) {
   return (
     <a
       className="guide-link"
@@ -25,9 +24,54 @@ function ShotLink({ shot, act, icon }: { shot: Shot; act: Props["act"]; icon?: b
         act(api.openLink(shot.url));
       }}
     >
-      <Icon aria-hidden="true" />
-      {say(shot.label)}
+      {icon && <Open16Regular aria-hidden="true" />}
+      {text ?? say(shot.label)}
     </a>
+  );
+}
+
+interface ShotGroup {
+  title: string;
+  links: { shot: Shot; text: string }[];
+}
+
+/**
+ * Pictures gathered by what they show: labels sharing a name before their colon ("Reel: on a couch")
+ * form a group under that name; the others stay together under a general title.
+ */
+function groupShots(shots: Shot[]): ShotGroup[] {
+  const named = new Map<string, ShotGroup["links"]>();
+  const parts = shots.map((shot) => /^(.+?) ?: (.+)$/.exec(say(shot.label)));
+  shots.forEach((shot, index) => {
+    const part = parts[index];
+    if (part?.[1] && part[2]) {
+      const links = named.get(part[1]) ?? [];
+      links.push({ shot, text: part[2].charAt(0).toUpperCase() + part[2].slice(1) });
+      named.set(part[1], links);
+    }
+  });
+  const grouped = [...named].filter(([, links]) => links.length > 1);
+  const inGroup = new Set(grouped.flatMap(([, links]) => links.map((link) => link.shot)));
+  const loose = shots.filter((shot) => !inGroup.has(shot)).map((shot) => ({ shot, text: say(shot.label) }));
+  return [...(loose.length > 0 ? [{ title: t("Pictures", "Images"), links: loose }] : []), ...grouped.map(([title, links]) => ({ title, links }))];
+}
+
+function ShotGroups({ shots, act }: { shots: Shot[]; act: Props["act"] }) {
+  return (
+    <div className="guide-shots">
+      {groupShots(shots).map((group) => (
+        <div key={group.title} className="guide-shot-group">
+          <h4>{group.title}</h4>
+          <ul>
+            {group.links.map((link) => (
+              <li key={link.shot.url}>
+                <ShotLink shot={link.shot} text={link.text} act={act} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -73,13 +117,7 @@ function StepBlock({ step, act }: { step: Step; act: Props["act"] }) {
           </table>
         </div>
       )}
-      {step.shots && (
-        <div className="guide-shots">
-          {step.shots.map((shot) => (
-            <ShotLink key={shot.url} shot={shot} act={act} />
-          ))}
-        </div>
-      )}
+      {step.shots && <ShotGroups shots={step.shots} act={act} />}
     </li>
   );
 }
