@@ -4,6 +4,7 @@
 # - the tool's files in this folder (programs, configuration, README, license, logs), then the folder
 #   itself if nothing else is left in it. From a source checkout (Cargo.toml present), only logs\;
 # - the interface's data (WebView2 cache) in %LOCALAPPDATA%\fr.zen.iw-helper;
+# - the iw7-mod script the tool can install in the game folder (iw7-mod itself stays);
 # - on request, the two Windows graphics settings the tool can apply to the game.
 #
 # Nothing else is changed on the PC. The game's memory is never saved by the tool: nothing to undo there.
@@ -55,6 +56,13 @@ if (Test-Path $gpuKey) {
             $gpuValues += $property
         }
     }
+}
+
+# The iw7-mod script, in the usual game folder and in those the graphics settings name.
+$gameFolders = @('C:\Program Files (x86)\Steam\steamapps\common\Call of Duty - Infinite Warfare') + @($gpuValues | ForEach-Object { Split-Path $_.Name -Parent })
+foreach ($folder in ($gameFolders | Select-Object -Unique)) {
+    $script = Join-Path $folder 'iw7-mod\custom_scripts\cp\iw_helper.gsc'
+    if (Test-Path -LiteralPath $script) { $targets += $script }
 }
 
 if ($targets.Count -eq 0 -and $gpuValues.Count -eq 0) {

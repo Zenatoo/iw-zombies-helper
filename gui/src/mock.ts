@@ -497,6 +497,8 @@ function makeView(language: Lang): View {
     modClient: game !== "absent" && params.get("client") === "mod",
     // In a match on iw7-mod, the script reports its map.
     map: playing && params.get("client") === "mod" ? "Spaceland" : null,
+    // `?client=mod`: an older script is installed, to show the button.
+    modScript: params.get("client") === "mod" ? "outdated" : "none",
     keys,
     savedPosition: playing ? [1204, -388, 64] : null,
     character: game === "absent" ? null : 0,
@@ -667,6 +669,9 @@ export function respond(command: string, args: Record<string, unknown>): unknown
       return;
     case "set_sound":
       view.settings.sound = Boolean(args.on);
+      return;
+    case "install_mod_script":
+      view.modScript = "current";
       return;
     case "set_launch_game":
       view.settings.launch.game = String(args.game);

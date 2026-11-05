@@ -117,6 +117,8 @@ export interface View {
   /** Name of the match's map once the iw7-mod script has reported it; extras and lists then keep
    * what has a use there. `null` in the menus, where everything is listed. */
   map: string | null;
+  /** The script behind the extras, in the game folder; "none" without iw7-mod there. */
+  modScript: "none" | "missing" | "outdated" | "current";
   keys: { allOff: string; savePosition: string; teleport: string };
   savedPosition: [number, number, number] | null;
   /** Code of the character requested for the next match, when the profile is readable. */
@@ -169,6 +171,7 @@ export const api = {
   setOnTop: (on: boolean) => call<void>("set_on_top", { on }),
   setSound: (on: boolean) => call<void>("set_sound", { on }),
   setLaunchGame: (game: string) => call<void>("set_launch_game", { game }),
+  installModScript: () => call<void>("install_mod_script"),
   setLanguage: (language: Lang) => call<void>("set_language", { language }),
   openLogs: () => call<void>("open_logs"),
 };

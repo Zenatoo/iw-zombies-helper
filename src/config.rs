@@ -124,10 +124,14 @@ impl LaunchGame {
     }
 }
 
+/// The game's executable in the command Steam gives (`%command%`).
+pub fn steam_client_in(command: &[String]) -> Option<&Path> {
+    command.iter().map(Path::new).find(|arg| arg.file_name().is_some_and(|name| name.eq_ignore_ascii_case(STEAM_CLIENT)))
+}
+
 /// iw7-mod's executable in the folder of the game Steam starts (`%command%`), if this install has it.
 pub fn mod_client_beside(command: &[String]) -> Option<PathBuf> {
-    let game = command.iter().map(Path::new).find(|arg| arg.file_name().is_some_and(|name| name.eq_ignore_ascii_case(STEAM_CLIENT)))?;
-    let exe = game.parent()?.join(MOD_CLIENT);
+    let exe = steam_client_in(command)?.parent()?.join(MOD_CLIENT);
     exe.is_file().then_some(exe)
 }
 

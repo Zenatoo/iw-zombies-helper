@@ -1,6 +1,7 @@
 import { CheckmarkCircle16Filled, Circle16Regular } from "@fluentui/react-icons";
 import { api, type View } from "../api";
 import { type Lang, t } from "../i18n";
+import { ModScriptRow } from "../modscript";
 import { Key, NumberBox, Row, Section, Segmented, Slider, ToggleRow } from "../ui";
 
 interface Props {
@@ -52,6 +53,10 @@ export function Settings({ view, act }: Props) {
             onChange={(game) => act(api.setLaunchGame(game))}
           />
         </Row>
+      </Section>
+
+      <Section title="iw7-mod">
+        <ModScriptRow state={view.modScript} act={act} />
       </Section>
 
       <Section title={t("Processor", "Processeur")} note={t(`${cpu.outcome} Takes effect at the next game launch.`, `${cpu.outcome} Effet au prochain lancement du jeu.`)}>

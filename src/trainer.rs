@@ -1350,8 +1350,12 @@ impl Trainer {
         }
         let (index, current) = self
             .level_int(p, SCRIPT_MAILBOX_NAME, &SANE_MAILBOX)
-            .ok_or(tr("iw7-mod script not loaded, see the README", "script iw7-mod non chargé, voir le README"))?;
-        if current >= SCRIPT_COMMAND {
+            .ok_or(tr("iw7-mod script not loaded: install it in Settings, then start a new match", "script iw7-mod non chargé : installez-le dans Réglages, puis relancez une partie"))?;
+        // No command has the number 0: this is the waiting value of the scripts older than the map's number.
+        if current == SCRIPT_COMMAND {
+            return Err(tr("iw7-mod script out of date: update it in Settings, then start a new match", "script iw7-mod trop ancien : mettez-le à jour dans Réglages, puis relancez une partie"));
+        }
+        if current > SCRIPT_COMMAND {
             return Err(tr("the script is busy, try again", "le script est occupé, réessayez"));
         }
         if !write_child_int(p, index, SCRIPT_COMMAND + code) {

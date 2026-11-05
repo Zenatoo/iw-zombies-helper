@@ -3,8 +3,9 @@
 // iw7-mod only: the Steam game never loads custom_scripts, and this file must stay that way. It calls the
 // game's own Zombies functions, which the external tool cannot reach from memory (Pack-a-Punch, bonuses).
 //
-// Install: copy the iw7-mod folder of this repository into the game folder, so that this file ends up in
-// <game folder>\iw7-mod\custom_scripts\cp\iw_helper.gsc. It is compiled when a Zombies match loads.
+// Install: iw-helper window, Settings > iw7-mod, with iw7-mod in the game folder; or copy the iw7-mod folder
+// of this repository there, so that this file ends up in <game folder>\iw7-mod\custom_scripts\cp\iw_helper.gsc.
+// It is compiled when a Zombies match loads.
 //
 // Two ways to send a command, as the host:
 // - the iw-helper window, page Match, section "iw7-mod extras": it writes the command's number into

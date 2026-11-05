@@ -288,9 +288,12 @@ since the previous one. Survey files are written in French and contain account d
 `custom_scripts` folder; the Steam game does not. [iw_helper.gsc](iw7-mod/custom_scripts/cp/iw_helper.gsc)
 uses this to call the game's own Zombies functions, which the tool cannot reach from memory.
 
-**Install:** copy the [iw7-mod](iw7-mod/) folder of this repository (also in the `iw7-mod` release zip) into
-the game folder, so that the file ends up in `<game folder>\iw7-mod\custom_scripts\cp\iw_helper.gsc`. It is
-compiled when a Zombies match loads. To remove it, delete that file.
+**Install:** iw7-mod itself must be in the game folder (`iw7-mod.exe` next to `iw7_ship.exe`). Then, in the
+window, **Settings > iw7-mod > Install**: the tool puts its script in
+`<game folder>\iw7-mod\custom_scripts\cp\iw_helper.gsc`, and offers to update it when a new version of the
+tool needs it. It is compiled when a Zombies match loads, so it takes effect at the next match. By hand, copy
+the [iw7-mod](iw7-mod/) folder of this repository (also in the `iw7-mod` release zip) into the game folder. To
+remove it, delete that file, or use the uninstaller.
 
 **Use**, as the host, in either of two ways:
 

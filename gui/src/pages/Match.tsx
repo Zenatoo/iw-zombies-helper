@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api, type Pick, type Tweak, type View } from "../api";
 import { t } from "../i18n";
+import { ModScriptRow } from "../modscript";
 import { usePending, useToggles } from "../toggles";
 import { Choice, formatNumber, Key, Legend, NumberBox, OptionRow, Row, Section, Slider } from "../ui";
 
@@ -198,6 +199,7 @@ export function Match({ view, act }: Props) {
                 )
           }
         >
+          {view.modScript !== "current" && <ModScriptRow state={view.modScript} act={act} />}
           {extras.map((action) => (
             <Row key={action.key} label={action.label} hint={action.hint} trial={action.trial} off={!playing}>
               <button type="button" className="btn" disabled={!playing} onClick={() => act(api.runAction(action.key))}>

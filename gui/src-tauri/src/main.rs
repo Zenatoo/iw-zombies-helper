@@ -10,6 +10,7 @@ use iw_helper::config::{self, Config, LaunchGame, Priority, Setting};
 use iw_helper::engine::{Command, Engine, Launch, Snapshot};
 use iw_helper::lang::{self, tr, trs, Lang};
 use iw_helper::logbook::Logbook;
+use iw_helper::mod_script;
 use iw_helper::picks::Pick;
 use iw_helper::trainer::{Feature, OneShot, Tweak};
 use iw_helper::winsettings::{self, GraphicsSettings};
@@ -22,6 +23,8 @@ use tauri::{Manager, State};
 /// How long the result of the last action stays shown at the top.
 const FEEDBACK_SHOWN: Duration = Duration::from_secs(7);
 const FINISHED_CHECK: Duration = Duration::from_millis(500);
+/// How long the state of the iw7-mod script is kept before its file is read again.
+const MOD_SCRIPT_CHECK: Duration = Duration::from_secs(3);
 const TABS: [&str; 6] = ["accueil", "salon", "partie", "compte", "reglages", "journal"];
 
 struct App {
@@ -44,6 +47,8 @@ struct Inner {
     config: Config,
     game_exe: Option<String>,
     graphics: GraphicsSettings,
+    /// State of the iw7-mod script and when it was read; `None` to read it again.
+    mod_script: Option<(mod_script::State, Instant)>,
     /// Last log line already handled, so an action is only reported once.
     last_log_line: Option<String>,
     feedback: Option<(view::Feedback, Instant)>,
@@ -79,6 +84,20 @@ impl App {
 }
 
 impl Inner {
+    /// Folder of the game, when it is known.
+    fn game_folder(&self) -> Option<PathBuf> {
+        self.game_exe.as_deref().and_then(|exe| Path::new(exe).parent()).map(Path::to_path_buf)
+    }
+
+    fn mod_script_state(&mut self) -> mod_script::State {
+        if let Some((state, _)) = self.mod_script.filter(|(_, read)| read.elapsed() < MOD_SCRIPT_CHECK) {
+            return state;
+        }
+        let state = self.game_folder().map_or(mod_script::State::NoClient, |folder| mod_script::state(&folder));
+        self.mod_script = Some((state, Instant::now()));
+        state
+    }
+
     /// Finds the last action's result in the log, to show it at the top.
     fn watch_journal(&mut self, lines: &[String]) {
         if lines.last() == self.last_log_line.as_ref() {
@@ -103,13 +122,24 @@ fn view(app: State<App>) -> view::View {
         (None, Some(engine)) => engine.snapshot(),
         (None, None) => Snapshot::default(),
     };
-    // The game was just seen somewhere other than usual: its Windows settings are read again.
-    if let Some(exe) = snapshot.game.as_ref().and_then(|game| game.exe.clone()) {
-        if inner.game_exe.as_deref() != Some(exe.as_str()) && exe.to_ascii_lowercase().ends_with(config::STEAM_CLIENT) {
-            inner.graphics = winsettings::read(&exe);
-            inner.game_exe = Some(exe);
+    // The game was just seen somewhere other than usual: its Windows settings are read again. iw7-mod
+    // runs from the same folder, next to the game's executable.
+    if let Some(exe) = snapshot.game.as_ref().and_then(|game| game.exe.as_deref()) {
+        let lower = exe.to_ascii_lowercase();
+        let game_exe = if lower.ends_with(config::STEAM_CLIENT) {
+            Some(exe.to_string())
+        } else if lower.ends_with(config::MOD_CLIENT) {
+            Path::new(exe).parent().map(|folder| folder.join(config::STEAM_CLIENT).to_string_lossy().into_owned())
+        } else {
+            None
+        };
+        if let Some(game_exe) = game_exe.filter(|game_exe| inner.game_exe.as_deref() != Some(game_exe.as_str())) {
+            inner.graphics = winsettings::read(&game_exe);
+            inner.game_exe = Some(game_exe);
+            inner.mod_script = None;
         }
     }
+    let mod_script = inner.mod_script_state();
     inner.watch_journal(&app.log.recent());
     view::build(&view::Input {
         snapshot: &snapshot,
@@ -122,7 +152,7 @@ fn view(app: State<App>) -> view::View {
         graphics: inner.game_exe.as_ref().map(|_| &inner.graphics),
         on_top: inner.on_top,
         log_path: app.log.path().map(|path| path.display().to_string()),
-        mod_installed: inner.game_exe.as_ref().is_some_and(|exe| config::mod_client_beside(std::slice::from_ref(exe)).is_some()),
+        mod_script,
     })
 }
 
@@ -264,8 +294,30 @@ fn set_launch_game(app: State<App>, game: String) {
     }
 }
 
+/// Puts this version's iw7-mod script in the game folder; the game reads it at the next match.
 #[tauri::command]
-fn apply_windows_settings(app: State<App>) {
+fn install_mod_script(app: State<App>) {
+    if app.demo {
+        app.demo_line(tr("iw7-mod script: done (demo, nothing is written)", "Script iw7-mod : fait (démonstration, rien n'est écrit)"));
+        return;
+    }
+    let mut inner = app.inner.lock().unwrap();
+    let Some(folder) = inner.game_folder() else {
+        return;
+    };
+    inner.mod_script = None;
+    match mod_script::install(&folder) {
+        Ok(()) => {
+            inner.notice = None;
+            app.log.line(tr("iw7-mod script: done (takes effect at the next match).", "Script iw7-mod : fait (effet à la prochaine partie)."));
+        }
+        Err(e) => inner.notice = Some(trs(format!("iw7-mod script not installed: {e}"), format!("Script iw7-mod non installé : {e}"))),
+    }
+}
+
+#[tauri::command]
+fn apply_windows_settings(
+app: State<App>) {
     let mut inner = app.inner.lock().unwrap();
     let Some(exe) = inner.game_exe.clone() else {
         return;
@@ -360,6 +412,8 @@ fn main() {
         log.line(error);
     }
     let mut config = config;
+    // Started by Steam: the game's real folder, whichever library it is in.
+    let steam_exe = config::steam_client_in(&game_command).map(|exe| exe.to_string_lossy().into_owned());
     // Started by Steam on an install that also has iw7-mod: the game started is the one chosen.
     if let Some(mod_exe) = config::mod_client_beside(&game_command) {
         let game = match config.launch.game {
@@ -389,13 +443,14 @@ fn main() {
         let launch = if wrapped { Launch::Wrap(game_command) } else { Launch::Attach };
         Engine::start(config.clone(), cores.clone(), log.clone(), launch)
     });
-    let game_exe = winsettings::default_game_exe().map(|path| path.to_string_lossy().into_owned());
+    let game_exe = steam_exe.or_else(|| winsettings::default_game_exe().map(|path| path.to_string_lossy().into_owned()));
     let app = App {
         engine,
         inner: Mutex::new(Inner {
             last_log_line: log.recent().last().cloned(),
             graphics: game_exe.as_deref().map(winsettings::read).unwrap_or_default(),
             game_exe,
+            mod_script: None,
             config,
             feedback: None,
             notice: load_error,
@@ -447,6 +502,7 @@ fn main() {
             set_fps,
             set_sound,
             set_launch_game,
+            install_mod_script,
             apply_windows_settings,
             set_on_top,
             set_language,
