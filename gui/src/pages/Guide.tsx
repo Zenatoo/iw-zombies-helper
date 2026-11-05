@@ -75,10 +75,47 @@ function ShotGroups({ shots, act }: { shots: Shot[]; act: Props["act"] }) {
   );
 }
 
-function StepBlock({ step, act }: { step: Step; act: Props["act"] }) {
+/** Steps ticked by hand, kept between sessions: "map/part/step", from their English titles. */
+const DONE_STORED = "iwh-guide-done";
+
+function readDone(): string[] {
+  try {
+    const stored = JSON.parse(localStorage.getItem(DONE_STORED) ?? "null");
+    return Array.isArray(stored) ? stored.filter((key): key is string => typeof key === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDone(done: string[]) {
+  try {
+    localStorage.setItem(DONE_STORED, JSON.stringify(done));
+  } catch {
+    // Only a convenience: the ticks are lost when the window forgets them.
+  }
+}
+
+const stepKey = (guide: MapGuide, part: Part, step: Step) => `${guide.map}/${part.title[0]}/${step.title[0]}`;
+
+/** Every step of a map in order, with its key. */
+function stepsOf(guide: MapGuide) {
+  return guide.parts.flatMap((part) => part.steps.map((step) => ({ part, step, key: stepKey(guide, part, step) })));
+}
+
+interface StepProps {
+  step: Step;
+  done: boolean;
+  onDone: (done: boolean) => void;
+  act: Props["act"];
+}
+
+function StepBlock({ step, done, onDone, act }: StepProps) {
   return (
-    <li className="guide-step">
-      <h3>{say(step.title)}</h3>
+    <li className="guide-step" data-done={done}>
+      <label className="guide-check">
+        <input type="checkbox" checked={done} onChange={(event) => onDone(event.target.checked)} />
+        <h3>{say(step.title)}</h3>
+      </label>
       {step.text?.map((paragraph) => <p key={paragraph[0]}>{say(paragraph)}</p>)}
       {step.points && (
         <ul>
@@ -122,19 +159,33 @@ function StepBlock({ step, act }: { step: Step; act: Props["act"] }) {
   );
 }
 
-function PartBlock({ part, open, onToggle, act }: { part: Part; open: boolean; onToggle: () => void; act: Props["act"] }) {
+interface PartProps {
+  guide: MapGuide;
+  part: Part;
+  open: boolean;
+  onToggle: () => void;
+  done: string[];
+  onDone: (key: string, done: boolean) => void;
+  act: Props["act"];
+}
+
+function PartBlock({ guide, part, open, onToggle, done, onDone, act }: PartProps) {
+  const ticked = part.steps.filter((step) => done.includes(stepKey(guide, part, step))).length;
   return (
     <div className="group fold">
       <button type="button" className="fold-head" aria-expanded={open} onClick={onToggle}>
         <ChevronRight16Regular aria-hidden="true" />
         <span>{say(part.title)}</span>
-        <span className="fold-count">{part.steps.length}</span>
+        <span className="fold-count" data-complete={ticked === part.steps.length}>
+          {t(`${ticked} of ${part.steps.length}`, `${ticked} sur ${part.steps.length}`)}
+        </span>
       </button>
       {open && (
         <ol className="guide-steps">
-          {part.steps.map((step) => (
-            <StepBlock key={step.title[0]} step={step} act={act} />
-          ))}
+          {part.steps.map((step) => {
+            const key = stepKey(guide, part, step);
+            return <StepBlock key={key} step={step} done={done.includes(key)} onDone={(value) => onDone(key, value)} act={act} />;
+          })}
         </ol>
       )}
     </div>
@@ -160,6 +211,16 @@ export function Guide({ view, act }: Props) {
 
   const toggle = (key: string) => setOpened((all) => (all.includes(key) ? all.filter((other) => other !== key) : [...all, key]));
 
+  const [done, setDone] = useState(readDone);
+  const changeDone = (next: string[]) => {
+    setDone(next);
+    saveDone(next);
+  };
+  const tick = (key: string, value: boolean) => changeDone(value ? [...done.filter((other) => other !== key), key] : done.filter((other) => other !== key));
+  const steps = stepsOf(chosen);
+  const ticked = steps.filter(({ key }) => done.includes(key)).length;
+  const next = steps.find(({ key }) => !done.includes(key));
+
   return (
     <>
       <div className="guide-maps" role="group" aria-label={t("Map", "Carte")}>
@@ -173,11 +234,20 @@ export function Guide({ view, act }: Props) {
       <section>
         <h2>{say(chosen.quest)}</h2>
         <p className="guide-intro">{say(chosen.intro)}</p>
+        <div className="guide-progress">
+          <span>
+            <b>{t(`${ticked} of ${steps.length} steps done.`, `${ticked} étapes faites sur ${steps.length}.`)}</b>{" "}
+            {next ? t(`Next: ${next.step.title[0]}.`, `Prochaine : ${next.step.title[1]}.`) : t("All done.", "Tout est fait.")}
+          </span>
+          <button type="button" className="btn" disabled={ticked === 0} onClick={() => changeDone(done.filter((key) => !steps.some((step) => step.key === key)))}>
+            {t("Untick this map", "Tout décocher sur cette carte")}
+          </button>
+        </div>
         {chosen.parts.map((part, index) => {
           const key = `${chosen.map}/${part.title[0]}`;
           // The part where the quest itself starts is open first.
           const open = opened.includes(key) !== (index === 1);
-          return <PartBlock key={key} part={part} open={open} onToggle={() => toggle(key)} act={act} />;
+          return <PartBlock key={key} guide={chosen} part={part} open={open} onToggle={() => toggle(key)} done={done} onDone={tick} act={act} />;
         })}
         <p className="caption">
           {t("Places and objects keep their English names: the French game may write some of them differently. Pictures open in your browser. ", "Les lieux et objets gardent leur nom anglais : le jeu en français peut en écrire certains autrement. Les images s'ouvrent dans votre navigateur. ")}

@@ -1491,9 +1491,50 @@ h2 {
   font-weight: 600;
 }
 
+.guide-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.guide-check input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .guide-step h3 {
-  margin: 0 0 4px;
+  margin: 0;
   font: 600 14px/20px var(--font);
+}
+
+/* A ticked step stays readable: only its title steps back. */
+.guide-step[data-done="true"] h3 {
+  color: var(--text-3);
+}
+
+.guide-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+  color: var(--text-2);
+}
+
+.guide-progress b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.fold-count[data-complete="true"] {
+  color: var(--success);
 }
 
 .guide-step p,
