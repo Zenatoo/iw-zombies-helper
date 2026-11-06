@@ -2349,25 +2349,47 @@ bonus_rain(player)
     }
 }
 
-// Every zombie dies, then a physics blast under each body throws it in the air.
+// Every zombie is thrown in the air and dies on the way up.
 launch_zombies(player)
 {
-    spots = [];
+    count = 0;
     foreach (enemy in scripts\cp\cp_agent_utils::get_alive_enemies())
     {
         if (!isdefined(enemy) || !isalive(enemy))
             continue;
 
-        spots[spots.size] = enemy.origin;
-        enemy dodamage(enemy.health + 100, enemy.origin, player, player, "MOD_EXPLOSIVE");
+        enemy thread fling_up(player);
+        count++;
     }
+    player iprintln("iw-helper: " + count + " zombies launched");
+}
 
-    // The bodies become ragdolls on the next frame.
+// As the game's own throws do (fan trap, boombox, harpoon): pushed up while alive, then killed straight
+// into a ragdoll, which keeps the push. Killed first, a zombie plays its death animation and its body
+// only falls: nothing is left for a physics blast to throw.
+fling_up(player)
+{
+    self endon("death");
+    self.do_immediate_ragdoll = 1;
+    self.customdeath = 1;
+    self.dontmutilate = 1;
+    self.disable_armor = 1;
+    self.ragdollhitloc = "torso_lower";
+    side = anglestoforward((0, randomint(360), 0));
+    self.ragdollimpactvector = side * 600 + (0, 0, 3500);
+    self setvelocity(side * 150 + (0, 0, 500));
+    wait 0.15;
+
+    // From the level: this thread ends with the zombie's death.
+    level thread blast_under(self.origin);
+    self dodamage(self.health + 100, self.origin + (0, 0, -50), player, player, "MOD_UNKNOWN");
+}
+
+// A blast under the body once it is a ragdoll, as the seismic trap's.
+blast_under(spot)
+{
     wait 0.1;
-    foreach (spot in spots)
-        physicsexplosionsphere(spot + (0, 0, -16), 160, 100, 7);
-
-    player iprintln("iw-helper: " + spots.size + " zombies launched");
+    physicsexplosionsphere(spot + (0, 0, -20), 200, 150, 250);
 }
 
 burn_zombies(player)
