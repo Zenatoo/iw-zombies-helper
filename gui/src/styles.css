@@ -1513,6 +1513,31 @@ h2 {
   font: 600 14px/20px var(--font);
 }
 
+/* Ticked by the host's game: not a box to click. */
+.guide-check[data-game="true"],
+.guide-check[data-game="true"] input {
+  cursor: default;
+}
+
+.guide-source {
+  flex: none;
+  margin-left: auto;
+  padding-top: 1px;
+  color: var(--text-3);
+  font: 12px/18px var(--font);
+}
+
+.guide-follow {
+  margin: 0 0 10px;
+  max-width: 84ch;
+  color: var(--text-2);
+  line-height: 20px;
+}
+
+.guide-follow[data-live="true"] {
+  color: var(--text);
+}
+
 /* A ticked step stays readable: only its title steps back. */
 .guide-step[data-done="true"] h3 {
   color: var(--text-3);

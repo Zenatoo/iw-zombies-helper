@@ -559,6 +559,12 @@ function makeView(language: Lang): View {
       },
     },
     logPath: "C:\\iw-helper\\logs\\session-20261013-190214.log",
+    // In a match, as the host of Spaceland after the SETI-COM's three defences; `?seat=guest` shows a guest.
+    quest:
+      playing && params.get("seat") !== "guest"
+        ? { map: "cp_zmb", flags: { pap_portal_used: true, dj_fetch_quest_completed: true, dj_request_defense_done: true, fuses_inserted: false }, steps: { ufo: 5 } }
+        : null,
+    seat: playing ? (params.get("seat") === "guest" ? "guest" : "host") : game === "absent" ? "unknown" : "away",
   };
 }
 

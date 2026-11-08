@@ -137,6 +137,18 @@ export interface View {
   watching: boolean;
   settings: Settings;
   logPath: string | null;
+  /** Where the host's match is in its easter egg: the Guide page ticks what it can tell from it. */
+  quest: Quest | null;
+  /** "host", "guest" or "away"; "unknown" when the game's memory is not readable. */
+  seat: "host" | "guest" | "away" | "unknown";
+}
+
+export interface Quest {
+  /** The map as the game's scripts name it ("cp_zmb"…). */
+  map: string;
+  flags: Record<string, boolean>;
+  /** The step each quest line of the game is at: the steps before it are done. */
+  steps: Record<string, number>;
 }
 
 export type ProfileAction = "show" | "max-level" | "weapon-xp" | "directors-cut" | "contracts" | "reroll-contracts" | `character-${number}` | "reset";

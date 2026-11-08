@@ -14,8 +14,16 @@ export interface Shot {
   url: string;
 }
 
+/**
+ * What the host's game shows once a step is done, for the steps it can tell: a flag of `level.flag` set,
+ * a quest line of the game's shared quest system past a step (it is at the step after), or a mix.
+ */
+export type Done = { flag: string } | { past: [line: string, step: number] } | { any: Done[] };
+
 export interface Step {
   title: Text;
+  /** Ticked from the game when the player hosts the match; by hand otherwise, and for steps without it. */
+  done?: Done;
   text?: Text[];
   points?: Text[];
   table?: { head: Text[]; rows: Cell[][] };
@@ -31,6 +39,8 @@ export interface Part {
 export interface MapGuide {
   /** Name of the map as the window's other pages write it. */
   map: string;
+  /** Name of the map as the game's scripts write it (`level.script`). */
+  code: string;
   quest: Text;
   intro: Text;
   source: string;
@@ -52,6 +62,7 @@ const final = pictures("the_beast_from_beyond/pictures");
 
 const SPACELAND: MapGuide = {
   map: "Spaceland",
+  code: "cp_zmb",
   quest: ["Zombies in Spaceland: Sooooul Key", "Zombies in Spaceland : Sooooul Key"],
   intro: [
     "Allow 40 minutes to an hour. Solo is the easiest way. Pack-a-Punch your starting pistol early: it helps during the whole quest.",
@@ -75,6 +86,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Use the four teleporters", "Empruntez les quatre téléporteurs"],
+          done: { any: [{ flag: "pap_portal_used" }, { past: ["ufo", 1] }] },
           text: [
             [
               "The lights above the main teleporter come on, left to right: Journey, Astrocade, Polar Peak, Kepler. Once all four are lit, the middle teleporter takes you to the projector room.",
@@ -101,6 +113,7 @@ const SPACELAND: MapGuide = {
       steps: [
         {
           title: ["Find the three parts of the SETI-COM", "Trouvez les trois pièces du SETI-COM"],
+          done: { any: [{ flag: "dj_fetch_quest_completed" }, { past: ["ufo", 0] }] },
           text: [["Each part is at one of three places, drawn at random.", "Chaque pièce se trouve à l'un de trois endroits, tiré au hasard."]],
           shots: [
             zmb("Calculator: Cosmic Way bench, before the Pack-a-Punch portal", "Calculatrice : banc de Cosmic Way, devant le portail du Pack-a-Punch", "main_ee/seti_com/calc_cosmic.webp"),
@@ -116,6 +129,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Get the SETI-COM from David Hasselhoff", "Récupérez le SETI-COM auprès de David Hasselhoff"],
+          done: { any: [{ flag: "dj_request_defense_done" }, { past: ["ufo", 2] }] },
           text: [
             [
               "One round after the third part, the screen shakes and the UFO on the side of Polar Peak flashes with four loud sounds. Hasselhoff is then at one of the Cosmic Tunes stands and gives you the finished SETI-COM.",
@@ -131,6 +145,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Defend the SETI-COM three times", "Défendez le SETI-COM trois fois"],
+          done: { past: ["ufo", 4] },
           text: [
             [
               "One defence per round, at three of the seven spots below. Walk around: the screen shakes at the right one. Place the SETI-COM there and survive endless zombies until the timer ends: 60, then 90, then 120 seconds.",
@@ -154,6 +169,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Place the speakers", "Placez les enceintes"],
+          done: { past: ["ufo", 7] },
           text: [
             [
               "Put three speakers on the three golden symbols around the Pack-a-Punch portal, and the fourth right in front of the portal. Have a Weapon of Rock ready if you can: it does heavy damage in the next fight.",
@@ -167,6 +183,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Repeat the UFO's colours three times", "Répétez trois fois les couleurs de l'OVNI"],
+          done: { any: [{ flag: "tones_played_successfully" }, { past: ["ufo", 8] }] },
           text: [
             [
               "Interact with a speaker in Cosmic Way (in co-op, all players together). You are locked in Cosmic Way and spawn. The speakers shine red, blue, yellow and green: note which is which.",
@@ -185,10 +202,12 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Kill 50 clowns", "Tuez 50 clowns"],
+          done: { past: ["ufo", 9] },
           text: [["They come after the third sequence and run at you to explode: keep your distance and shoot them from afar. Then one alien per player leaves the portal.", "Ils arrivent après la troisième séquence et foncent sur vous pour exploser : gardez vos distances et tirez de loin. Un alien par joueur sort ensuite du portail."]],
         },
         {
           title: ["Beat the aliens: shoot the collar, hit the back", "Battez les aliens : tirez sur le collier, frappez le dos"],
+          done: { past: ["ufo", 10] },
           text: [
             [
               "This is the step that looks endless if you only shoot. The glowing collar on its neck shows its health: green, yellow, then red. Shoot it until the alien lands in the playable area, raises a bubble and kneels.",
@@ -212,6 +231,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Upgrade the projector", "Améliorez le projecteur"],
+          done: { flag: "fuses_inserted" },
           text: [
             [
               "The fuses appear before the portal and you can leave Cosmic Way. Put them in the projector: for this game, weapons can be upgraded a second time for 10,000 points and Weapons of Rock once for 5,000.",
@@ -222,6 +242,7 @@ const SPACELAND: MapGuide = {
         },
         {
           title: ["Destroy the UFO", "Détruisez l'OVNI"],
+          done: { any: [{ flag: "ufo_destroyed" }, { flag: "ufo_quest_finished" }] },
           text: [
             [
               "Craft and upgrade a Weapon of Rock. On the Spaceland ring, around the bridge from spawn, shoot four of the five nodes: each one turns orange.",
@@ -249,6 +270,7 @@ const SPACELAND: MapGuide = {
 
 const RAVE: MapGuide = {
   map: "Rave",
+  code: "cp_rave",
   quest: ["Rave in the Redwoods: Locksmith", "Rave in the Redwoods : Locksmith"],
   intro: [
     "Allow 40 minutes to an hour. Keep a Banshee from the wallbuy outside spawn: shotguns knock off arms and legs easily, which the first two challenges ask for.",
@@ -292,11 +314,13 @@ const RAVE: MapGuide = {
       steps: [
         {
           title: ["Talk to Kevin Smith", "Parlez à Kevin Smith"],
+          done: { past: ["jmem", 0] },
           text: [["He is in the attic of the cabin on Turtle Island: this unlocks the first challenge.", "Il est dans le grenier de la cabane de Turtle Island : cela débloque le premier défi."]],
           shots: [rave("Kevin in the attic", "Kevin au grenier", "main_ee/kevin_in_attic.webp")],
         },
         {
           title: ["First photo: 10 arms", "Première photo : 10 bras"],
+          done: { any: [{ flag: "photo_1_kev_given" }, { past: ["jmem", 2] }] },
           points: [
             ["Take the photo piece behind the Burning Man, in the Rave Area.", "Prenez le morceau de photo derrière le Burning Man, dans la zone de la rave."],
             ["Place it on the ground before the big bonfire of the Thunderbird Amphitheatre. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le au sol devant le grand feu de l'amphithéâtre Thunderbird. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
@@ -313,6 +337,7 @@ const RAVE: MapGuide = {
         },
         {
           title: ["Second photo: 10 legs", "Seconde photo : 10 jambes"],
+          done: { any: [{ flag: "photo_2_kev_given" }, { past: ["jmem", 5] }] },
           points: [
             ["Take the photo piece by the doorway of the Tuff 'Nuff room, upstairs in the Bear Lodge.", "Prenez le morceau de photo près de la porte de la salle de Tuff 'Nuff, à l'étage du Bear Lodge."],
             ["Place it on the ground before the Quickies machine, in the Rave Area. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le au sol devant la machine Quickies, dans la zone de la rave. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
@@ -329,6 +354,7 @@ const RAVE: MapGuide = {
         },
         {
           title: ["Skull: 10 headshots", "Crâne : 10 tirs à la tête"],
+          done: { any: [{ flag: "survivor_trapped" }, { past: ["jmem", 7] }] },
           points: [
             ["Take the skull on the floor, left of the Magic Wheel in the Bear Lodge basement.", "Prenez le crâne au sol, à gauche de la roue magique, au sous-sol du Bear Lodge."],
             ["Place it on the beach, before Slappy Taffy. Rave Mode starts. In co-op, every player must be nearby and nobody already in Rave Mode.", "Posez-le sur la plage, devant Slappy Taffy. Le mode rave démarre. En coop, tous les joueurs doivent être à côté, et personne déjà en mode rave."],
@@ -360,6 +386,7 @@ const RAVE: MapGuide = {
         },
         {
           title: ["Beat the Super Slasher", "Battez le Super Slasher"],
+          done: { flag: "super_slasher_fight_complete" },
           text: [["Good weapons: FHR-40, Mauler, RPR-Evo, NV4, Acid Rain, Whirlwind. A round has these stages, and the fight has three rounds:", "Bonnes armes : FHR-40, Mauler, RPR-Evo, NV4, Acid Rain, Whirlwind. Un tour a ces étapes, et le combat compte trois tours :"]],
           points: [
             ["Rave Mode: charge two skulls (more in co-op) with about 30 zombie souls each, until a beam of light shines. A full skull slowly falls and can be recharged.", "Mode rave : chargez deux crânes (plus en coop) avec environ 30 âmes de zombies chacun, jusqu'au rayon de lumière. Un crâne plein descend lentement et peut être rechargé."],
@@ -385,6 +412,7 @@ const RAVE: MapGuide = {
 
 const SHAOLIN: MapGuide = {
   map: "Shaolin",
+  code: "cp_disco",
   quest: ["Shaolin Shuffle: Pest Control", "Shaolin Shuffle : Pest Control"],
   intro: [
     "Allow 1 to 1.5 hours. The quest has three parts, each ending in a fight with the Rat King: the Eye, the Brain and the Heart. Bring a weapon with plenty of ammo to the last fight.",
@@ -705,6 +733,7 @@ const WALKTHROUGHS: Step[] = FINALS.map((final) => ({
 
 const RADIOACTIVE: MapGuide = {
   map: "Radioactive Thing",
+  code: "cp_town",
   quest: ["Attack of the Radioactive Thing", "Attack of the Radioactive Thing"],
   intro: [
     "The longest of the quests, because of its chemistry. Keep paper at hand: several numbers change every match and can't be read again later. The Crowbar in the Motel maintenance room and the Cleaver in the Market are used all along.",
@@ -1166,6 +1195,7 @@ const RADIOACTIVE: MapGuide = {
 
 const BEAST: MapGuide = {
   map: "Beast from Beyond",
+  code: "cp_final",
   quest: ["The Beast from Beyond: The End?", "The Beast from Beyond : The End?"],
   intro: [
     "Shorter than the others, but it needs the Entangler, which comes first. Be careful: once finished without Director's Cut, the match breaks, so don't plan on playing further.",

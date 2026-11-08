@@ -1,7 +1,7 @@
 import { ChevronRight16Regular, Open16Regular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
-import { api, type View } from "../api";
-import { type Cell, GUIDES, type MapGuide, type Part, type Shot, type Step, type Text } from "../guideData";
+import { api, type Quest, type View } from "../api";
+import { type Cell, type Done, GUIDES, type MapGuide, type Part, type Shot, type Step, type Text } from "../guideData";
 import { t } from "../i18n";
 
 interface Props {
@@ -102,19 +102,38 @@ function stepsOf(guide: MapGuide) {
   return guide.parts.flatMap((part) => part.steps.map((step) => ({ part, step, key: stepKey(guide, part, step) })));
 }
 
+/** True once the host's game shows the condition met. */
+function reached(done: Done, quest: Quest): boolean {
+  if ("flag" in done) {
+    return quest.flags[done.flag] === true;
+  }
+  if ("past" in done) {
+    const [line, step] = done.past;
+    return (quest.steps[line] ?? -1) > step;
+  }
+  return done.any.some((one) => reached(one, quest));
+}
+
+/** Whether a step is done, and whether the game says so (then it cannot be ticked by hand). */
+interface StepState {
+  done: boolean;
+  fromGame: boolean;
+}
+
 interface StepProps {
   step: Step;
-  done: boolean;
+  state: StepState;
   onDone: (done: boolean) => void;
   act: Props["act"];
 }
 
-function StepBlock({ step, done, onDone, act }: StepProps) {
+function StepBlock({ step, state, onDone, act }: StepProps) {
   return (
-    <li className="guide-step" data-done={done}>
-      <label className="guide-check">
-        <input type="checkbox" checked={done} onChange={(event) => onDone(event.target.checked)} />
+    <li className="guide-step" data-done={state.done}>
+      <label className="guide-check" data-game={state.fromGame}>
+        <input type="checkbox" checked={state.done} disabled={state.fromGame} onChange={(event) => onDone(event.target.checked)} />
         <h3>{say(step.title)}</h3>
+        {state.fromGame && <span className="guide-source">{t("from the game", "d'après le jeu")}</span>}
       </label>
       {step.text?.map((paragraph) => <p key={paragraph[0]}>{say(paragraph)}</p>)}
       {step.points && (
@@ -164,13 +183,13 @@ interface PartProps {
   part: Part;
   open: boolean;
   onToggle: () => void;
-  done: string[];
+  stateOf: (step: Step, key: string) => StepState;
   onDone: (key: string, done: boolean) => void;
   act: Props["act"];
 }
 
-function PartBlock({ guide, part, open, onToggle, done, onDone, act }: PartProps) {
-  const ticked = part.steps.filter((step) => done.includes(stepKey(guide, part, step))).length;
+function PartBlock({ guide, part, open, onToggle, stateOf, onDone, act }: PartProps) {
+  const ticked = part.steps.filter((step) => stateOf(step, stepKey(guide, part, step)).done).length;
   return (
     <div className="group fold">
       <button type="button" className="fold-head" aria-expanded={open} onClick={onToggle}>
@@ -184,7 +203,7 @@ function PartBlock({ guide, part, open, onToggle, done, onDone, act }: PartProps
         <ol className="guide-steps">
           {part.steps.map((step) => {
             const key = stepKey(guide, part, step);
-            return <StepBlock key={key} step={step} done={done.includes(key)} onDone={(value) => onDone(key, value)} act={act} />;
+            return <StepBlock key={key} step={step} state={stateOf(step, key)} onDone={(value) => onDone(key, value)} act={act} />;
           })}
         </ol>
       )}
@@ -197,17 +216,40 @@ function guideOf(map: string | null | undefined): MapGuide {
   return GUIDES.find((guide) => guide.map === map) ?? (GUIDES[0] as MapGuide);
 }
 
-/** Each map's main easter egg, written out step by step. It reads the game's state for nothing but the map. */
+/** What the page says about where the ticks come from, or nothing when there is nothing to say. */
+function followLine(view: View, chosen: MapGuide, live: Quest | null): string | null {
+  if (live) {
+    return t(
+      "Followed from the game: you host this match, so the steps marked “from the game” tick themselves. Tick the others by hand.",
+      "Suivi depuis le jeu : vous êtes l'hôte, les étapes marquées « d'après le jeu » se cochent seules. Cochez les autres à la main.",
+    );
+  }
+  if (view.seat === "guest") {
+    return t(
+      "You are a guest: only the host's game knows where the easter egg is. Tick the steps by hand.",
+      "Vous êtes invité : seul le jeu de l'hôte sait où en est le secret. Cochez les étapes à la main.",
+    );
+  }
+  const playing = GUIDES.find((guide) => guide.code === view.quest?.map);
+  if (playing && playing !== chosen) {
+    return t(`The match is on ${playing.map}: this map's steps are ticked by hand.`, `La partie est sur ${playing.map} : les étapes de cette carte se cochent à la main.`);
+  }
+  return null;
+}
+
+/** Each map's main easter egg, written out step by step. As the host, the steps the game can tell tick themselves. */
 export function Guide({ view, act }: Props) {
-  const [chosen, setChosen] = useState(() => guideOf(view.map));
+  // The map being played: from the iw7-mod script, otherwise from the host's game (also on Steam).
+  const playing = view.map ?? GUIDES.find((guide) => guide.code === view.quest?.map)?.map ?? null;
+  const [chosen, setChosen] = useState(() => guideOf(playing));
   const [opened, setOpened] = useState<string[]>([]);
 
   // Arriving on a map brings up its guide; choosing another one by hand stays until the next map.
   useEffect(() => {
-    if (view.map) {
-      setChosen(guideOf(view.map));
+    if (playing) {
+      setChosen(guideOf(playing));
     }
-  }, [view.map]);
+  }, [playing]);
 
   const toggle = (key: string) => setOpened((all) => (all.includes(key) ? all.filter((other) => other !== key) : [...all, key]));
 
@@ -217,9 +259,16 @@ export function Guide({ view, act }: Props) {
     saveDone(next);
   };
   const tick = (key: string, value: boolean) => changeDone(value ? [...done.filter((other) => other !== key), key] : done.filter((other) => other !== key));
-  const steps = stepsOf(chosen);
-  const ticked = steps.filter(({ key }) => done.includes(key)).length;
-  const next = steps.find(({ key }) => !done.includes(key));
+
+  // One list: as the host of this map, the game's word for the steps it can tell, the hand's for the rest.
+  const live = view.quest && view.quest.map === chosen.code ? view.quest : null;
+  const stateOf = (step: Step, key: string): StepState =>
+    live && step.done ? { done: reached(step.done, live), fromGame: true } : { done: done.includes(key), fromGame: false };
+  const steps = stepsOf(chosen).map((entry) => ({ ...entry, state: stateOf(entry.step, entry.key) }));
+  const ticked = steps.filter(({ state }) => state.done).length;
+  const next = steps.find(({ state }) => !state.done);
+  const byHand = steps.filter(({ key, state }) => !state.fromGame && done.includes(key));
+  const follow = followLine(view, chosen, live);
 
   return (
     <>
@@ -239,15 +288,20 @@ export function Guide({ view, act }: Props) {
             <b>{t(`${ticked} of ${steps.length} steps done.`, `${ticked} étapes faites sur ${steps.length}.`)}</b>{" "}
             {next ? t(`Next: ${next.step.title[0]}.`, `Prochaine : ${next.step.title[1]}.`) : t("All done.", "Tout est fait.")}
           </span>
-          <button type="button" className="btn" disabled={ticked === 0} onClick={() => changeDone(done.filter((key) => !steps.some((step) => step.key === key)))}>
+          <button type="button" className="btn" disabled={byHand.length === 0} onClick={() => changeDone(done.filter((key) => !steps.some((step) => step.key === key)))}>
             {t("Untick this map", "Tout décocher sur cette carte")}
           </button>
         </div>
+        {follow && (
+          <p className="guide-follow" data-live={live !== null}>
+            {follow}
+          </p>
+        )}
         {chosen.parts.map((part, index) => {
           const key = `${chosen.map}/${part.title[0]}`;
           // The part where the quest itself starts is open first.
           const open = opened.includes(key) !== (index === 1);
-          return <PartBlock key={key} guide={chosen} part={part} open={open} onToggle={() => toggle(key)} done={done} onDone={tick} act={act} />;
+          return <PartBlock key={key} guide={chosen} part={part} open={open} onToggle={() => toggle(key)} stateOf={stateOf} onDone={tick} act={act} />;
         })}
         <p className="caption">
           {t("Places and objects keep their English names: the French game may write some of them differently. Pictures open in your browser. ", "Les lieux et objets gardent leur nom anglais : le jeu en français peut en écrire certains autrement. Les images s'ouvrent dans votre navigateur. ")}

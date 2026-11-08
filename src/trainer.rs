@@ -147,8 +147,16 @@ const SANE_MAILBOX: std::ops::RangeInclusive<i32> = SCRIPT_IDLE..=SCRIPT_COMMAND
 /// `level.flag`: the quests' flags, an array keyed by each flag's name, worth 1 once set. The number
 /// is that of the public list of script names, like `cash_scalar`'s.
 const FLAG_NAME: u32 = 0x6E25;
+/// The step each line of the shared quest system (scripts\cp\zombies\zombie_quest) is at, keyed by the
+/// line's name ("ufo", "chemistry"…). The quest sets it as each step starts: the steps before it are
+/// done. The name has no text in the public list; the number is the one the game's scripts use.
+const QUEST_STEP_NAME: u32 = 0x1_3F1B;
+/// `level.script`: the map's name ("cp_zmb"), as a script string.
+const SCRIPT_NAME: u32 = 0x279;
 /// Value type of a field that holds another script object (`VAR_POINTER`, iw7-mod).
 const VAR_POINTER: u8 = 1;
+/// Value type of a field that holds a script string, its number as value.
+const VAR_STRING: u8 = 2;
 /// Pointer to the script string table, read in the code of `SL_ConvertToString`: the text of string
 /// `n` starts at `table + 8 + 20 × n`. Not yet checked against a known string in a match.
 pub(crate) const STRING_TABLE_PTR: usize = BASE + 0x60B_9588;
@@ -1845,10 +1853,9 @@ pub(crate) struct FlagEntry {
     pub name: Option<String>,
 }
 
-/// The `level.flag` array of the match and its entries, or `None` if `level` has no such array.
-pub(crate) fn flag_entries(p: &Process) -> Option<(u32, Vec<FlagEntry>)> {
-    let level = level_object(p)?;
-    let (_, field) = object_fields(p, level).into_iter().find(|(_, var)| var.name == FLAG_NAME && var.kind == VAR_POINTER)?;
+/// The entries of an array keyed by names held in this field (`level.flag`…), with the array's number.
+fn array_entries(p: &Process, field: Option<&ChildVariable>) -> Option<(u32, Vec<FlagEntry>)> {
+    let field = field.filter(|var| var.kind == VAR_POINTER)?;
     let array = u32::try_from(field.value).ok().filter(|id| (1..OBJECT_COUNT).contains(id))?;
     let entries = object_fields(p, array)
         .into_iter()
@@ -1857,10 +1864,61 @@ pub(crate) fn flag_entries(p: &Process) -> Option<(u32, Vec<FlagEntry>)> {
     Some((array, entries))
 }
 
-/// The quests' flags of the match that read by name: each name, and whether it is set.
-pub fn quest_flags(p: &Process) -> Option<Vec<(String, bool)>> {
-    let (_, entries) = flag_entries(p)?;
-    Some(entries.into_iter().filter(|entry| entry.kind == VAR_INTEGER).filter_map(|entry| entry.name.map(|name| (name, entry.value != 0))).collect())
+/// `level`'s field of this name.
+fn level_field(fields: &[(usize, ChildVariable)], name: u32) -> Option<&ChildVariable> {
+    fields.iter().map(|(_, var)| var).find(|var| var.name == name)
+}
+
+/// The `level.flag` array of the match and its entries, or `None` if `level` has no such array.
+pub(crate) fn flag_entries(p: &Process) -> Option<(u32, Vec<FlagEntry>)> {
+    let fields = object_fields(p, level_object(p)?);
+    array_entries(p, level_field(&fields, FLAG_NAME))
+}
+
+/// The step each quest line is at, as `flag_entries` gives the flags.
+pub(crate) fn quest_step_entries(p: &Process) -> Option<(u32, Vec<FlagEntry>)> {
+    let fields = object_fields(p, level_object(p)?);
+    array_entries(p, level_field(&fields, QUEST_STEP_NAME))
+}
+
+/// The map's name as the scripts give it (`level.script`), if it reads.
+pub(crate) fn script_level_name(p: &Process) -> Option<String> {
+    let fields = object_fields(p, level_object(p)?);
+    string_field(p, level_field(&fields, SCRIPT_NAME))
+}
+
+fn string_field(p: &Process, field: Option<&ChildVariable>) -> Option<String> {
+    let id = field.filter(|var| var.kind == VAR_STRING).and_then(|var| u32::try_from(var.value).ok())?;
+    script_string(p, id)
+}
+
+/// The integer entries that read by name: each name and its value.
+fn named_values(entries: Vec<FlagEntry>) -> Vec<(String, i32)> {
+    entries.into_iter().filter(|entry| entry.kind == VAR_INTEGER).filter_map(|entry| entry.name.map(|name| (name, entry.value))).collect()
+}
+
+/// Where the host's match is in its easter egg, as its scripts keep it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct QuestProgress {
+    /// The map's name ("cp_zmb"…).
+    pub map: String,
+    /// Each flag of `level.flag` and whether it is set.
+    pub flags: Vec<(String, bool)>,
+    /// The step each quest line is at (see `QUEST_STEP_NAME`).
+    pub steps: Vec<(String, i32)>,
+}
+
+/// The easter egg's progress, read in the host's game; `None` elsewhere: only the host's game runs the
+/// quests' scripts. `level` is read once for the three fields.
+pub fn quest_progress(p: &Process) -> Option<QuestProgress> {
+    if seat(p) != Seat::Host {
+        return None;
+    }
+    let fields = object_fields(p, level_object(p)?);
+    let map = string_field(p, level_field(&fields, SCRIPT_NAME))?;
+    let read = |name| array_entries(p, level_field(&fields, name)).map(|(_, entries)| named_values(entries)).unwrap_or_default();
+    let flags = read(FLAG_NAME).into_iter().map(|(name, value)| (name, value != 0)).collect();
+    Some(QuestProgress { map, flags, steps: read(QUEST_STEP_NAME) })
 }
 
 /// Map named by the script's waiting value: `SCRIPT_IDLE` plus the map's number, 0 for none it knows.

@@ -7,10 +7,11 @@ use iw_helper::engine::{FeatureState, Game, Snapshot};
 use iw_helper::lang::{self, tr, trs};
 use iw_helper::mod_script;
 use iw_helper::picks::{self, Pick};
-use iw_helper::trainer::{Feature, OneShot, Tweak};
+use iw_helper::trainer::{Feature, OneShot, QuestProgress, Seat, Tweak};
 use iw_helper::winsettings::GraphicsSettings;
 use iw_helper::{cpu, profile};
 use serde::Serialize;
+use std::collections::BTreeMap;
 
 /// Background of the interface cards, and Windows' accent when the user's does not stand out on it.
 const CARD: [u8; 3] = [0x2B, 0x2B, 0x2B];
@@ -89,6 +90,19 @@ pub struct View {
     pub watching: bool,
     pub settings: Settings,
     pub log_path: Option<String>,
+    /// Where the host's match is in its easter egg: the Guide page ticks what it can tell from it.
+    pub quest: Option<Quest>,
+    /// "host", "guest" or "away"; "unknown" when the game's memory is not readable.
+    pub seat: &'static str,
+}
+
+#[derive(Serialize, Debug, PartialEq)]
+pub struct Quest {
+    /// The map as the scripts name it ("cp_zmb"…).
+    pub map: String,
+    pub flags: BTreeMap<String, bool>,
+    /// The step each quest line is at: the steps before it are done.
+    pub steps: BTreeMap<String, i32>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -353,7 +367,18 @@ pub fn build(input: &Input) -> View {
         watching: snapshot.watching,
         settings: settings(input),
         log_path: input.log_path.clone(),
+        quest: snapshot.quest.as_ref().map(quest),
+        seat: match snapshot.seat {
+            Some(Seat::Host) => "host",
+            Some(Seat::Guest) => "guest",
+            Some(Seat::Away) => "away",
+            None => "unknown",
+        },
     }
+}
+
+fn quest(progress: &QuestProgress) -> Quest {
+    Quest { map: progress.map.clone(), flags: progress.flags.iter().cloned().collect(), steps: progress.steps.iter().cloned().collect() }
 }
 
 fn option(feature: Feature, snapshot: &Snapshot, config: &Config) -> OptionRow {
@@ -585,6 +610,15 @@ pub fn demo_snapshot() -> Snapshot {
         character: Some(0),
         map: None,
         finished: false,
+        // Spaceland, the SETI-COM defended three times: the Guide page shows its automatic list.
+        quest: Some(QuestProgress {
+            map: "cp_zmb".to_string(),
+            flags: [("pap_portal_used", true), ("dj_fetch_quest_completed", true), ("dj_request_defense_done", true), ("fuses_inserted", false), ("ufo_destroyed", false)]
+                .map(|(name, on)| (name.to_string(), on))
+                .to_vec(),
+            steps: vec![("ufo".to_string(), 5), ("ghost".to_string(), 0)],
+        }),
+        seat: Some(Seat::Host),
     }
 }
 
@@ -684,8 +718,9 @@ mod tests {
         let (config, cores, graphics, snapshot) = (Config::default(), [0b11], GraphicsSettings::default(), demo_snapshot());
         let view = build(&Input { snapshot: &snapshot, config: &config, cores: &cores, start_tab: "partie", accent: "#60cdff", notice: None, feedback: None, graphics: Some(&graphics), on_top: false, log_path: None, mod_script: mod_script::State::NoClient });
         let json = serde_json::to_value(&view).unwrap();
-        let expected: [(&serde_json::Value, &[&str]); 18] = [
-            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "extraGroups", "modClient", "map", "modScript", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath"]),
+        let expected: [(&serde_json::Value, &[&str]); 19] = [
+            (&json, &["startTab", "language", "accent", "game", "state", "message", "ready", "profileReady", "groups", "tweaks", "actions", "extras", "picks", "extraGroups", "modClient", "map", "modScript", "keys", "savedPosition", "character", "characters", "hotkeys", "watching", "settings", "logPath", "quest", "seat"]),
+            (&json["quest"], &["map", "flags", "steps"]),
             (&json["message"], &["text", "tone"]),
             (&json["groups"][0], &["title", "options"]),
             (&json["groups"][0]["options"][0], &["key", "label", "hint", "hotkey", "on", "code", "trial"]),

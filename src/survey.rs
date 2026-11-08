@@ -862,6 +862,17 @@ fn quest_section(p: &Process) -> Section {
         },
     );
     section.entry("Base de la table des chaînes", p.read_usize(STRING_TABLE_PTR).map_or("illisible".to_string(), |base| format!("{base:#x}")));
+    section.entry("Carte selon les scripts (level.script)", trainer::script_level_name(p).unwrap_or_else(|| "illisible".to_string()));
+    match trainer::quest_step_entries(p) {
+        Some((array, entries)) => {
+            section.entry("Étapes en cours des quêtes (level, champ 0x13f1b)", format!("objet {array}, {} quêtes", entries.len()));
+            for entry in entries {
+                let name = entry.name.unwrap_or_else(|| format!("(chaîne {:#x} illisible)", entry.key));
+                section.entry(format!("quête « {name} »"), format!("étape {} en cours (type {})", entry.value, entry.kind));
+            }
+        }
+        None => section.note("Étapes des quêtes introuvables (normal hors partie, chez un invité, et sur une carte sans quête commune)."),
+    }
     let Some((array, entries)) = trainer::flag_entries(p) else {
         section.note("Tableau level.flag introuvable (normal hors partie et chez un invité).");
         return section;

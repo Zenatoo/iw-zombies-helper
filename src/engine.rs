@@ -6,7 +6,7 @@ use crate::lang::{tr, trs};
 use crate::logbook::Logbook;
 use crate::picks::Pick;
 use crate::process::{self, Access, Process};
-use crate::trainer::{self, Feature, FpsOutcome, OneShot, RoundSource, Trainer, Tweak};
+use crate::trainer::{self, Feature, FpsOutcome, OneShot, QuestProgress, RoundSource, Seat, Trainer, Tweak};
 use crate::watch::{self, Watch};
 use crate::state::{self, Pending};
 use crate::survey::{self, Survey};
@@ -25,6 +25,9 @@ const RELAUNCH_GRACE: Duration = Duration::from_secs(3);
 const FREEZE_INTERVAL: Duration = Duration::from_millis(100);
 const WATCH_INTERVAL: Duration = Duration::from_millis(250);
 const PUBLISH_INTERVAL: Duration = Duration::from_millis(200);
+/// The easter egg's progress takes about 3 MB of reading: a look every few seconds is enough to tick
+/// a step that took minutes.
+const QUEST_INTERVAL: Duration = Duration::from_secs(3);
 const STATE_INTERVAL: Duration = Duration::from_millis(500);
 const AFFINITY_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 const FPS_INTERVAL: Duration = Duration::from_secs(10);
@@ -107,6 +110,11 @@ pub struct Snapshot {
     pub map: Option<&'static str>,
     /// In launcher mode: the game is closed, there is nothing left to follow.
     pub finished: bool,
+    /// Where the match is in its easter egg, read in the host's game; `None` for a guest, outside a
+    /// match, or without memory access.
+    pub quest: Option<QuestProgress>,
+    /// Host or guest of the match, when the game's memory is readable.
+    pub seat: Option<Seat>,
 }
 
 pub struct Engine {
@@ -366,6 +374,7 @@ impl Worker {
         let mut next_watch = start;
         let mut next_state = start;
         let mut next_publish = start;
+        let mut next_quest = start;
 
         while s.game.is_running() {
             let now = Instant::now();
@@ -415,6 +424,15 @@ impl Worker {
                         self.log.line(line);
                     }
                 }
+            }
+            if now >= next_quest {
+                next_quest = now + QUEST_INTERVAL;
+                let readable = s.memory && s.recognised == Some(true);
+                let seat = readable.then(|| trainer::seat(&s.game));
+                let quest = (readable && s.in_match).then(|| trainer::quest_progress(&s.game)).flatten();
+                let mut snapshot = self.snapshot.lock().unwrap();
+                snapshot.quest = quest;
+                snapshot.seat = seat;
             }
             if now >= next_publish {
                 next_publish = now + PUBLISH_INTERVAL;
