@@ -1538,9 +1538,18 @@ h2 {
   color: var(--text);
 }
 
-/* A ticked step stays readable: only its title steps back. */
+/* A done step, ticked by hand or by the game: its title and its box turn green, the rest stays readable. */
 .guide-step[data-done="true"] h3 {
-  color: var(--text-3);
+  color: var(--success);
+}
+
+.guide-step[data-done="true"] .guide-check input {
+  accent-color: var(--success);
+}
+
+/* A box the game ticked is locked, but keeps the full green rather than the browser's greyed look. */
+.guide-step[data-done="true"] .guide-check input:disabled {
+  opacity: 1;
 }
 
 .guide-progress {
