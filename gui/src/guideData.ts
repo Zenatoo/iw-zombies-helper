@@ -283,6 +283,7 @@ const RAVE: MapGuide = {
       steps: [
         {
           title: ["Turn on the power", "Activez le courant"],
+          done: { flag: "power_on" },
           text: [["The only switch is in the basement of the Bear Lodge, under spawn, reached through the mines.", "L'unique interrupteur est au sous-sol du Bear Lodge, sous le départ, accessible par les mines."]],
           shots: [rave("The power switch", "L'interrupteur", "power/power_switch.webp")],
         },
@@ -425,6 +426,7 @@ const SHAOLIN: MapGuide = {
       steps: [
         {
           title: ["Turn on the four power switches", "Activez les quatre interrupteurs"],
+          done: { flag: "power_on" },
           shots: [
             disco("Spawn subway, on a pillar", "Métro du départ, sur un pilier", "power/power_spawn.webp"),
             disco("Disco roof, left of Quickies", "Toit du disco, à gauche de Quickies", "power/power_roof.webp"),
@@ -760,6 +762,7 @@ const RADIOACTIVE: MapGuide = {
       steps: [
         {
           title: ["Turn on the power", "Activez le courant"],
+          done: { flag: "power_on" },
           text: [["Take the handle from the zombie hand on the beach, near the OSA, and bring it to the box in the Power Station, near the drive-in.", "Prenez la poignée dans la main de zombie sur la plage, près de l'OSA, et apportez-la au boîtier de la Power Station, près du drive-in."]],
           shots: [town("The handle", "La poignée", "power/power_switch.webp"), town("The box", "Le boîtier", "power/power_box.webp")],
         },
