@@ -1,6 +1,6 @@
 [package]
 name = "iw-helper"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "CPU fix, FPS limit unlock and Zombies trainer for Call of Duty: Infinite Warfare"
 license = "GPL-3.0-or-later"
