@@ -22,7 +22,7 @@ export type Done = { flag: string } | { past: [line: string, step: number] } | {
 
 export interface Step {
   title: Text;
-  /** Ticked from the game when the player hosts the match; by hand otherwise, and for steps without it. */
+  /** Ticked from the game once it shows it, when the player hosts the match; by hand otherwise. */
   done?: Done;
   text?: Text[];
   points?: Text[];
@@ -434,6 +434,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Find the flyer, the coin and the film reel", "Trouvez le flyer, la pièce et la bobine"],
+          done: { flag: "pap_portal_used" },
           text: [
             [
               "The flyer opens the Pink Cat, the coin opens the left room from the street, the reel repairs the projector inside. Its portal gives 30 seconds in the Pack-a-Punch room.",
@@ -456,6 +457,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Get a Chi ability", "Obtenez un pouvoir Chi"],
+          done: { flag: "first_kung_fu_mode" },
           text: [
             [
               "From round 5, talk to Pam Grier in the Dojo and take one of the four gourds around it. Kill with melee to level it up: the shuriken, which the quest needs, comes at tier 2. A gourd recharges the ability.",
@@ -471,6 +473,7 @@ const SHAOLIN: MapGuide = {
       steps: [
         {
           title: ["Follow the rat", "Suivez le rat"],
+          done: { flag: "skq_p2t1_2" },
           text: [
             [
               "Talk to Pam until she says « The one who terrorizes these streets… »: cages appear. Throw a shuriken at a cage, then follow the rat to the next one and break it the same way. Open most doors first, so you don't lose it. Only shoot the cage the rat went into: hitting another one starts the chase over. The sixth cage is empty and a big yellow circle appears nearby.",
@@ -481,6 +484,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Earn the key", "Gagnez la clé"],
+          done: { flag: "skq_p2t1_2" },
           text: [
             [
               "Kill 15 zombies while they are inside the circle; you don't have to stand in it. Eight ninjas then come. Once they are dead, a key appears where the circle was.",
@@ -491,6 +495,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Open the locker, shoot the four symbols", "Ouvrez le casier, tirez sur les quatre symboles"],
+          done: { flag: "skq_p2t1_4" },
           text: [["The locker with symbols is in the Bang Bangs subway station. Then shoot once each, in this order. A wrong shot, or a second shot on the same symbol, starts it over. A gong follows each right shot.", "Le casier à symboles est à la station de métro de Bang Bangs. Tirez ensuite une seule fois sur chacun, dans cet ordre. Un mauvais tir, ou un second tir sur le même symbole, fait tout recommencer. Un gong suit chaque bon tir."]],
           shots: [
             disco("The locker", "Le casier", "main_ee/eye/locker.webp"),
@@ -501,6 +506,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["First fight", "Premier combat"],
+          done: { any: [{ flag: "eye_picked" }, { flag: "skq_p2t1_5" }] },
           text: [["Use the circle before the Black Cat Dojo to call the Rat King. Kill him and take the Eye he drops.", "Utilisez le cercle devant le Black Cat Dojo pour appeler le Rat King. Tuez-le et prenez l'Œil qu'il lâche."]],
           shots: [disco("The circle before the Dojo", "Le cercle devant le Dojo", "main_ee/eye/eye_fight_symbol.webp")],
         },
@@ -511,6 +517,7 @@ const SHAOLIN: MapGuide = {
       steps: [
         {
           title: ["Find six orange symbols with the Eye", "Trouvez six symboles orange avec l'Œil"],
+          done: { flag: "skq_p2t2_1" },
           text: [
             [
               "Talk to Pam until she says « You must once again face your enemy… ». The Eye goes in your tactical slot. Use it to reveal the Rat King's orange symbols and shoot them. One shows at a time, six in total, among these places:",
@@ -535,6 +542,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Read the Morse on the phone", "Lisez le morse au téléphone"],
+          done: { flag: "skq_p2t2_3" },
           text: [
             [
               "After the sixth symbol, a phone rings in one of the subway stations. Pick up and listen to the end: hanging up early, or being hit, forces you to listen again. It plays a three-digit number in Morse: a short beep is · and a long beep is −, and each digit has exactly five beeps.",
@@ -568,6 +576,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Take the matching poster", "Prenez l'affiche correspondante"],
+          done: { any: [{ flag: "correct_poster_got" }, { flag: "skq_p2t2_4" }] },
           text: [
             [
               "Find the Nightmare Summer poster whose « Film Registration » number, bottom left, is the one you heard. With the wrong poster, Willard Wyler laughs and you must shoot the six symbols again for a new number.",
@@ -591,6 +600,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Spell the word with the map's alphabet", "Écrivez le mot avec l'alphabet de la carte"],
+          done: { flag: "skq_p2t2_6" },
           text: [
             [
               "A letter appears on the wall, right of the drop to the street, and six symbols appear around the roof. These symbols are the map's own alphabet, shown below. The letter on the wall is the first letter of a hidden word, taken from the lists below.",
@@ -638,6 +648,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Second fight", "Deuxième combat"],
+          done: { any: [{ flag: "brain_picked" }, { flag: "skq_p2t2_7" }] },
           text: [["Go to the RPR Evo near Deadeye Dewdrops and use the Rat King's symbol. Kill him and take the Brain.", "Allez à la RPR Evo près de Deadeye Dewdrops et utilisez le symbole du Rat King. Tuez-le et prenez le Cerveau."]],
           shots: [disco("The symbol to use", "Le symbole à utiliser", "main_ee/brain/brain_fight.webp")],
         },
@@ -677,6 +688,7 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["The disco ball", "La boule à facettes"],
+          done: { flag: "skq_p2t3_4" },
           text: [
             [
               "Use the DJ booth on the Disco's second floor: a dancing zombie with a disco ball appears on the floor below. Kill it while another zombie stands on the dance floor, and the ball jumps to that one. Do this ten times, until a gong sounds.",
@@ -688,11 +700,13 @@ const SHAOLIN: MapGuide = {
         },
         {
           title: ["Third fight", "Troisième combat"],
+          done: { any: [{ flag: "heart_picked" }, { flag: "skq_p2t3_6" }] },
           text: [["Use the symbol on the street before the Pink Cat. Kill the Rat King and take the Heart. Talk to Pam in the Dojo, then enter his lair in the sewers.", "Utilisez le symbole dans la rue devant le Pink Cat. Tuez le Rat King et prenez le Cœur. Parlez à Pam dans le Dojo, puis entrez dans son repaire, dans les égouts."]],
           shots: [disco("The symbol", "Le symbole", "main_ee/heart/heart_fight.webp")],
         },
         {
           title: ["Last fight in the lair", "Dernier combat dans le repaire"],
+          done: { flag: "rk_fight_ended" },
           text: [
             [
               "Damage him until he climbs to the rafters: the Eye, the Brain and the Heart then lie on the ground. Take one and use the big symbol in the middle to start its challenge, in the order you want. Each challenge leaves a Max Ammo in the middle: take it only when needed. After each one, damage him until he retreats again.",
@@ -751,6 +765,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Have Elvira open the Pack-a-Punch", "Faites ouvrir le Pack-a-Punch par Elvira"],
+          done: { flag: "pap_portal_used" },
           points: [
             ["Take Elvira's book from the safe at the back of the Ice Cream Parlour and bring it to her in the TV studio: she gives you an empty vial.", "Prenez le livre d'Elvira dans le coffre au fond de l'Ice Cream Parlour et apportez-le-lui au studio de télé : elle vous donne une fiole vide."],
             ["Take the Cleaver behind the counter near Deadeye Dewdrops, in the Market. Kill about 20 zombies with it to fill the vial.", "Prenez le hachoir derrière le comptoir près de Deadeye Dewdrops, au Market. Tuez environ 20 zombies avec pour remplir la fiole."],
@@ -842,6 +857,7 @@ const RADIOACTIVE: MapGuide = {
       steps: [
         {
           title: ["Build the chemistry set", "Montez le matériel de chimie"],
+          done: { flag: "chemistry_step1" },
           text: [["Put the three parts on the empty table in the garage.", "Posez les trois pièces sur la table vide du garage."]],
           shots: [
             town("Tube: couch at the back of the Market", "Tube : canapé au fond du Market", "main_ee/tube.webp"),
@@ -852,6 +868,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Build the bomb", "Montez la bombe"],
+          done: { flag: "launchcode_step3" },
           text: [["Put the three parts on the bomb in the garage.", "Posez les trois pièces sur la bombe du garage."]],
           shots: [
             town("Under the front of the red car, between the Motel and the TV Station", "Sous l'avant de la voiture rouge, entre le motel et la TV Station", "main_ee/nuke_red_car.webp"),
@@ -862,6 +879,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Open the safe: note this code", "Ouvrez le coffre : notez ce code"],
+          done: { any: [{ flag: "launchcode_step1" }, { flag: "launchcode_step2" }] },
           text: [
             [
               "At the back of the Market, lie prone on the left of the desk and note its four numbers. Set each one on one of the four gauges, in any order: hit a gauge with the Crowbar while its needle is on the number, and again to start over.",
@@ -1137,6 +1155,7 @@ const RADIOACTIVE: MapGuide = {
       steps: [
         {
           title: ["Start it and push the bomb", "Lancez-le et poussez la bombe"],
+          done: { past: ["crabBoss", 1] },
           text: [
             [
               "All players use the bomb to charge it, then use it again. You are taken to the beach. Stand near the cart to push it towards the water. Every time it stops and starts again, the monster fires eggs and fireballs, and zombies come. Shoot the eggs and fireballs down so the cart keeps moving. A Max Ammo waits near the OSA and returns after a few minutes.",
@@ -1147,6 +1166,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Hit the chest with the death rays", "Frappez la poitrine avec les rayons"],
+          done: { past: ["crabBoss", 2] },
           text: [
             [
               "At the water, the bomb flies into its mouth. It now has a deadly ground slam, when one or both claws rise: run, for example across the bridge towards the RV Park. Its laser, when the antenna glows, is easy to dodge.",
@@ -1169,6 +1189,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Radiation and lasers", "Radiations et lasers"],
+          done: { flag: "boss_fight_finished" },
           text: [
             [
               "It spits radiation on the front of the beach, then two sets of eggs and fireballs, then more radiation, which pushes you back to the wall under the bridge. Then the radiation clears and lasers appear. Everyone jumps and slides through them to the cart, before the timer ends, and uses it.",
@@ -1180,6 +1201,7 @@ const RADIOACTIVE: MapGuide = {
         },
         {
           title: ["Enter the safe's code in its belly", "Entrez le code du coffre dans son ventre"],
+          done: { flag: "boss_fight_finished" },
           text: [
             [
               "Inside, each player must enter the code from the safe, nobody can do it for another. It works like the machine at spawn: press use when the light is on the digit. Three errors per attempt and three attempts are allowed. Failing or taking too long sends you back to the radiation and the lasers.",
@@ -1208,6 +1230,7 @@ const BEAST: MapGuide = {
       steps: [
         {
           title: ["Bring N31L's head back", "Rapportez la tête de N31L"],
+          done: { any: [{ flag: "neil_head_placed" }, { flag: "restorepower_step1" }] },
           text: [
             [
               "In the Ops Center, drop through the hole in the middle of the room, and land on the lowest ledge or you die. Take the head at the end of the hallway and put it in the slot on the wall near the spawn door. Power comes on, and from the next round zombies replace cryptids.",
@@ -1223,6 +1246,7 @@ const BEAST: MapGuide = {
         },
         {
           title: ["Build the bridge to the Pack-a-Punch", "Construisez le pont vers le Pack-a-Punch"],
+          done: { flag: "bridge_constructed" },
           text: [
             [
               "Each of the three scraps of metal brings three cryptids when taken. Place them on the broken bridge outside. The portal across it gives 30 seconds in the Pack-a-Punch room. The first time you come back in a round, a Phantom or three cryptids appear: the first Phantom you kill drops a disk you need, so note where it dies.",
@@ -1317,6 +1341,7 @@ const BEAST: MapGuide = {
         },
         {
           title: ["Put all the handles in the same direction", "Mettez toutes les poignées dans le même sens"],
+          done: { flag: "completed_toggle_puzzle_once" },
           text: [
             [
               "The game accepts all 16 handles in one direction, whichever it is. Using a handle also moves others. The method that works: write down which handles are horizontal now, then use only those, once each, even if they turn meanwhile. If some are still horizontal at the end, write them down and do the same again.",

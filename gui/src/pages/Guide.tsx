@@ -114,7 +114,7 @@ function reached(done: Done, quest: Quest): boolean {
   return done.any.some((one) => reached(one, quest));
 }
 
-/** Whether a step is done, and whether the game says so (then it cannot be ticked by hand). */
+/** Whether a step is done, and whether the game says so (then it cannot be unticked by hand). */
 interface StepState {
   done: boolean;
   fromGame: boolean;
@@ -262,8 +262,11 @@ export function Guide({ view, act }: Props) {
 
   // One list: as the host of this map, the game's word for the steps it can tell, the hand's for the rest.
   const live = view.quest && view.quest.map === chosen.code ? view.quest : null;
-  const stateOf = (step: Step, key: string): StepState =>
-    live && step.done ? { done: reached(step.done, live), fromGame: true } : { done: done.includes(key), fromGame: false };
+  // The game only adds ticks: what it does not show done yet stays the hand's to tick.
+  const stateOf = (step: Step, key: string): StepState => {
+    const fromGame = live !== null && step.done !== undefined && reached(step.done, live);
+    return { done: fromGame || done.includes(key), fromGame };
+  };
   const steps = stepsOf(chosen).map((entry) => ({ ...entry, state: stateOf(entry.step, entry.key) }));
   const ticked = steps.filter(({ state }) => state.done).length;
   const next = steps.find(({ state }) => !state.done);
